@@ -538,9 +538,12 @@ const LEN_ICON = {
 let flipped = [false, false, false];
 let isLenormand = false;
 let drawnLenormand = [];
+let meaningsVisible = false;
 
 // ── Draw ───────────────────────────────────────────────────────────────────
 function draw() {
+  meaningsVisible = false;
+  closeSettings();
   for (let i = 0; i < 3; i++) {
     document.getElementById(`ci${i}`).classList.remove('flipped');
     document.getElementById(`lbl${i}`).textContent = '';
@@ -636,19 +639,30 @@ function tap(i) {
     flip(i, isLenormand);
     return;
   }
-  const mn = document.getElementById(`mn${i}`);
-  if (mn.classList.contains('visible')) {
-    mn.classList.remove('visible');
-    mn.textContent = '';
-    return;
+  toggleAllMeanings();
+}
+
+function toggleAllMeanings() {
+  meaningsVisible = !meaningsVisible;
+  for (let i = 0; i < 3; i++) {
+    const mn = document.getElementById(`mn${i}`);
+    if (meaningsVisible && flipped[i]) {
+      const text = isLenormand
+        ? lenMeaning(i)
+        : (MEANINGS[document.getElementById(`cf${i}`).dataset.key] || '');
+      if (text) { mn.textContent = text; mn.classList.add('visible'); }
+    } else {
+      mn.classList.remove('visible');
+      mn.textContent = '';
+    }
   }
-  const text = isLenormand
-    ? lenMeaning(i)
-    : (MEANINGS[document.getElementById(`cf${i}`).dataset.key] || '');
-  if (text) { mn.textContent = text; mn.classList.add('visible'); }
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
+function closeSettings() {
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('btnSettings').classList.remove('active');
+}
 function toggleSettings() {
   document.getElementById('settingsPanel').classList.toggle('open');
   document.getElementById('btnSettings').classList.toggle('active');
@@ -675,6 +689,15 @@ function switchDeck() {
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('settingsPanel');
+  const btn = document.getElementById('btnSettings');
+  if (panel.classList.contains('open') &&
+      !panel.contains(e.target) && !btn.contains(e.target)) {
+    closeSettings();
+  }
+});
+
 draw();
 </script>
 </body>
