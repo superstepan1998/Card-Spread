@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px 0;
+    }
+
+    /* ── Spread ────────────────────────────────────────────────── */
+    .spread {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Card shell ─────────────────────────────────────────────── */
+    .card-wrap {
+      width: 160px;
+      height: 275px;
+      perspective: 1000px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Lenormand cards are narrower in ratio; adjust height */
+    .lenormand-mode .card-wrap {
+      height: 240px;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-inner.flipped { transform: rotateY(180deg); }
+
+    .card-back, .card-front {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    /* RWS plaid back */
+    .card-back {
+      background-color: #c2d5ec;
+      background-image:
+        repeating-linear-gradient( 45deg, rgba(32,60,130,0.18) 0, rgba(32,60,130,0.18) 1px,   transparent 0, transparent 5px),
+        repeating-linear-gradient(-45deg, rgba(32,60,130,0.18) 0, rgba(32,60,130,0.18) 1px,   transparent 0, transparent 5px),
+        repeating-linear-gradient( 45deg, rgba(32,60,130,0.65) 0, rgba(32,60,130,0.65) 1.3px, transparent 0, transparent 10px),
+        repeating-linear-gradient(-45deg, rgba(32,60,130,0.65) 0, rgba(32,60,130,0.65) 1.3px, transparent 0, transparent 10px);
+      box-shadow: inset 0 0 0 5px #c2d5ec, inset 0 0 0 7px rgba(32,60,130,0.75);
+    }
+
+    /* Tarot face */
+    .card-front {
+      transform: rotateY(180deg);
+      background: #111;
+    }
+    .card-front img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .card-front.rev img { transform: rotate(180deg); }
+
+    /* Lenormand face — CSS sprite from SVG */
+    .card-front.lenormand {
+      transform: rotateY(180deg);
+      background: url('russian-deck.svg') no-repeat;
+      /* size and position set inline per card */
+    }
+
+    /* ── Card label (Lenormand name) ────────────────────────────── */
+    .card-label {
+      color: #888;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    /* ── Controls ───────────────────────────────────────────────── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .icon-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 8px; opacity: 0.3; transition: opacity 0.2s;
+      line-height: 0; display: flex; align-items: center;
+    }
+    .icon-btn:hover { opacity: 0.8; }
+    .icon-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* Toggle */
+    .toggle-wrap {
+      display: flex; align-items: center; gap: 0;
+      opacity: 0.3; transition: opacity 0.2s; cursor: pointer;
+    }
+    .toggle-wrap:hover { opacity: 0.8; }
+    .toggle-wrap input { display: none; }
+    .toggle-track {
+      width: 32px; height: 18px; background: #333;
+      border-radius: 9px; position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle-thumb {
+      position: absolute; top: 3px; left: 3px;
+      width: 12px; height: 12px; background: #fff;
+      border-radius: 50%; transition: transform 0.2s;
+    }
+    input:checked + .toggle-track { background: #4a7fc1; }
+    input:checked + .toggle-track .toggle-thumb { transform: translateX(14px); }
+    .toggle-wrap svg { width: 16px; height: 16px; fill: #fff; margin-left: 8px; }
+
+    /* Deck toggle uses text labels instead of icon */
+    .deck-toggle {
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0.3; transition: opacity 0.2s; cursor: pointer;
+    }
+    .deck-toggle:hover { opacity: 0.8; }
+    .deck-toggle input { display: none; }
+    .deck-toggle .toggle-track { background: #333; }
+    input:checked + .toggle-track { background: #7a4fc1; }
+    .deck-label {
+      color: #fff;
+      font-family: 'Palatino Linotype', serif;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Hide reversed toggle in Lenormand mode */
+    .lenormand-mode .rev-toggle { display: none; }
+
+    /* Lenormand card back — SVG sprite at col 13 (card back column) */
+    .lenormand-mode .card-back {
+      background: url('russian-deck.svg') -2273px -14px / 2447px 1030px no-repeat;
+      box-shadow: none;
+    }
+
+    /* Tighter corners to match the SVG card's own rounding (rx≈30px → ~13.5px at display scale) */
+    .lenormand-mode .card-back,
+    .lenormand-mode .card-front.lenormand {
+      border-radius: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="spread" id="spread">
+  <div class="slot" id="slot0">
+    <div class="card-wrap" onclick="tap(0)">
+      <div class="card-inner" id="ci0">
+        <div class="card-back"></div>
+        <div class="card-front" id="cf0"><img id="img0" src="" alt=""></div>
+      </div>
+    </div>
+    <div class="card-label" id="lbl0"></div>
+  </div>
+  <div class="slot" id="slot1">
+    <div class="card-wrap" onclick="tap(1)">
+      <div class="card-inner" id="ci1">
+        <div class="card-back"></div>
+        <div class="card-front" id="cf1"><img id="img1" src="" alt=""></div>
+      </div>
+    </div>
+    <div class="card-label" id="lbl1"></div>
+  </div>
+  <div class="slot" id="slot2">
+    <div class="card-wrap" onclick="tap(2)">
+      <div class="card-inner" id="ci2">
+        <div class="card-back"></div>
+        <div class="card-front" id="cf2"><img id="img2" src="" alt=""></div>
+      </div>
+    </div>
+    <div class="card-label" id="lbl2"></div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+
+  <!-- Redraw -->
+  <button class="icon-btn" onclick="draw()" title="Draw">
+    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+  </button>
+
+  <!-- Reversed toggle (Tarot only) -->
+  <label class="toggle-wrap rev-toggle" title="Allow reversed cards">
+    <input type="checkbox" id="revToggle" checked>
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zm-8-2l-4-4h3V8h2v4h3l-4 4z"/></svg>
+  </label>
+
+  <!-- Deck toggle: Tarot ↔ Lenormand -->
+  <label class="deck-toggle" title="Switch deck">
+    <span class="deck-label">T</span>
+    <input type="checkbox" id="deckToggle" onchange="switchDeck()">
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <span class="deck-label">L</span>
+  </label>
+
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────
+const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+
+// SVG sprite constants
+const SVG_CARD_W = 359, SVG_CARD_H = 539;
+const SVG_TOTAL_W = 5490, SVG_TOTAL_H = 2310;
+const DISPLAY_W = 160;
+const SCALE = DISPLAY_W / SVG_CARD_W;           // 0.4457
+const BG_W = Math.round(SVG_TOTAL_W * SCALE);   // 2447
+const BG_H = Math.round(SVG_TOTAL_H * SCALE);   // 1030
+
+// Column x-positions in the SVG
+const COL_X = [30.5,420.5,810.5,1200.5,1590.5,1980.5,2370.5,2760.5,3150.5,3540.5,3930.5,4320.5,4710.5,5100.5];
+// Row y-positions: ♥ ♦ ♣ ♠
+const ROW_Y = [30.5, 600.5, 1170.5, 1740.5];
+// Rank → column index (A=0, 2=1..5=4, 6=5..K=12, back=13)
+const RANK_COL = { A:0, 6:5, 7:6, 8:7, 9:8, 10:9, J:10, Q:11, K:12 };
+// Suit → row index
+const SUIT_ROW = { '♥':0, '♦':1, '♣':2, '♠':3 };
+
+function spriteStyle(suit, rank) {
+  const col = RANK_COL[rank];
+  const row = SUIT_ROW[suit];
+  const bx = -Math.round(COL_X[col] * SCALE);
+  const by = -Math.round(ROW_Y[row] * SCALE);
+  return `background:url('russian-deck.svg') ${bx}px ${by}px / ${BG_W}px ${BG_H}px`;
+}
+
+// ── Tarot deck ─────────────────────────────────────────────────────────────
+const TAROT = [
+  'RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg',
+  'RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_05_Hierophant.jpg',
+  'RWS_Tarot_06_Lovers.jpg','RWS_Tarot_07_Chariot.jpg','RWS_Tarot_08_Strength.jpg',
+  'RWS_Tarot_09_Hermit.jpg','RWS_Tarot_10_Wheel_of_Fortune.jpg','RWS_Tarot_11_Justice.jpg',
+  'RWS_Tarot_12_Hanged_Man.jpg','RWS_Tarot_13_Death.jpg','RWS_Tarot_14_Temperance.jpg',
+  'RWS_Tarot_15_Devil.jpg','RWS_Tarot_16_Tower.jpg','RWS_Tarot_17_Star.jpg',
+  'RWS_Tarot_18_Moon.jpg','RWS_Tarot_19_Sun.jpg','RWS_Tarot_20_Judgement.jpg',
+  'RWS_Tarot_21_World.jpg',
+  'Wands01.jpg','Wands02.jpg','Wands03.jpg','Wands04.jpg','Wands05.jpg','Wands06.jpg',
+  'Wands07.jpg','Wands08.jpg','Wands09.jpg','Wands10.jpg','Wands11.jpg','Wands12.jpg',
+  'Wands13.jpg','Wands14.jpg',
+  'Cups01.jpg','Cups02.jpg','Cups03.jpg','Cups04.jpg','Cups05.jpg','Cups06.jpg',
+  'Cups07.jpg','Cups08.jpg','Cups09.jpg','Cups10.jpg','Cups11.jpg','Cups12.jpg',
+  'Cups13.jpg','Cups14.jpg',
+  'Swords01.jpg','Swords02.jpg','Swords03.jpg','Swords04.jpg','Swords05.jpg','Swords06.jpg',
+  'Swords07.jpg','Swords08.jpg','Swords09.jpg','Swords10.jpg','Swords11.jpg','Swords12.jpg',
+  'Swords13.jpg','Swords14.jpg',
+  'Pents01.jpg','Pents02.jpg','Pents03.jpg','Pents04.jpg','Pents05.jpg','Pents06.jpg',
+  'Pents07.jpg','Pents08.jpg','Pents09.jpg','Pents10.jpg','Pents11.jpg','Pents12.jpg',
+  'Pents13.jpg','Pents14.jpg',
+];
+
+// ── Lenormand deck (36 cards) ──────────────────────────────────────────────
+// Each card: { name, suit, rank }
+// Correspondences follow the German/Russian tradition
+const LENORMAND = [
+  { name:'Rider',      suit:'♥', rank:9  },
+  { name:'Clover',     suit:'♦', rank:6  },
+  { name:'Ship',       suit:'♠', rank:10 },
+  { name:'House',      suit:'♥', rank:'K'},
+  { name:'Tree',       suit:'♥', rank:7  },
+  { name:'Clouds',     suit:'♣', rank:'K'},
+  { name:'Snake',      suit:'♣', rank:'Q'},
+  { name:'Coffin',     suit:'♦', rank:9  },
+  { name:'Flowers',    suit:'♠', rank:'Q'},
+  { name:'Scythe',     suit:'♦', rank:'J'},
+  { name:'Whip',       suit:'♣', rank:'J'},
+  { name:'Birds',      suit:'♦', rank:7  },
+  { name:'Child',      suit:'♠', rank:'J'},
+  { name:'Fox',        suit:'♣', rank:9  },
+  { name:'Bear',       suit:'♣', rank:10 },
+  { name:'Stars',      suit:'♥', rank:6  },
+  { name:'Stork',      suit:'♥', rank:'Q'},
+  { name:'Dog',        suit:'♥', rank:10 },
+  { name:'Tower',      suit:'♠', rank:6  },
+  { name:'Garden',     suit:'♠', rank:8  },
+  { name:'Mountain',   suit:'♣', rank:8  },
+  { name:'Crossroads', suit:'♦', rank:'Q'},
+  { name:'Mice',       suit:'♣', rank:7  },
+  { name:'Heart',      suit:'♥', rank:'J'},
+  { name:'Ring',       suit:'♣', rank:'A'},
+  { name:'Book',       suit:'♦', rank:10 },
+  { name:'Letter',     suit:'♠', rank:7  },
+  { name:'Man',        suit:'♥', rank:'A'},
+  { name:'Woman',      suit:'♠', rank:'A'},
+  { name:'Lily',       suit:'♠', rank:'K'},
+  { name:'Sun',        suit:'♦', rank:'A'},
+  { name:'Moon',       suit:'♥', rank:8  },
+  { name:'Key',        suit:'♦', rank:8  },
+  { name:'Fish',       suit:'♦', rank:'K'},
+  { name:'Anchor',     suit:'♠', rank:9  },
+  { name:'Cross',      suit:'♣', rank:6  },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let flipped = [false, false, false];
+let isLenormand = false;
+
+// ── Draw ───────────────────────────────────────────────────────────────────
+function draw() {
+  for (let i = 0; i < 3; i++) {
+    document.getElementById(`ci${i}`).classList.remove('flipped');
+    document.getElementById(`lbl${i}`).textContent = '';
+    flipped[i] = false;
+  }
+
+  if (isLenormand) {
+    drawLenormand();
+  } else {
+    drawTarot();
+  }
+}
+
+function drawTarot() {
+  const allowRev = document.getElementById('revToggle').checked;
+  const shuffled = [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
+  shuffled.forEach((img, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style = '';
+    const el = document.getElementById(`img${i}`);
+    el.style.display = '';
+    el.src = WIKI + img;
+    front.innerHTML = '';
+    front.appendChild(el);
+    const rev = !allowRev && Math.random() < 0.3;
+    if (rev) front.classList.add('rev');
+  });
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
+}
+
+function drawLenormand() {
+  const shuffled = [...LENORMAND].sort(() => Math.random() - 0.5).slice(0, 3);
+  shuffled.forEach((card, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front lenormand';
+    front.style.cssText = spriteStyle(card.suit, card.rank);
+    front.innerHTML = '';           // no <img> needed
+    front.dataset.name = card.name;
+    front.dataset.suit = card.suit;
+    front.dataset.rank = card.rank;
+  });
+  setTimeout(() => flip(0, true), 300);
+  setTimeout(() => flip(1, true), 550);
+  setTimeout(() => flip(2, true), 800);
+}
+
+// ── Flip ───────────────────────────────────────────────────────────────────
+function flip(i, showLabel) {
+  document.getElementById(`ci${i}`).classList.add('flipped');
+  flipped[i] = true;
+  if (showLabel) {
+    setTimeout(() => {
+      const front = document.getElementById(`cf${i}`);
+      document.getElementById(`lbl${i}`).textContent = front.dataset.name || '';
+    }, 360);
+  }
+}
+
+function tap(i) {
+  if (!flipped[i]) flip(i, isLenormand);
+}
+
+// ── Deck switch ────────────────────────────────────────────────────────────
+function switchDeck() {
+  isLenormand = document.getElementById('deckToggle').checked;
+  document.body.classList.toggle('lenormand-mode', isLenormand);
+
+  // Rebuild card fronts: tarot uses <img>, lenormand uses background sprite
+  for (let i = 0; i < 3; i++) {
+    const front = document.getElementById(`cf${i}`);
+    if (!isLenormand) {
+      // Restore img element inside front
+      if (!document.getElementById(`img${i}`)) {
+        const img = document.createElement('img');
+        img.id = `img${i}`; img.src = ''; img.alt = '';
+        front.appendChild(img);
+      }
+    }
+  }
+  draw();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+draw();
+</script>
+</body>
+</html>
