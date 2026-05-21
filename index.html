@@ -43,9 +43,11 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 8px;
-      padding-top: 8px;
+      padding-top: 0;
       flex: 1;
       min-width: 0;
+      height: 275px;
+      overflow: hidden;
     }
 
     /* ── Card shell ─────────────────────────────────────────────── */
@@ -60,6 +62,9 @@
 
     /* Lenormand cards are narrower in ratio; adjust height */
     .lenormand-mode .card-wrap {
+      height: 240px;
+    }
+    .lenormand-mode .card-info {
       height: 240px;
     }
 
@@ -111,7 +116,7 @@
       letter-spacing: 1.5px;
       text-transform: uppercase;
       text-align: left;
-      min-height: 1.2em;
+      min-height: 0;
     }
 
     /* ── Card meaning (tap to reveal) ──────────────────────────── */
@@ -329,10 +334,10 @@ const MEANINGS = {
   'Wands08': '♣ 8 of Wands\nSpeed, swift action, momentum, sudden movement',
   'Wands09': '♣ 9 of Wands\nResilience, defensiveness, experience, wariness',
   'Wands10': '♣ 10 of Wands\nBurden, responsibility, hard work, nearing the end',
-  'Wands11': '♣ Page of Wands\nEnthusiasm, exploration, new ideas, creative spark\nAdventurous and bold, eager to begin, full of fire energy\nInner: inspiration and excitement, genuine interest, anticipation of adventure\nOuter: enthusiastic beginner, devoted student or helper, bright gifted energetic child\nSituation: inspired-idea stage, spontaneous startup, creative endeavors, new relationships with mutual interest',
-  'Wands12': '♣ Knight of Wands\nPassion, adventure, risk-taking, rapid growth\nCharismatic and impulsive — acts first, thinks later\nInner: excitement and adrenaline, willingness to risk, passionate desire\nOuter: the one who acts and achieves, pioneer and experimenter\nSituation: explosive growth, idea spreading like wildfire, intensifying passion in relationships',
-  'Wands13': '♣ Queen of Wands\nConfidence, charisma, warmth, determination, popularity\nNaturally magnetic, inspires others, knows her own power\nInner: self-confidence, clear sense of beauty in life, uses charm and influence practically, tendency toward drama\nOuter: talented master who inspires others, protective figure, vibrant and often public personality\nSituation: project at peak popularity still developing, successful ambitious endeavor, vivid thriving relationships',
-  'Wands14': '♣ King of Wands\nLeadership, vision, entrepreneurship, bold ambition\nEntrepreneur at heart, motivates through passion, big-picture thinker\nInner: control over complex challenges, drive to inspire others, responsibility for people — struggles with anger and impatience\nOuter: charismatic leader, creator of inspiring ideology, paternal figure who sets an example and encourages competition\nSituation: established success in active exploitation, mature relationship that keeps its passion',
+  'Wands11': '♣ Page of Wands\nEnthusiasm, new ideas, spark\nEager and bold, full of fire energy\nInner: inspiration, desire for adventure\nOuter: beginner, devoted student, gifted child\nSit: idea stage, new passionate relationship',
+  'Wands12': '♣ Knight of Wands\nPassion, adventure, rapid growth\nImpulsive — acts first, thinks later\nInner: adrenaline, willingness to risk\nOuter: pioneer, achiever of ambitions\nSit: explosive growth, intensifying passion',
+  'Wands13': '♣ Queen of Wands\nConfidence, charisma, determination\nMagnetic, inspires others, knows her power\nInner: uses charm and influence, dramatic\nOuter: inspiring master, often public figure\nSit: project at peak, thriving relationship',
+  'Wands14': '♣ King of Wands\nLeadership, vision, bold ambition\nMotivates through passion, visionary\nInner: controls complex tasks, anger issues\nOuter: charismatic leader, sets example\nSit: established success, passionate bond',
 
   // Cups ♥
   'Cups01': '♥ Ace of Cups\nNew love, emotional beginning, intuition, overflowing feeling',
@@ -345,10 +350,10 @@ const MEANINGS = {
   'Cups08': '♥ 8 of Cups\nWalking away, disappointment, seeking deeper meaning',
   'Cups09': '♥ 9 of Cups\nContentment, satisfaction, wishes fulfilled, inner pleasure',
   'Cups10': '♥ 10 of Cups\nHappiness, family harmony, emotional fulfillment, joy',
-  'Cups11': '♥ Page of Cups\nImagination, sensitivity, inner child, dreamy beginnings\nEmotionally open, creative, may carry an emotional message\nInner: enchanted by new feelings, dreamy and imaginative, carefree youthful soul, happy inner child\nOuter: a child, junior helper, inspired but inexperienced beginner in creative or emotional fields\nSituation: project in dream stage, budding emotional attachment, first steps in heartfelt connection',
-  'Cups12': '♥ Knight of Cups\nRomance, charm, emotional pursuit, following the heart\nThe hopeless romantic — led by feelings, drawn to beauty\nInner: uplifted by feelings, in love with a person or idea, emotional surge\nOuter: creative and emotional activist, devoted admirer and fan\nSituation: active but unsystematic development driven by passion, a romance unfolding',
-  'Cups13': '♥ Queen of Cups\nCompassion, intuition, emotional depth, empathy\nHighly empathic, absorbs others\' feelings, trusts her gut completely\nInner: intuitive and sensitive, ability to perceive and channel others\' emotions\nOuter: loving parent, healer, priestess, heart and soul of the group\nSituation: obvious but irrational success, project running on intuitive mastery and unique aura, unspoken agreement',
-  'Cups14': '♥ King of Cups\nEmotional maturity, wisdom, diplomacy, balanced feelings\nControls emotions without suppressing them, a wise counselor\nInner: gift for understanding others\' feelings, guards his inner world, prone to emotional burnout\nOuter: loving mentor and parent figure, tactful and empathic healer\nSituation: successful project risking loss of soul without renewal, mature loving relationship that has lost emotional freshness',
+  'Cups11': '♥ Page of Cups\nImagination, sensitivity, dreamy\nEmotionally open, creative, inner child\nInner: enchanted, dreamy, carefree soul\nOuter: inexperienced beginner, junior helper\nSit: dream stage, first heartfelt steps',
+  'Cups12': '♥ Knight of Cups\nRomance, charm, following the heart\nHopeless romantic, led by feelings\nInner: in love with a person or idea\nOuter: emotional activist, devoted fan\nSit: passion-driven growth, romance unfolding',
+  'Cups13': '♥ Queen of Cups\nCompassion, intuition, emotional depth\nAbsorbs others\' feelings, trusts her gut\nInner: intuitive, sensitive channel\nOuter: loving parent, healer, soul of group\nSit: irrational success, unspoken agreement',
+  'Cups14': '♥ King of Cups\nEmotional maturity, wisdom, diplomacy\nControls emotions, wise counselor\nInner: understands others, prone to burnout\nOuter: loving mentor, empathic healer\nSit: mature love losing its freshness',
 
   // Swords ♠
   'Swords01': '♠ Ace of Swords\nClarity, breakthrough, new idea, truth, mental force',
@@ -361,10 +366,10 @@ const MEANINGS = {
   'Swords08': '♠ 8 of Swords\nRestriction, feeling trapped, powerlessness, blocked',
   'Swords09': '♠ 9 of Swords\nAnxiety, fear, dark thoughts, sleeplessness, worry',
   'Swords10': '♠ 10 of Swords\nPainful ending, betrayal, forced conclusion, rock bottom',
-  'Swords11': '♠ Page of Swords\nCuriosity, vigilance, sharp mind, gathering information\nAnalytical and watchful, may bring a warning or sharp news\nInner: thirst for knowledge, drive to study and understand, distrust and suspicion\nOuter: student or intern, newcomer to a discipline, sharp-minded and often difficult child\nSituation: beginning of intellectual work, theorizing phase, relationships sizing each other up, conflicts and criticism',
-  'Swords12': '♠ Knight of Swords\nAmbition, swift action, determination, forceful change\nCharges in without hesitation — sharp-tongued but effective\nInner: drive to transform the world by own ideals, aggression toward wrongdoers\nOuter: ideological leader, missionary for their viewpoint, fighter for truth — or rebel and extremist\nSituation: project with clear theoretical principles, relationship in war for right to reshape it, rapid change',
-  'Swords13': '♠ Queen of Swords\nIndependence, clear thinking, directness, rational approach\nCuts through illusion, values truth above comfort, often alone by choice\nInner: informed and self-sufficient — sometimes over-informed, leading to cynicism and criticism\nOuter: strategist who executes plans, strict manager, scholar, maternal figure based on logic not feelings\nSituation: well-planned project running on track, relationship where rational arguments come first, solitude has its place',
-  'Swords14': '♠ King of Swords\nIntellect, authority, truth, ruling with proven ideas\nFair but cold, commands through logic, expects the highest standards\nInner: wisdom and sense of all-knowing, intellect and erudition as identity, rationality and control over words and thoughts\nOuter: authority who oversees his concepts, founding father figure, judge, doctor, writer, scholar\nSituation: fully conceived project running on established ideas, conservative planning, relationship dominated by reason — sometimes rigid and constraining',
+  'Swords11': '♠ Page of Swords\nCuriosity, sharp mind, vigilance\nAnalytical, watchful, brings sharp news\nInner: thirst for knowledge, suspicion\nOuter: student, intern, sharp-minded child\nSit: theorizing phase, conflicts, criticism',
+  'Swords12': '♠ Knight of Swords\nAmbition, swift action, forceful change\nCharges in without hesitation\nInner: driven to transform by own ideals\nOuter: ideological leader or rebel\nSit: principled project, war in relationship',
+  'Swords13': '♠ Queen of Swords\nIndependence, directness, clear thinking\nValues truth above comfort, often alone\nInner: self-sufficient, can turn cynical\nOuter: strategist, strict manager, scholar\nSit: plan on track, logic over feelings',
+  'Swords14': '♠ King of Swords\nIntellect, authority, proven ideas\nCommands through logic, high standards\nInner: wisdom as identity, controls words\nOuter: authority, judge, scholar, founder\nSit: established ideas, reason-bound bond',
 
   // Pentacles ♦
   'Pents01': '♦ Ace of Pentacles\nNew financial opportunity, manifestation, abundance, new venture',
@@ -377,10 +382,10 @@ const MEANINGS = {
   'Pents08': '♦ 8 of Pentacles\nDiligence, mastery, skill-building, steady work, routine',
   'Pents09': '♦ 9 of Pentacles\nAbundance, luxury, self-reliance, hollow success',
   'Pents10': '♦ 10 of Pentacles\nWealth, legacy, family success, financial security',
-  'Pents11': '♦ Page of Pentacles\nAmbition, groundedness, new opportunity, diligent beginnings\nSerious and studious, focused on building real-world skills\nInner: fully absorbed in a task, all senses engaged, experimenting with the physical world\nOuter: learner and apprentice, junior helper in practical matters, child with much invested in their development\nSituation: new project with solid groundwork, endeavor interesting from a practical standpoint',
-  'Pents12': '♦ Knight of Pentacles\nEfficiency, responsibility, methodical, step-by-step progress\nSlow and steady — values reliability, builds lasting results\nInner: total concentration on the task, persistence bordering on stubbornness\nOuter: executor of a narrowly defined task, skilled specialist, dedicated practitioner\nSituation: methodical step-by-step development, high-quality execution, relationship aimed at solving a specific task',
-  'Pents13': '♦ Queen of Pentacles\nNurturing, practical, down-to-earth, abundant, self-sufficient\nCreates comfort effortlessly, deeply connected to home and nature\nInner: focused on material qualities — money, beauty, health, property — for self and others\nOuter: any maternal role caring for material wellbeing — health, provision, resources\nSituation: fully resourced project, task resolved on a material level, relationship that needs allocated time or space',
-  'Pents14': '♦ King of Pentacles\nWealth, business mastery, stability, disciplined success\nThe provider who built everything through patience and hard work\nInner: responsibility for all possessions, pressure to control and manage resources, sense of power and influence\nOuter: owner and master, formally empowered, fully responsible for prosperity, practitioner relying on material means\nSituation: large resource-rich project, mature pragmatic relationship valuing order and security — may have peaked and stagnated',
+  'Pents11': '♦ Page of Pentacles\nAmbition, diligence, new opportunity\nSerious, studious, builds real skills\nInner: absorbed in task, senses engaged\nOuter: apprentice, practical junior helper\nSit: solid new project, practical interest',
+  'Pents12': '♦ Knight of Pentacles\nEfficiency, methodical, reliability\nSlow and steady, builds lasting results\nInner: concentrated, stubborn persistence\nOuter: specialist, executor, practitioner\nSit: methodical execution, task-driven bond',
+  'Pents13': '♦ Queen of Pentacles\nNurturing, practical, abundant\nCreates comfort, connected to home\nInner: focused on material wellbeing for all\nOuter: maternal provider of health, resources\nSit: fully resourced project, needs space',
+  'Pents14': '♦ King of Pentacles\nWealth, stability, business mastery\nProvider, built everything with patience\nInner: controls all assets, sense of power\nOuter: owner, master, responsible for all\nSit: rich mature project, may have peaked',
 };
 
 const REVERSED = {
