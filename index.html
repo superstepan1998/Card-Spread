@@ -99,9 +99,9 @@
 
     /* ── Card label (Lenormand name) ────────────────────────────── */
     .card-label {
-      color: #888;
+      color: #ccc;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       text-align: left;
@@ -110,9 +110,9 @@
 
     /* ── Card meaning (tap to reveal) ──────────────────────────── */
     .meaning-text {
-      color: #888;
+      color: #bbb;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 0.68rem;
+      font-size: 0.82rem;
       line-height: 1.6;
       text-align: left;
       white-space: pre-line;
@@ -482,6 +482,17 @@ const LENORMAND = [
   { name:'Cross',      suit:'♣', rank:6  },
 ];
 
+// ── Lenormand icons ───────────────────────────────────────────────────────
+const LEN_ICON = {
+  'Rider':'🏇', 'Clover':'🍀', 'Ship':'🚢', 'House':'🏠', 'Tree':'🌳',
+  'Clouds':'☁️', 'Snake':'🐍', 'Coffin':'⚰️', 'Flowers':'🌸', 'Scythe':'⚔️',
+  'Whip':'⚡', 'Birds':'🐦', 'Child':'👶', 'Fox':'🦊', 'Bear':'🐻',
+  'Stars':'⭐', 'Stork':'🦢', 'Dog':'🐕', 'Tower':'🏰', 'Garden':'🌿',
+  'Mountain':'⛰️', 'Crossroads':'🔀', 'Mice':'🐭', 'Heart':'❤️', 'Ring':'💍',
+  'Book':'📖', 'Letter':'✉️', 'Man':'👨', 'Woman':'👩', 'Lily':'🌷',
+  'Sun':'☀️', 'Moon':'🌙', 'Key':'🗝️', 'Fish':'🐟', 'Anchor':'⚓', 'Cross':'✝️',
+};
+
 // ── State ──────────────────────────────────────────────────────────────────
 let flipped = [false, false, false];
 let isLenormand = false;
@@ -545,7 +556,9 @@ function flip(i, showLabel) {
   if (showLabel) {
     setTimeout(() => {
       const front = document.getElementById(`cf${i}`);
-      document.getElementById(`lbl${i}`).textContent = front.dataset.name || '';
+      const name = front.dataset.name || '';
+      const icon = LEN_ICON[name] || '';
+      document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
     }, 360);
   }
 }
