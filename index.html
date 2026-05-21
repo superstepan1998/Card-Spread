@@ -99,6 +99,7 @@
       width: 100%; height: 100%;
       object-fit: cover; display: block;
     }
+    .marseille-mode .card-front img { object-fit: contain; }
     .card-front.rev img { transform: rotate(180deg); }
 
     /* Lenormand face — CSS sprite from SVG */
@@ -847,6 +848,7 @@ function switchDeck(deck) {
   currentDeck = deck;
   const isLen = deck === 'lenormand';
   document.body.classList.toggle('lenormand-mode', isLen);
+  document.body.classList.toggle('marseille-mode', deck === 'marseille');
 
   ['tarot', 'marseille', 'lenormand'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
