@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Tarot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,6 +50,7 @@
       perspective: 1000px;
       cursor: pointer;
       flex-shrink: 0;
+      touch-action: manipulation;
     }
 
     /* Lenormand cards are narrower in ratio; adjust height */
