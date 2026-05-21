@@ -261,9 +261,9 @@
 <div class="settings-panel" id="settingsPanel">
   <!-- Reversed toggle (Tarot only) -->
   <div class="setting-row rev-toggle">
-    <span class="setting-label">Upright cards only</span>
+    <span class="setting-label">Reversed</span>
     <label class="toggle-wrap">
-      <input type="checkbox" id="revToggle" checked>
+      <input type="checkbox" id="revToggle">
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
     </label>
   </div>
@@ -291,92 +291,182 @@ const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 // ── Meanings (English) ───────────────────────────────────────────────────
 const MEANINGS = {
   // Major Arcana
-  'RWS_Tarot_00_Fool':             '0 — The Fool\nNew beginnings, spontaneity, leap of faith, innocence, risk',
-  'RWS_Tarot_01_Magician':         'I — The Magician\nSkill, willpower, mastery, manifestation, conscious action',
-  'RWS_Tarot_02_High_Priestess':   'II — The High Priestess\nIntuition, mystery, inner voice, hidden knowledge, patience',
-  'RWS_Tarot_03_Empress':          'III — The Empress\nFertility, abundance, nature, sensuality, motherhood',
-  'RWS_Tarot_04_Emperor':          'IV — The Emperor\nAuthority, structure, order, discipline, control',
-  'RWS_Tarot_05_Hierophant':       'V — The Hierophant\nTradition, spiritual guidance, convention, mentorship, marriage',
-  'RWS_Tarot_06_Lovers':           'VI — The Lovers\nLove, alignment, values, choice made with the heart',
-  'RWS_Tarot_07_Chariot':          'VII — The Chariot\nDetermination, victory, willpower, direction, movement',
-  'RWS_Tarot_08_Strength':         'VIII — Strength\nCourage, patience, inner strength, compassion, self-control',
-  'RWS_Tarot_09_Hermit':           'IX — The Hermit\nSolitude, introspection, wisdom, guidance, inner search',
-  'RWS_Tarot_10_Wheel_of_Fortune': 'X — Wheel of Fortune\nFate, cycles, turning points, destiny, inevitable change',
-  'RWS_Tarot_11_Justice':          'XI — Justice\nFairness, law, cause and effect, accountability, truth',
-  'RWS_Tarot_12_Hanged_Man':       'XII — The Hanged Man\nSuspension, sacrifice, new perspective, surrender, pause',
-  'RWS_Tarot_13_Death':            'XIII — Death\nTransformation, endings, transition, release, renewal',
-  'RWS_Tarot_14_Temperance':       'XIV — Temperance\nBalance, moderation, patience, harmony, purpose',
-  'RWS_Tarot_15_Devil':            'XV — The Devil\nBondage, addiction, materialism, shadow self, temptation',
-  'RWS_Tarot_16_Tower':            'XVI — The Tower\nSudden upheaval, revelation, chaos, liberation, breakdown',
-  'RWS_Tarot_17_Star':             'XVII — The Star\nHope, faith, renewal, inspiration, serenity, right path',
-  'RWS_Tarot_18_Moon':             'XVIII — The Moon\nIllusion, fear, subconscious, confusion, fantasy, intuition',
-  'RWS_Tarot_19_Sun':              'XIX — The Sun\nJoy, success, vitality, confidence, clarity, recognition',
-  'RWS_Tarot_20_Judgement':        'XX — Judgement\nRenewal, awakening, karma, reckoning, inner calling',
-  'RWS_Tarot_21_World':            'XXI — The World\nCompletion, integration, accomplishment, wholeness, success',
+  ‘RWS_Tarot_00_Fool’:             ‘0 The Fool  ♅\nNew beginnings, spontaneity, leap of faith, innocence, risk, trust in the universe’,
+  ‘RWS_Tarot_01_Magician’:         ‘I The Magician  ☿\nSkill, willpower, mastery, manifestation, conscious action, all four elements at hand’,
+  ‘RWS_Tarot_02_High_Priestess’:   ‘II The High Priestess  🌙\nIntuition, mystery, inner voice, hidden knowledge, patience, the veil between worlds’,
+  ‘RWS_Tarot_03_Empress’:          ‘III The Empress  ♀\nFertility, abundance, nature, sensuality, motherhood, creative force, unconditional love’,
+  ‘RWS_Tarot_04_Emperor’:          ‘IV The Emperor  ♈\nAuthority, structure, order, discipline, control, the archetypal father figure’,
+  ‘RWS_Tarot_05_Hierophant’:       ‘V The Hierophant  ♉\nTradition, spiritual guidance, convention, mentorship, marriage, shared beliefs, ritual’,
+  ‘RWS_Tarot_06_Lovers’:           ‘VI The Lovers  ♊\nLove, alignment, values, choice made with the heart, duality, deep connection, union’,
+  ‘RWS_Tarot_07_Chariot’:          ‘VII The Chariot  ♋\nDetermination, victory, willpower, direction, movement, harnessing opposing forces’,
+  ‘RWS_Tarot_08_Strength’:         ‘VIII Strength  ♌\nCourage, patience, inner strength, compassion, self-control, taming the beast within’,
+  ‘RWS_Tarot_09_Hermit’:           ‘IX The Hermit  ♍\nSolitude, introspection, wisdom, guidance, inner search, lighting the way for others’,
+  ‘RWS_Tarot_10_Wheel_of_Fortune’: ‘X Wheel of Fortune  ♃\nFate, cycles, turning points, destiny, inevitable change, karma in motion’,
+  ‘RWS_Tarot_11_Justice’:          ‘XI Justice  ♎\nFairness, law, cause and effect, accountability, truth, objective balance’,
+  ‘RWS_Tarot_12_Hanged_Man’:       ‘XII The Hanged Man  ♆\nSuspension, sacrifice, new perspective, surrender, pause, seeing from another angle’,
+  ‘RWS_Tarot_13_Death’:            ‘XIII Death  ♏\nTransformation, endings, transition, release, renewal, clearing the old to make way for new’,
+  ‘RWS_Tarot_14_Temperance’:       ‘XIV Temperance  ♐\nBalance, moderation, patience, harmony, purpose, blending opposites into something better’,
+  ‘RWS_Tarot_15_Devil’:            ‘XV The Devil  ♑\nBondage, addiction, materialism, shadow self, temptation, what holds you chained’,
+  ‘RWS_Tarot_16_Tower’:            ‘XVI The Tower  ♂\nSudden upheaval, revelation, chaos, liberation, breakdown, false structures crumble’,
+  ‘RWS_Tarot_17_Star’:             ‘XVII The Star  ♒\nHope, faith, renewal, inspiration, serenity, being guided by your true north’,
+  ‘RWS_Tarot_18_Moon’:             ‘XVIII The Moon  ♓\nIllusion, fear, subconscious, confusion, fantasy, intuition, the unknown depths’,
+  ‘RWS_Tarot_19_Sun’:              ‘XIX The Sun  ☀\nJoy, success, vitality, confidence, clarity, recognition, radiating warmth and truth’,
+  ‘RWS_Tarot_20_Judgement’:        ‘XX Judgement  ♇\nRenewal, awakening, karma, reckoning, inner calling, answering a higher summons’,
+  ‘RWS_Tarot_21_World’:            ‘XXI The World  ♄\nCompletion, integration, accomplishment, wholeness, success, the full cycle complete’,
 
   // Wands ♣
-  'Wands01': 'Ace ♣ Wands\nNew beginning, inspiration, potential, creative spark, desire',
-  'Wands02': '2 ♣ Wands\nPlanning, personal power, decisions, looking ahead',
-  'Wands03': '3 ♣ Wands\nProgress, expansion, foresight, first results, journey',
-  'Wands04': '4 ♣ Wands\nCelebration, stability, home, harmony, achievement',
-  'Wands05': '5 ♣ Wands\nConflict, competition, tension, wasted energy',
-  'Wands06': '6 ♣ Wands\nVictory, recognition, progress, public success',
-  'Wands07': '7 ♣ Wands\nPerseverance, defense, challenge, holding your ground',
-  'Wands08': '8 ♣ Wands\nSpeed, swift action, momentum, sudden movement',
-  'Wands09': '9 ♣ Wands\nResilience, defensiveness, experience, wariness',
-  'Wands10': '10 ♣ Wands\nBurden, responsibility, hard work, nearing the end',
-  'Wands11': 'Page ♣ Wands\nEnthusiasm, exploration, new ideas, creative spark',
-  'Wands12': 'Knight ♣ Wands\nPassion, adventure, risk-taking, rapid growth',
-  'Wands13': 'Queen ♣ Wands\nConfidence, charisma, warmth, determination, popularity',
-  'Wands14': 'King ♣ Wands\nLeadership, vision, entrepreneurship, exploiting success',
+  ‘Wands01’: ‘♣ Ace of Wands\nNew beginning, inspiration, potential, creative spark, desire’,
+  ‘Wands02’: ‘♣ 2 of Wands\nPlanning, personal power, decisions, looking ahead’,
+  ‘Wands03’: ‘♣ 3 of Wands\nProgress, expansion, foresight, first results, journey’,
+  ‘Wands04’: ‘♣ 4 of Wands\nCelebration, stability, home, harmony, achievement’,
+  ‘Wands05’: ‘♣ 5 of Wands\nConflict, competition, tension, wasted energy’,
+  ‘Wands06’: ‘♣ 6 of Wands\nVictory, recognition, progress, public success’,
+  ‘Wands07’: ‘♣ 7 of Wands\nPerseverance, defense, challenge, holding your ground’,
+  ‘Wands08’: ‘♣ 8 of Wands\nSpeed, swift action, momentum, sudden movement’,
+  ‘Wands09’: ‘♣ 9 of Wands\nResilience, defensiveness, experience, wariness’,
+  ‘Wands10’: ‘♣ 10 of Wands\nBurden, responsibility, hard work, nearing the end’,
+  ‘Wands11’: ‘♣ Page of Wands\nEnthusiasm, exploration, new ideas, creative spark\nAdventurous and bold, eager to begin, full of fire energy’,
+  ‘Wands12’: ‘♣ Knight of Wands\nPassion, adventure, risk-taking, rapid growth\nCharismatic and impulsive — acts first, thinks later’,
+  ‘Wands13’: ‘♣ Queen of Wands\nConfidence, charisma, warmth, determination, popularity\nNaturally magnetic, inspires others, knows her own power’,
+  ‘Wands14’: ‘♣ King of Wands\nLeadership, vision, entrepreneurship, bold ambition\nEntrepreneur at heart, motivates through passion, big-picture thinker’,
 
   // Cups ♥
-  'Cups01': 'Ace ♥ Cups\nNew love, emotional beginning, intuition, overflowing feeling',
-  'Cups02': '2 ♥ Cups\nPartnership, connection, mutual attraction, early romance',
-  'Cups03': '3 ♥ Cups\nCelebration, friendship, joy, sharing emotions',
-  'Cups04': '4 ♥ Cups\nApathy, contemplation, emotional withdrawal',
-  'Cups05': '5 ♥ Cups\nLoss, grief, disappointment, focusing on what was lost',
-  'Cups06': '6 ♥ Cups\nNostalgia, childhood memories, innocence, past connections',
-  'Cups07': '7 ♥ Cups\nIllusion, fantasy, wishful thinking, many choices',
-  'Cups08': '8 ♥ Cups\nWalking away, disappointment, seeking deeper meaning',
-  'Cups09': '9 ♥ Cups\nContentment, satisfaction, wishes fulfilled, inner pleasure',
-  'Cups10': '10 ♥ Cups\nHappiness, family harmony, emotional fulfillment, joy',
-  'Cups11': 'Page ♥ Cups\nImagination, sensitivity, inner child, dreamy beginnings',
-  'Cups12': 'Knight ♥ Cups\nRomance, charm, emotional pursuit, following the heart',
-  'Cups13': 'Queen ♥ Cups\nCompassion, intuition, emotional depth, irrational success',
-  'Cups14': 'King ♥ Cups\nEmotional maturity, wisdom, diplomacy, risk of burnout',
+  ‘Cups01’: ‘♥ Ace of Cups\nNew love, emotional beginning, intuition, overflowing feeling’,
+  ‘Cups02’: ‘♥ 2 of Cups\nPartnership, connection, mutual attraction, early romance’,
+  ‘Cups03’: ‘♥ 3 of Cups\nCelebration, friendship, joy, sharing emotions’,
+  ‘Cups04’: ‘♥ 4 of Cups\nApathy, contemplation, emotional withdrawal’,
+  ‘Cups05’: ‘♥ 5 of Cups\nLoss, grief, disappointment, focusing on what was lost’,
+  ‘Cups06’: ‘♥ 6 of Cups\nNostalgia, childhood memories, innocence, past connections’,
+  ‘Cups07’: ‘♥ 7 of Cups\nIllusion, fantasy, wishful thinking, many choices’,
+  ‘Cups08’: ‘♥ 8 of Cups\nWalking away, disappointment, seeking deeper meaning’,
+  ‘Cups09’: ‘♥ 9 of Cups\nContentment, satisfaction, wishes fulfilled, inner pleasure’,
+  ‘Cups10’: ‘♥ 10 of Cups\nHappiness, family harmony, emotional fulfillment, joy’,
+  ‘Cups11’: ‘♥ Page of Cups\nImagination, sensitivity, inner child, dreamy beginnings\nEmotionally open, creative, may carry an emotional message’,
+  ‘Cups12’: ‘♥ Knight of Cups\nRomance, charm, emotional pursuit, following the heart\nThe hopeless romantic — led by feelings, drawn to beauty’,
+  ‘Cups13’: ‘♥ Queen of Cups\nCompassion, intuition, emotional depth, empathy\nHighly empathic, absorbs others’ feelings, trusts her gut completely’,
+  ‘Cups14’: ‘♥ King of Cups\nEmotional maturity, wisdom, diplomacy, balanced feelings\nControls emotions without suppressing them, a wise counselor’,
 
   // Swords ♠
-  'Swords01': 'Ace ♠ Swords\nClarity, breakthrough, new idea, truth, mental force',
-  'Swords02': '2 ♠ Swords\nIndecision, stalemate, avoidance, not knowing what to do',
-  'Swords03': '3 ♠ Swords\nHeartbreak, sorrow, grief, suppressing feelings with logic',
-  'Swords04': '4 ♠ Swords\nRest, recovery, contemplation, not the time to act',
-  'Swords05': '5 ♠ Swords\nConflict, dishonesty, defeat, unfair fight',
-  'Swords06': '6 ♠ Swords\nTransition, moving on, change, gradual recovery',
-  'Swords07': '7 ♠ Swords\nDeception, strategy, cunning, taking what is not yours',
-  'Swords08': '8 ♠ Swords\nRestriction, feeling trapped, powerlessness, blocked',
-  'Swords09': '9 ♠ Swords\nAnxiety, fear, dark thoughts, sleeplessness, worry',
-  'Swords10': '10 ♠ Swords\nPainful ending, betrayal, forced conclusion, rock bottom',
-  'Swords11': 'Page ♠ Swords\nCuriosity, vigilance, sharp mind, gathering information',
-  'Swords12': 'Knight ♠ Swords\nAmbition, swift action, determination, forceful change',
-  'Swords13': 'Queen ♠ Swords\nIndependence, clear thinking, directness, rational approach',
-  'Swords14': 'King ♠ Swords\nIntellect, authority, truth, ruling with proven ideas',
+  ‘Swords01’: ‘♠ Ace of Swords\nClarity, breakthrough, new idea, truth, mental force’,
+  ‘Swords02’: ‘♠ 2 of Swords\nIndecision, stalemate, avoidance, not knowing what to do’,
+  ‘Swords03’: ‘♠ 3 of Swords\nHeartbreak, sorrow, grief, suppressing feelings with logic’,
+  ‘Swords04’: ‘♠ 4 of Swords\nRest, recovery, contemplation, not the time to act’,
+  ‘Swords05’: ‘♠ 5 of Swords\nConflict, dishonesty, defeat, unfair fight’,
+  ‘Swords06’: ‘♠ 6 of Swords\nTransition, moving on, change, gradual recovery’,
+  ‘Swords07’: ‘♠ 7 of Swords\nDeception, strategy, cunning, taking what is not yours’,
+  ‘Swords08’: ‘♠ 8 of Swords\nRestriction, feeling trapped, powerlessness, blocked’,
+  ‘Swords09’: ‘♠ 9 of Swords\nAnxiety, fear, dark thoughts, sleeplessness, worry’,
+  ‘Swords10’: ‘♠ 10 of Swords\nPainful ending, betrayal, forced conclusion, rock bottom’,
+  ‘Swords11’: ‘♠ Page of Swords\nCuriosity, vigilance, sharp mind, gathering information\nAnalytical and watchful, may bring a warning or sharp news’,
+  ‘Swords12’: ‘♠ Knight of Swords\nAmbition, swift action, determination, forceful change\nCharges in without hesitation — sharp-tongued but effective’,
+  ‘Swords13’: ‘♠ Queen of Swords\nIndependence, clear thinking, directness, rational approach\nCuts through illusion, values truth above comfort, often alone by choice’,
+  ‘Swords14’: ‘♠ King of Swords\nIntellect, authority, truth, ruling with proven ideas\nFair but cold, commands through logic, expects the highest standards’,
 
   // Pentacles ♦
-  'Pents01': 'Ace ♦ Pentacles\nNew financial opportunity, manifestation, abundance, new venture',
-  'Pents02': '2 ♦ Pentacles\nBalance, adaptation, juggling priorities, financial flexibility',
-  'Pents03': '3 ♦ Pentacles\nTeamwork, skill, craftsmanship, collaboration, learning',
-  'Pents04': '4 ♦ Pentacles\nStability, security, possessiveness, no room for growth',
-  'Pents05': '5 ♦ Pentacles\nHardship, poverty, isolation, financial or health crisis',
-  'Pents06': '6 ♦ Pentacles\nGenerosity, giving and receiving, financial assistance',
-  'Pents07': '7 ♦ Pentacles\nPatience, long-term investment, assessment, perseverance',
-  'Pents08': '8 ♦ Pentacles\nDiligence, mastery, skill-building, steady work, routine',
-  'Pents09': '9 ♦ Pentacles\nAbundance, luxury, self-reliance, hollow success',
-  'Pents10': '10 ♦ Pentacles\nWealth, legacy, family success, financial security',
-  'Pents11': 'Page ♦ Pentacles\nAmbition, groundedness, new opportunity, diligent beginnings',
-  'Pents12': 'Knight ♦ Pentacles\nEfficiency, responsibility, methodical, step-by-step progress',
-  'Pents13': 'Queen ♦ Pentacles\nNurturing, practical, down-to-earth, fully resourced',
-  'Pents14': 'King ♦ Pentacles\nWealth, business mastery, stability, reached the peak',
+  ‘Pents01’: ‘♦ Ace of Pentacles\nNew financial opportunity, manifestation, abundance, new venture’,
+  ‘Pents02’: ‘♦ 2 of Pentacles\nBalance, adaptation, juggling priorities, financial flexibility’,
+  ‘Pents03’: ‘♦ 3 of Pentacles\nTeamwork, skill, craftsmanship, collaboration, learning’,
+  ‘Pents04’: ‘♦ 4 of Pentacles\nStability, security, possessiveness, no room for growth’,
+  ‘Pents05’: ‘♦ 5 of Pentacles\nHardship, poverty, isolation, financial or health crisis’,
+  ‘Pents06’: ‘♦ 6 of Pentacles\nGenerosity, giving and receiving, financial assistance’,
+  ‘Pents07’: ‘♦ 7 of Pentacles\nPatience, long-term investment, assessment, perseverance’,
+  ‘Pents08’: ‘♦ 8 of Pentacles\nDiligence, mastery, skill-building, steady work, routine’,
+  ‘Pents09’: ‘♦ 9 of Pentacles\nAbundance, luxury, self-reliance, hollow success’,
+  ‘Pents10’: ‘♦ 10 of Pentacles\nWealth, legacy, family success, financial security’,
+  ‘Pents11’: ‘♦ Page of Pentacles\nAmbition, groundedness, new opportunity, diligent beginnings\nSerious and studious, focused on building real-world skills’,
+  ‘Pents12’: ‘♦ Knight of Pentacles\nEfficiency, responsibility, methodical, step-by-step progress\nSlow and steady — values reliability, builds lasting results’,
+  ‘Pents13’: ‘♦ Queen of Pentacles\nNurturing, practical, down-to-earth, abundant, self-sufficient\nCreates comfort effortlessly, deeply connected to home and nature’,
+  ‘Pents14’: ‘♦ King of Pentacles\nWealth, business mastery, stability, disciplined success\nThe provider who built everything through patience and hard work’,
+};
+
+const REVERSED = {
+  // Major Arcana
+  'RWS_Tarot_00_Fool':          'Recklessness, risk-taking, naivety, foolish leaps, holding back',
+  'RWS_Tarot_01_Magician':      'Manipulation, poor planning, untapped potential, trickery',
+  'RWS_Tarot_02_High_Priestess':'Secrets hidden, disconnection from intuition, repressed feelings',
+  'RWS_Tarot_03_Empress':       'Creative block, dependence, smothering, neglect, infertility',
+  'RWS_Tarot_04_Emperor':       'Domination, rigidity, lack of discipline, abuse of authority',
+  'RWS_Tarot_05_Hierophant':    'Rebellion, unconventional path, questioning traditions',
+  'RWS_Tarot_06_Lovers':        'Disharmony, misalignment, bad choice, imbalance in values',
+  'RWS_Tarot_07_Chariot':       'Loss of control, aggression, lack of direction, defeat',
+  'RWS_Tarot_08_Strength':      'Self-doubt, weakness, lack of inner courage, insecurity',
+  'RWS_Tarot_09_Hermit':        'Isolation, loneliness, withdrawal, refusing guidance',
+  'RWS_Tarot_10_Wheel_of_Fortune':'Bad luck, resistance to change, clinging to the past',
+  'RWS_Tarot_11_Justice':       'Injustice, dishonesty, unfair outcome, avoiding accountability',
+  'RWS_Tarot_12_Hanged_Man':    'Stalling, resistance, useless sacrifice, impulsive action',
+  'RWS_Tarot_13_Death':         'Resistance to change, inability to move on, stagnation',
+  'RWS_Tarot_14_Temperance':    'Imbalance, excess, lack of patience, conflict',
+  'RWS_Tarot_15_Devil':         'Breaking free, releasing bonds, reclaiming power',
+  'RWS_Tarot_16_Tower':         'Avoiding disaster, fear of change, clinging to the crumbling',
+  'RWS_Tarot_17_Star':          'Despair, lost hope, disconnection, pessimism',
+  'RWS_Tarot_18_Moon':          'Confusion lifting, releasing fear, misinterpretation',
+  'RWS_Tarot_19_Sun':           'Blocked happiness, pessimism, unrealistic expectations',
+  'RWS_Tarot_20_Judgement':     'Self-doubt, refusal of a calling, ignoring inner voice',
+  'RWS_Tarot_21_World':         'Incompletion, shortcuts, delays, feeling stuck',
+
+  // Wands ♣
+  'Wands01': 'Delays, hesitation, lack of energy, false start',
+  'Wands02': 'Fear of the unknown, poor planning, playing it too safe',
+  'Wands03': 'Setbacks, obstacles, unexpected delays, return empty-handed',
+  'Wands04': 'Instability, conflict at home, incomplete celebration',
+  'Wands05': 'Avoiding conflict, internal struggle, ending a fight',
+  'Wands06': 'Ego, fall from grace, lack of recognition, self-doubt',
+  'Wands07': 'Overwhelmed, giving up, loss of position, backing down',
+  'Wands08': 'Delays, miscommunication, missed opportunities, chaos',
+  'Wands09': 'Paranoia, stubbornness, refusing to move on, worn out',
+  'Wands10': 'Carrying too much, inability to delegate, burnout',
+  'Wands11': 'Immaturity, hasty decisions, envy, poor communication',
+  'Wands12': 'Scattered energy, recklessness, impatience, frustration',
+  'Wands13': 'Drama, jealousy, insecurity, controlling nature',
+  'Wands14': 'Impulsiveness, ruthlessness, arrogance, poor leadership',
+
+  // Cups ♥
+  'Cups01':  'Blocked feelings, missed opportunities, empty gestures',
+  'Cups02':  'Disconnection, bad communication, breakup, imbalance',
+  'Cups03':  'Overindulgence, gossip, strained friendship, excess',
+  'Cups04':  'Missed opportunity, awakening, sudden motivation',
+  'Cups05':  'Acceptance, moving on, finding the positive, forgiveness',
+  'Cups06':  'Stuck in the past, nostalgia, naivety, unrealistic ideals',
+  'Cups07':  'Clarity, choosing wisely, cutting through illusion',
+  'Cups08':  'Drift, aimlessness, staying in a bad situation too long',
+  'Cups09':  'Overindulgence, dissatisfaction despite plenty, smugness',
+  'Cups10':  'Broken family, conflict at home, false happiness, discord',
+  'Cups11':  'Emotional immaturity, insecurity, escapism, moodiness',
+  'Cups12':  'Moodiness, manipulativeness, unreliability, jealousy',
+  'Cups13':  'Emotional insecurity, co-dependency, giving too much',
+  'Cups14':  'Emotional manipulation, moodiness, using feelings as control',
+
+  // Swords ♠
+  'Swords01': 'Confusion, misinformation, chaos, clouded thinking',
+  'Swords02': 'Lies coming to light, less stress, moving past indecision',
+  'Swords03': 'Recovery, releasing pain, slowly healing, optimism returns',
+  'Swords04': 'Restlessness, burnout, returning to conflict too soon',
+  'Swords05': 'Reconciliation, compromise, letting go of ego',
+  'Swords06': 'Stuck, resistance to change, running from problems',
+  'Swords07': 'Conscience, coming clean, caught in a lie, exposure',
+  'Swords08': 'Freedom, releasing limitations, new perspective, escape',
+  'Swords09': 'Releasing worry, recovery, seeing past fears',
+  'Swords10': 'Recovery, resisting ending, slow healing, victim mindset',
+  'Swords11': 'Gossip, impulsiveness, bad news, deception, rash words',
+  'Swords12': 'Scattered thinking, recklessness, going too fast, bully',
+  'Swords13': 'Bitterness, cruelty, overly cold, cutting words',
+  'Swords14': 'Abuse of power, cruelty, cold judgment, tyranny',
+
+  // Pentacles ♦
+  'Pents01':  'Lost opportunity, lack of planning, missed chance',
+  'Pents02':  'Disorganized, financial loss, overwhelmed by duties',
+  'Pents03':  'Lack of teamwork, poor planning, mediocrity, ego clashes',
+  'Pents04':  'Greed, materialism, hoarding, financial insecurity',
+  'Pents05':  'Recovery, finding help, end of hardship, new hope',
+  'Pents06':  'Debt, strings attached, unfair exchange, imbalance',
+  'Pents07':  'Impatience, lack of reward, wasted effort, poor choices',
+  'Pents08':  'Laziness, poor quality, lack of focus, cutting corners',
+  'Pents09':  'Overindulgence, superficiality, financial dependence',
+  'Pents10':  'Financial failure, family conflict, unstable foundations',
+  'Pents11':  'Procrastination, laziness, missed chance, unrealistic',
+  'Pents12':  'Laziness, boredom, obsession with routine, lack of drive',
+  'Pents13':  'Neglect, smothering, insecurity, work-life imbalance',
+  'Pents14':  'Financial corruption, materialism, inflexibility, stubbornness',
 };
 
 // ── Lenormand meanings ────────────────────────────────────────────────────
@@ -548,7 +638,7 @@ function draw() {
 }
 
 function drawTarot() {
-  const allowRev = document.getElementById('revToggle').checked;
+  const allowRev = !document.getElementById('revToggle').checked;
   const shuffled = [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
   shuffled.forEach((img, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -647,14 +737,21 @@ function tap(i) {
   }, 300);
 }
 
+function getMeaning(i) {
+  const front = document.getElementById(`cf${i}`);
+  const key = front.dataset.key;
+  const upright = MEANINGS[key] || '';
+  if (!front.classList.contains('rev') || !REVERSED[key]) return upright;
+  const header = upright.split('\n')[0] + ' (Rev.)';
+  return header + '\n' + REVERSED[key];
+}
+
 function toggleAllMeanings() {
   meaningsVisible = !meaningsVisible;
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = isLenormand
-        ? lenMeaning(i)
-        : (MEANINGS[document.getElementById(`cf${i}`).dataset.key] || '');
+      const text = isLenormand ? lenMeaning(i) : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
