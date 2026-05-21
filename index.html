@@ -197,18 +197,23 @@
     .toggle-wrap input:checked + .toggle-track { background: #4a7fc1; }
     .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
 
-    /* Deck toggle */
-    .deck-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .deck-toggle input { display: none; }
-    .deck-toggle input:checked + .toggle-track { background: #7a4fc1; }
-    .deck-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
-    .deck-label {
-      color: #ccc;
-      font-family: 'Palatino Linotype', serif;
-      font-size: 0.8rem;
-      letter-spacing: 2px;
+    /* Deck picker */
+    .deck-picker { display: flex; gap: 4px; }
+    .deck-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #666;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      padding: 5px 9px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
+    .deck-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
+    .deck-btn:hover:not(.active) { color: #aaa; border-color: #444; }
 
     /* Hide reversed row in Lenormand mode */
     .lenormand-mode .rev-toggle { display: none; }
@@ -276,14 +281,13 @@
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
     </label>
   </div>
-  <!-- Deck toggle -->
+  <!-- Deck picker -->
   <div class="setting-row">
-    <label class="deck-toggle">
-      <span class="deck-label">Tarot</span>
-      <input type="checkbox" id="deckToggle" onchange="switchDeck()">
-      <div class="toggle-track"><div class="toggle-thumb"></div></div>
-      <span class="deck-label">Lenormand</span>
-    </label>
+    <div class="deck-picker">
+      <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
+      <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
+      <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Lenormand</button>
+    </div>
   </div>
 </div>
 
@@ -570,6 +574,41 @@ const TAROT = [
   'Pents13.jpg','Pents14.jpg',
 ];
 
+// ── Marseille filename map (Wikimedia Commons "X_Tarot.png" collection) ────
+const MARSEILLE_MAP = {
+  'RWS_Tarot_00_Fool':'TT_Tarot.png','RWS_Tarot_01_Magician':'T1_Tarot.png',
+  'RWS_Tarot_02_High_Priestess':'T2_Tarot.png','RWS_Tarot_03_Empress':'T3_Tarot.png',
+  'RWS_Tarot_04_Emperor':'T4_Tarot.png','RWS_Tarot_05_Hierophant':'T5_Tarot.png',
+  'RWS_Tarot_06_Lovers':'T6_Tarot.png','RWS_Tarot_07_Chariot':'T7_Tarot.png',
+  'RWS_Tarot_08_Strength':'T8_Tarot.png','RWS_Tarot_09_Hermit':'T9_Tarot.png',
+  'RWS_Tarot_10_Wheel_of_Fortune':'T10_Tarot.png','RWS_Tarot_11_Justice':'T11_Tarot.png',
+  'RWS_Tarot_12_Hanged_Man':'T12_Tarot.png','RWS_Tarot_13_Death':'T13_Tarot.png',
+  'RWS_Tarot_14_Temperance':'T14_Tarot.png','RWS_Tarot_15_Devil':'T15_Tarot.png',
+  'RWS_Tarot_16_Tower':'T16_Tarot.png','RWS_Tarot_17_Star':'T17_Tarot.png',
+  'RWS_Tarot_18_Moon':'T18_Tarot.png','RWS_Tarot_19_Sun':'T19_Tarot.png',
+  'RWS_Tarot_20_Judgement':'T20_Tarot.png','RWS_Tarot_21_World':'T21_Tarot.png',
+  'Wands01':'1B_Tarot.png','Wands02':'2B_Tarot.png','Wands03':'3B_Tarot.png',
+  'Wands04':'4B_Tarot.png','Wands05':'5B_Tarot.png','Wands06':'6B_Tarot.png',
+  'Wands07':'7B_Tarot.png','Wands08':'8B_Tarot.png','Wands09':'9B_Tarot.png',
+  'Wands10':'10B_Tarot.png','Wands11':'JB_Tarot.png','Wands12':'HB_Tarot.png',
+  'Wands13':'QB_Tarot.png','Wands14':'KB_Tarot.png',
+  'Cups01':'1C_Tarot.png','Cups02':'2C_Tarot.png','Cups03':'3C_Tarot.png',
+  'Cups04':'4C_Tarot.png','Cups05':'5C_Tarot.png','Cups06':'6C_Tarot.png',
+  'Cups07':'7C_Tarot.png','Cups08':'8C_Tarot.png','Cups09':'9C_Tarot.png',
+  'Cups10':'10C_Tarot.png','Cups11':'JC_Tarot.png','Cups12':'HC_Tarot.png',
+  'Cups13':'QC_Tarot.png','Cups14':'KC_Tarot.png',
+  'Swords01':'1S_Tarot.png','Swords02':'2S_Tarot.png','Swords03':'3S_Tarot.png',
+  'Swords04':'4S_Tarot.png','Swords05':'5S_Tarot.png','Swords06':'6S_Tarot.png',
+  'Swords07':'7S_Tarot.png','Swords08':'8S_Tarot.png','Swords09':'9S_Tarot.png',
+  'Swords10':'10S_Tarot.png','Swords11':'JS_Tarot.png','Swords12':'HS_Tarot.png',
+  'Swords13':'QS_Tarot.png','Swords14':'KS_Tarot.png',
+  'Pents01':'1P_Tarot.png','Pents02':'2P_Tarot.png','Pents03':'3P_Tarot.png',
+  'Pents04':'4P_Tarot.png','Pents05':'5P_Tarot.png','Pents06':'6P_Tarot.png',
+  'Pents07':'7P_Tarot.png','Pents08':'8P_Tarot.png','Pents09':'9P_Tarot.png',
+  'Pents10':'10P_Tarot.png','Pents11':'JP_Tarot.png','Pents12':'HP_Tarot.png',
+  'Pents13':'QP_Tarot.png','Pents14':'KP_Tarot.png',
+};
+
 // ── Lenormand deck (36 cards) ──────────────────────────────────────────────
 // Each card: { name, suit, rank }
 // Correspondences follow the German/Russian tradition
@@ -625,7 +664,7 @@ const LEN_ICON = {
 
 // ── State ──────────────────────────────────────────────────────────────────
 let flipped = [false, false, false];
-let isLenormand = false;
+let currentDeck = 'tarot';
 let drawnLenormand = [];
 let meaningsVisible = false;
 let lastTap = 0;
@@ -643,7 +682,9 @@ function draw() {
     mn.classList.remove('visible');
     flipped[i] = false;
   }
-  if (isLenormand) { drawLenormand(); } else { drawTarot(); }
+  if (currentDeck === 'lenormand') drawLenormand();
+  else if (currentDeck === 'marseille') drawMarseille();
+  else drawTarot();
 }
 
 function drawTarot() {
@@ -659,6 +700,28 @@ function drawTarot() {
     front.innerHTML = '';
     front.appendChild(el);
     front.dataset.key = img.replace('.jpg', '');
+    const rev = !allowRev && Math.random() < 0.3;
+    if (rev) front.classList.add('rev');
+  });
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
+}
+
+function drawMarseille() {
+  const allowRev = !document.getElementById('revToggle').checked;
+  const shuffled = [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
+  shuffled.forEach((img, i) => {
+    const key = img.replace('.jpg', '');
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    const el = document.getElementById(`img${i}`);
+    el.style.display = '';
+    el.src = WIKI + (MARSEILLE_MAP[key] || img);
+    front.innerHTML = '';
+    front.appendChild(el);
+    front.dataset.key = key;
     const rev = !allowRev && Math.random() < 0.3;
     if (rev) front.classList.add('rev');
   });
@@ -739,7 +802,7 @@ function tap(i) {
   clearTimeout(tapTimer);
   tapTimer = setTimeout(() => {
     if (!flipped[i]) {
-      flip(i, isLenormand);
+      flip(i, currentDeck === 'lenormand');
       return;
     }
     toggleAllMeanings();
@@ -760,7 +823,7 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = isLenormand ? lenMeaning(i) : getMeaning(i);
+      const text = currentDeck === 'lenormand' ? lenMeaning(i) : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -780,20 +843,22 @@ function toggleSettings() {
 }
 
 // ── Deck switch ────────────────────────────────────────────────────────────
-function switchDeck() {
-  isLenormand = document.getElementById('deckToggle').checked;
-  document.body.classList.toggle('lenormand-mode', isLenormand);
+function switchDeck(deck) {
+  currentDeck = deck;
+  const isLen = deck === 'lenormand';
+  document.body.classList.toggle('lenormand-mode', isLen);
 
-  // Rebuild card fronts: tarot uses <img>, lenormand uses background sprite
+  ['tarot', 'marseille', 'lenormand'].forEach(d => {
+    const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
+    if (btn) btn.classList.toggle('active', d === deck);
+  });
+
   for (let i = 0; i < 3; i++) {
     const front = document.getElementById(`cf${i}`);
-    if (!isLenormand) {
-      // Restore img element inside front
-      if (!document.getElementById(`img${i}`)) {
-        const img = document.createElement('img');
-        img.id = `img${i}`; img.src = ''; img.alt = '';
-        front.appendChild(img);
-      }
+    if (!isLen && !document.getElementById(`img${i}`)) {
+      const img = document.createElement('img');
+      img.id = `img${i}`; img.src = ''; img.alt = '';
+      front.appendChild(img);
     }
   }
   draw();
