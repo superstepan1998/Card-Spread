@@ -13,23 +13,34 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       gap: 32px;
-      padding: 24px 0;
+      padding: 32px 16px;
     }
 
     /* ── Spread ────────────────────────────────────────────────── */
     .spread {
       display: flex;
-      gap: 20px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 480px;
     }
 
     .slot {
       display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .card-info {
+      display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 10px;
+      align-items: flex-start;
+      gap: 8px;
+      padding-top: 8px;
+      flex: 1;
+      min-width: 0;
     }
 
     /* ── Card shell ─────────────────────────────────────────────── */
@@ -93,7 +104,7 @@
       font-size: 0.72rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      text-align: center;
+      text-align: left;
       min-height: 1.2em;
     }
 
@@ -103,9 +114,7 @@
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
       font-size: 0.68rem;
       line-height: 1.6;
-      text-align: center;
-      max-width: 160px;
-      padding: 2px 6px 0;
+      text-align: left;
       white-space: pre-line;
       display: none;
     }
@@ -189,8 +198,10 @@
         <div class="card-front" id="cf0"><img id="img0" src="" alt=""></div>
       </div>
     </div>
-    <div class="card-label" id="lbl0"></div>
-    <div class="meaning-text" id="mn0"></div>
+    <div class="card-info">
+      <div class="card-label" id="lbl0"></div>
+      <div class="meaning-text" id="mn0"></div>
+    </div>
   </div>
   <div class="slot" id="slot1">
     <div class="card-wrap" onclick="tap(1)">
@@ -199,8 +210,10 @@
         <div class="card-front" id="cf1"><img id="img1" src="" alt=""></div>
       </div>
     </div>
-    <div class="card-label" id="lbl1"></div>
-    <div class="meaning-text" id="mn1"></div>
+    <div class="card-info">
+      <div class="card-label" id="lbl1"></div>
+      <div class="meaning-text" id="mn1"></div>
+    </div>
   </div>
   <div class="slot" id="slot2">
     <div class="card-wrap" onclick="tap(2)">
@@ -209,8 +222,10 @@
         <div class="card-front" id="cf2"><img id="img2" src="" alt=""></div>
       </div>
     </div>
-    <div class="card-label" id="lbl2"></div>
-    <div class="meaning-text" id="mn2"></div>
+    <div class="card-info">
+      <div class="card-label" id="lbl2"></div>
+      <div class="meaning-text" id="mn2"></div>
+    </div>
   </div>
 </div>
 
