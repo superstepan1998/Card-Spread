@@ -555,7 +555,7 @@ function lenMeaning(i) {
   const name = drawnLenormand[i].name;
   const d = LENDATA[name];
   if (!d) return name;
-  let text = `${name}\n${d[0]}`;
+  let text = d[0];
   if (i === 0 && drawnLenormand[1]) {
     const nb = drawnLenormand[1].name;
     const db = LENDATA[nb];
