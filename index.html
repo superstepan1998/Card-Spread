@@ -260,28 +260,28 @@ const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 // ── Meanings (English) ───────────────────────────────────────────────────
 const MEANINGS = {
   // Major Arcana
-  'RWS_Tarot_00_Fool':             '0 ★ The Fool\nNew beginnings, spontaneity, leap of faith, innocence, risk',
-  'RWS_Tarot_01_Magician':         'I ★ The Magician\nSkill, willpower, mastery, manifestation, conscious action',
-  'RWS_Tarot_02_High_Priestess':   'II ★ The High Priestess\nIntuition, mystery, inner voice, hidden knowledge, patience',
-  'RWS_Tarot_03_Empress':          'III ★ The Empress\nFertility, abundance, nature, sensuality, motherhood',
-  'RWS_Tarot_04_Emperor':          'IV ★ The Emperor\nAuthority, structure, order, discipline, control',
-  'RWS_Tarot_05_Hierophant':       'V ★ The Hierophant\nTradition, spiritual guidance, convention, mentorship, marriage',
-  'RWS_Tarot_06_Lovers':           'VI ★ The Lovers\nLove, alignment, values, choice made with the heart',
-  'RWS_Tarot_07_Chariot':          'VII ★ The Chariot\nDetermination, victory, willpower, direction, movement',
-  'RWS_Tarot_08_Strength':         'VIII ★ Strength\nCourage, patience, inner strength, compassion, self-control',
-  'RWS_Tarot_09_Hermit':           'IX ★ The Hermit\nSolitude, introspection, wisdom, guidance, inner search',
-  'RWS_Tarot_10_Wheel_of_Fortune': 'X ★ Wheel of Fortune\nFate, cycles, turning points, destiny, inevitable change',
-  'RWS_Tarot_11_Justice':          'XI ★ Justice\nFairness, law, cause and effect, accountability, truth',
-  'RWS_Tarot_12_Hanged_Man':       'XII ★ The Hanged Man\nSuspension, sacrifice, new perspective, surrender, pause',
-  'RWS_Tarot_13_Death':            'XIII ★ Death\nTransformation, endings, transition, release, renewal',
-  'RWS_Tarot_14_Temperance':       'XIV ★ Temperance\nBalance, moderation, patience, harmony, purpose',
-  'RWS_Tarot_15_Devil':            'XV ★ The Devil\nBondage, addiction, materialism, shadow self, temptation',
-  'RWS_Tarot_16_Tower':            'XVI ★ The Tower\nSudden upheaval, revelation, chaos, liberation, breakdown',
-  'RWS_Tarot_17_Star':             'XVII ★ The Star\nHope, faith, renewal, inspiration, serenity, right path',
-  'RWS_Tarot_18_Moon':             'XVIII ★ The Moon\nIllusion, fear, subconscious, confusion, fantasy, intuition',
-  'RWS_Tarot_19_Sun':              'XIX ★ The Sun\nJoy, success, vitality, confidence, clarity, recognition',
-  'RWS_Tarot_20_Judgement':        'XX ★ Judgement\nRenewal, awakening, karma, reckoning, inner calling',
-  'RWS_Tarot_21_World':            'XXI ★ The World\nCompletion, integration, accomplishment, wholeness, success',
+  'RWS_Tarot_00_Fool':             '0The Fool\nNew beginnings, spontaneity, leap of faith, innocence, risk',
+  'RWS_Tarot_01_Magician':         'IThe Magician\nSkill, willpower, mastery, manifestation, conscious action',
+  'RWS_Tarot_02_High_Priestess':   'IIThe High Priestess\nIntuition, mystery, inner voice, hidden knowledge, patience',
+  'RWS_Tarot_03_Empress':          'IIIThe Empress\nFertility, abundance, nature, sensuality, motherhood',
+  'RWS_Tarot_04_Emperor':          'IVThe Emperor\nAuthority, structure, order, discipline, control',
+  'RWS_Tarot_05_Hierophant':       'VThe Hierophant\nTradition, spiritual guidance, convention, mentorship, marriage',
+  'RWS_Tarot_06_Lovers':           'VIThe Lovers\nLove, alignment, values, choice made with the heart',
+  'RWS_Tarot_07_Chariot':          'VIIThe Chariot\nDetermination, victory, willpower, direction, movement',
+  'RWS_Tarot_08_Strength':         'VIIIStrength\nCourage, patience, inner strength, compassion, self-control',
+  'RWS_Tarot_09_Hermit':           'IXThe Hermit\nSolitude, introspection, wisdom, guidance, inner search',
+  'RWS_Tarot_10_Wheel_of_Fortune': 'XWheel of Fortune\nFate, cycles, turning points, destiny, inevitable change',
+  'RWS_Tarot_11_Justice':          'XIJustice\nFairness, law, cause and effect, accountability, truth',
+  'RWS_Tarot_12_Hanged_Man':       'XIIThe Hanged Man\nSuspension, sacrifice, new perspective, surrender, pause',
+  'RWS_Tarot_13_Death':            'XIIIDeath\nTransformation, endings, transition, release, renewal',
+  'RWS_Tarot_14_Temperance':       'XIVTemperance\nBalance, moderation, patience, harmony, purpose',
+  'RWS_Tarot_15_Devil':            'XVThe Devil\nBondage, addiction, materialism, shadow self, temptation',
+  'RWS_Tarot_16_Tower':            'XVIThe Tower\nSudden upheaval, revelation, chaos, liberation, breakdown',
+  'RWS_Tarot_17_Star':             'XVIIThe Star\nHope, faith, renewal, inspiration, serenity, right path',
+  'RWS_Tarot_18_Moon':             'XVIIIThe Moon\nIllusion, fear, subconscious, confusion, fantasy, intuition',
+  'RWS_Tarot_19_Sun':              'XIXThe Sun\nJoy, success, vitality, confidence, clarity, recognition',
+  'RWS_Tarot_20_Judgement':        'XXJudgement\nRenewal, awakening, karma, reckoning, inner calling',
+  'RWS_Tarot_21_World':            'XXIThe World\nCompletion, integration, accomplishment, wholeness, success',
 
   // Wands ♣
   'Wands01': 'Ace ♣ Wands\nNew beginning, inspiration, potential, creative spark, desire',
@@ -569,21 +569,22 @@ function lenMeaning(i) {
   const d = LENDATA[name];
   if (!d) return name;
   let text = d[0];
+  const sep = '\n\n───────────\n';
   if (i === 0 && drawnLenormand[1]) {
     const nb = drawnLenormand[1].name;
     const db = LENDATA[nb];
-    if (db) text += `\n\n${name} + ${nb}:\n${d[1]} ${db[2]}`;
+    if (db) text += `${sep}${name} + ${nb}\n${d[1]} ${db[2]}`;
   } else if (i === 2 && drawnLenormand[1]) {
     const na = drawnLenormand[1].name;
     const da = LENDATA[na];
-    if (da) text += `\n\n${na} + ${name}:\n${da[1]} ${d[2]}`;
+    if (da) text += `${sep}${na} + ${name}\n${da[1]} ${d[2]}`;
   } else if (i === 1 && drawnLenormand[0] && drawnLenormand[2]) {
     const na = drawnLenormand[0].name;
     const nc = drawnLenormand[2].name;
     const da = LENDATA[na];
     const dc = LENDATA[nc];
     if (da && dc) {
-      text += `\n\n${na} · ${name} · ${nc}:\n${da[1]} → ${d[1]} → ${dc[1]}`;
+      text += `${sep}${na} · ${name} · ${nc}\n${da[1]} → ${d[1]} → ${dc[1]}`;
     }
   }
   return text;
