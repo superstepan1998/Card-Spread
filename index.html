@@ -103,6 +103,9 @@
        then scale 5% to push white image border outside the overflow:hidden clip */
     .marseille-mode .card-wrap { width: 146px; }
     .marseille-mode .card-front img { transform: scale(1.05); }
+    .marseille-mode .card-back {
+      background: url('marseille-back.png') center / cover no-repeat;
+    }
     .card-front.rev img { transform: rotate(180deg); }
 
     /* Lenormand face — CSS sprite from SVG */
@@ -202,7 +205,7 @@
     .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
 
     /* Deck picker */
-    .deck-picker { display: flex; gap: 4px; }
+    .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     .deck-btn {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -219,6 +222,36 @@
     .deck-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
     .deck-btn:hover:not(.active) { color: #aaa; border-color: #444; }
 
+    /* Reshuffle row */
+    .reshuffle-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .reshuffle-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #888;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 6px 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      text-align: center;
+    }
+    .reshuffle-btn:hover { color: #ccc; border-color: #555; }
+    .deck-count {
+      color: #444;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
     /* Hide reversed row in Lenormand mode */
     .lenormand-mode .rev-toggle { display: none; }
 
@@ -232,6 +265,61 @@
     .lenormand-mode .card-back,
     .lenormand-mode .card-front.lenormand {
       border-radius: 14px;
+    }
+
+    /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
+    .russian-mode .card-back {
+      background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Russian_style_card_back.jpg') center / cover no-repeat;
+      box-shadow: none;
+    }
+    .russian-mode .card-front {
+      background: #e4e0cd;
+    }
+    .russian-mode .card-front img {
+      object-fit: cover;
+      transform: scale(1.1);
+      border-radius: 5px;
+      filter: sepia(0.1) contrast(1.04) brightness(1.02);
+    }
+    .russian-pip {
+      width: 100%; height: 100%;
+      position: relative;
+      font-family: 'Palatino Linotype', Palatino, serif;
+    }
+    .pip-tl, .pip-br {
+      position: absolute;
+      font-size: 0.72rem; font-weight: bold; line-height: 1.2; text-align: center;
+    }
+    .pip-tl { top: 6px; left: 3px; }
+    .pip-br { bottom: 6px; right: 3px; transform: rotate(180deg); }
+    .pip-sym {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-size: 3.1rem; line-height: 1;
+      user-select: none;
+    }
+    /* Double-headed court card */
+    .pip-court-half {
+      position: absolute;
+      left: 0; right: 0; height: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+    }
+    .pip-court-top { top: 0; }
+    .pip-court-bot { bottom: 0; transform: rotate(180deg); }
+    .pip-court-rank { font-size: 3.8rem; font-weight: bold; line-height: 1; }
+    .pip-court-suit-mid { font-size: 2rem; line-height: 1; }
+    .pip-court-divider {
+      position: absolute; top: 50%; left: 12%; right: 12%;
+      height: 1px; background: currentColor; opacity: 0.2;
+      transform: translateY(-50%);
+    }
+    /* Ace */
+    .pip-ace-sym {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 6rem; line-height: 1; user-select: none;
     }
   </style>
 </head>
@@ -291,7 +379,13 @@
       <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
       <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
       <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Lenormand</button>
+      <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
     </div>
+  </div>
+  <!-- Reshuffle -->
+  <div class="reshuffle-row">
+    <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
+    <div class="deck-count" id="deckCount"></div>
   </div>
 </div>
 
@@ -304,6 +398,14 @@
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────
 const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+
+// High-res individual scans from Wikimedia (rank+suit → local filename)
+const RUSSIAN_LOCAL = {
+  'K♥':'rc_Kh.jpg','K♦':'rc_Kd.jpg','K♣':'rc_Kc.jpg','K♠':'rc_Ks.jpg',
+  'Q♥':'rc_Qh.jpg','Q♦':'rc_Qd.jpg','Q♣':'rc_Qc.jpg','Q♠':'rc_Qs.jpg',
+  'J♥':'rc_Jh.jpg','J♦':'rc_Jd.jpg','J♣':'rc_Jc.jpg','J♠':'rc_Js.jpg',
+  'A♥':'rc_Ah.jpg','A♦':'rc_Ad.jpg','A♣':'rc_Ac.jpg','A♠':'rc_As.jpg',
+};
 
 // ── Meanings (English) ───────────────────────────────────────────────────
 const MEANINGS = {
@@ -674,6 +776,37 @@ let meaningsVisible = false;
 let lastTap = 0;
 let tapTimer = null;
 
+// ── Deck state ─────────────────────────────────────────────────────────────
+const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null };
+
+function deckSource(name) {
+  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND;
+}
+
+function pickCards(name, count) {
+  const source = deckSource(name);
+  if (!deckRemaining[name] || deckRemaining[name].length < count) {
+    deckRemaining[name] = [...source].sort(() => Math.random() - 0.5);
+  }
+  const picked = deckRemaining[name].splice(0, count);
+  updateDeckCount();
+  return picked;
+}
+
+function reshuffleAll() {
+  Object.keys(deckRemaining).forEach(k => { deckRemaining[k] = null; });
+  updateDeckCount();
+  draw();
+}
+
+function updateDeckCount() {
+  const el = document.getElementById('deckCount');
+  if (!el) return;
+  const source = deckSource(currentDeck);
+  const rem = deckRemaining[currentDeck] ? deckRemaining[currentDeck].length : source.length;
+  el.textContent = rem + ' of ' + source.length + ' cards remaining';
+}
+
 // ── Draw ───────────────────────────────────────────────────────────────────
 function draw() {
   meaningsVisible = false;
@@ -687,13 +820,14 @@ function draw() {
     flipped[i] = false;
   }
   if (currentDeck === 'lenormand') drawLenormand();
+  else if (currentDeck === 'russian') drawRussian();
   else if (currentDeck === 'marseille') drawMarseille();
   else drawTarot();
 }
 
 function drawTarot() {
   const allowRev = !document.getElementById('revToggle').checked;
-  const shuffled = [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
+  const shuffled = pickCards('tarot', 3);
   shuffled.forEach((img, i) => {
     const front = document.getElementById(`cf${i}`);
     front.className = 'card-front';
@@ -714,7 +848,7 @@ function drawTarot() {
 
 function drawMarseille() {
   const allowRev = !document.getElementById('revToggle').checked;
-  const shuffled = [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
+  const shuffled = pickCards('marseille', 3);
   shuffled.forEach((img, i) => {
     const key = img.replace('.jpg', '');
     const front = document.getElementById(`cf${i}`);
@@ -734,8 +868,49 @@ function drawMarseille() {
   setTimeout(() => flip(2), 800);
 }
 
+function drawRussian() {
+  const shuffled = pickCards('russian', 3);
+  drawnLenormand = shuffled;
+  shuffled.forEach((card, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    front.dataset.name = card.name;
+    front.dataset.suit = card.suit;
+    front.dataset.rank = card.rank;
+    const cardKey = String(card.rank) + card.suit;
+    const localFile = RUSSIAN_LOCAL[cardKey];
+    if (localFile) {
+      front.innerHTML = '';
+      const el = document.createElement('img');
+      el.id = `img${i}`; el.alt = '';
+      el.src = localFile;
+      front.appendChild(el);
+    } else {
+      const color = (card.suit === '♥' || card.suit === '♦') ? '#b01020' : '#111';
+      const corners = `<span class="pip-tl" style="color:${color}">${card.rank}<br>${card.suit}</span><span class="pip-br" style="color:${color}">${card.rank}<br>${card.suit}</span>`;
+      const pipPos = {
+        6:  [[18,30],[18,70],[50,30],[50,70],[82,30],[82,70]],
+        7:  [[13,30],[13,70],[35,50],[57,30],[57,70],[80,30],[80,70]],
+        8:  [[13,30],[13,70],[38,30],[38,70],[62,30],[62,70],[87,30],[87,70]],
+        9:  [[11,30],[11,70],[30,30],[30,70],[50,50],[70,30],[70,70],[89,30],[89,70]],
+        10: [[10,30],[10,70],[27,30],[27,70],[43,50],[57,50],[73,30],[73,70],[90,30],[90,70]],
+      };
+      const positions = pipPos[card.rank] || [];
+      const pips = positions.map(([y, x]) => {
+        const rot = y > 50 ? 'translate(-50%,-50%) rotate(180deg)' : 'translate(-50%,-50%)';
+        return `<span class="pip-sym" style="top:${y}%;left:${x}%;color:${color};transform:${rot}">${card.suit}</span>`;
+      }).join('');
+      front.innerHTML = `<div class="russian-pip">${corners}${pips}</div>`;
+    }
+  });
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
+}
+
 function drawLenormand() {
-  const shuffled = [...LENORMAND].sort(() => Math.random() - 0.5).slice(0, 3);
+  const shuffled = pickCards('lenormand', 3);
   drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -757,7 +932,7 @@ function flip(i) {
   flipped[i] = true;
   setTimeout(() => {
     const front = document.getElementById(`cf${i}`);
-    if (currentDeck === 'lenormand') {
+    if (currentDeck === 'lenormand' || currentDeck === 'russian') {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
@@ -832,7 +1007,7 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = currentDeck === 'lenormand' ? lenMeaning(i) : getMeaning(i);
+      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -854,23 +1029,25 @@ function toggleSettings() {
 // ── Deck switch ────────────────────────────────────────────────────────────
 function switchDeck(deck) {
   currentDeck = deck;
-  const isLen = deck === 'lenormand';
+  const isLen = deck === 'lenormand' || deck === 'russian';
   document.body.classList.toggle('lenormand-mode', isLen);
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
+  document.body.classList.toggle('russian-mode', deck === 'russian');
 
-  ['tarot', 'marseille', 'lenormand'].forEach(d => {
+  ['tarot', 'marseille', 'lenormand', 'russian'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
 
   for (let i = 0; i < 3; i++) {
     const front = document.getElementById(`cf${i}`);
-    if (!isLen && !document.getElementById(`img${i}`)) {
+    if (!document.getElementById(`img${i}`)) {
       const img = document.createElement('img');
       img.id = `img${i}`; img.src = ''; img.alt = '';
       front.appendChild(img);
     }
   }
+  updateDeckCount();
   draw();
 }
 
@@ -885,6 +1062,7 @@ document.addEventListener('click', (e) => {
 });
 
 draw();
+updateDeckCount();
 </script>
 </body>
 </html>
