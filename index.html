@@ -124,55 +124,92 @@
     .controls {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 10px;
     }
 
-    .icon-btn {
-      background: none; border: none; cursor: pointer;
-      padding: 8px; opacity: 0.3; transition: opacity 0.2s;
-      line-height: 0; display: flex; align-items: center;
+    .btn-draw {
+      background: #181818;
+      border: 1px solid #444;
+      color: #ddd;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 14px 44px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
     }
-    .icon-btn:hover { opacity: 0.8; }
-    .icon-btn svg { width: 20px; height: 20px; fill: #fff; }
+    .btn-draw:hover { background: #242424; border-color: #666; }
+
+    .btn-settings {
+      background: #181818;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 13px;
+      line-height: 0;
+      transition: border-color 0.2s;
+    }
+    .btn-settings:hover { border-color: #666; }
+    .btn-settings svg { width: 20px; height: 20px; fill: #666; transition: fill 0.2s; }
+    .btn-settings.active svg { fill: #ddd; }
+
+    /* Settings panel */
+    .settings-panel {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px 24px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .settings-panel.open { display: flex; }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .setting-label {
+      color: #ccc;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
 
     /* Toggle */
-    .toggle-wrap {
-      display: flex; align-items: center; gap: 0;
-      opacity: 0.3; transition: opacity 0.2s; cursor: pointer;
-    }
-    .toggle-wrap:hover { opacity: 0.8; }
+    .toggle-wrap { display: flex; align-items: center; cursor: pointer; }
     .toggle-wrap input { display: none; }
     .toggle-track {
-      width: 32px; height: 18px; background: #333;
-      border-radius: 9px; position: relative; transition: background 0.2s; flex-shrink: 0;
+      width: 36px; height: 20px; background: #333;
+      border-radius: 10px; position: relative; transition: background 0.2s; flex-shrink: 0;
     }
     .toggle-thumb {
-      position: absolute; top: 3px; left: 3px;
+      position: absolute; top: 4px; left: 4px;
       width: 12px; height: 12px; background: #fff;
       border-radius: 50%; transition: transform 0.2s;
     }
-    input:checked + .toggle-track { background: #4a7fc1; }
-    input:checked + .toggle-track .toggle-thumb { transform: translateX(14px); }
-    .toggle-wrap svg { width: 16px; height: 16px; fill: #fff; margin-left: 8px; }
+    .toggle-wrap input:checked + .toggle-track { background: #4a7fc1; }
+    .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
 
-    /* Deck toggle uses text labels instead of icon */
-    .deck-toggle {
-      display: flex; align-items: center; gap: 8px;
-      opacity: 0.3; transition: opacity 0.2s; cursor: pointer;
-    }
-    .deck-toggle:hover { opacity: 0.8; }
+    /* Deck toggle */
+    .deck-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .deck-toggle input { display: none; }
-    .deck-toggle .toggle-track { background: #333; }
-    input:checked + .toggle-track { background: #7a4fc1; }
+    .deck-toggle input:checked + .toggle-track { background: #7a4fc1; }
+    .deck-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
     .deck-label {
-      color: #fff;
+      color: #ccc;
       font-family: 'Palatino Linotype', serif;
-      font-size: 0.65rem;
+      font-size: 0.8rem;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
 
-    /* Hide reversed toggle in Lenormand mode */
+    /* Hide reversed row in Lenormand mode */
     .lenormand-mode .rev-toggle { display: none; }
 
     /* Lenormand card back — SVG sprite at col 13 (card back column) */
@@ -229,28 +266,32 @@
   </div>
 </div>
 
-<div class="controls" id="controls">
-
-  <!-- Redraw -->
-  <button class="icon-btn" onclick="draw()" title="Draw">
-    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-  </button>
-
+<div class="settings-panel" id="settingsPanel">
   <!-- Reversed toggle (Tarot only) -->
-  <label class="toggle-wrap rev-toggle" title="Allow reversed cards">
-    <input type="checkbox" id="revToggle" checked>
-    <div class="toggle-track"><div class="toggle-thumb"></div></div>
-    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zm-8-2l-4-4h3V8h2v4h3l-4 4z"/></svg>
-  </label>
+  <div class="setting-row rev-toggle">
+    <span class="setting-label">Upright cards only</span>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="revToggle" checked>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </label>
+  </div>
+  <!-- Deck toggle -->
+  <div class="setting-row">
+    <span class="setting-label">Deck</span>
+    <label class="deck-toggle">
+      <span class="deck-label">Tarot</span>
+      <input type="checkbox" id="deckToggle" onchange="switchDeck()">
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span class="deck-label">Lenormand</span>
+    </label>
+  </div>
+</div>
 
-  <!-- Deck toggle: Tarot ↔ Lenormand -->
-  <label class="deck-toggle" title="Switch deck">
-    <span class="deck-label">T</span>
-    <input type="checkbox" id="deckToggle" onchange="switchDeck()">
-    <div class="toggle-track"><div class="toggle-thumb"></div></div>
-    <span class="deck-label">L</span>
-  </label>
-
+<div class="controls" id="controls">
+  <button class="btn-draw" onclick="draw()">Draw</button>
+  <button class="btn-settings" id="btnSettings" onclick="toggleSettings()">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+  </button>
 </div>
 
 <script>
@@ -605,6 +646,12 @@ function tap(i) {
     ? lenMeaning(i)
     : (MEANINGS[document.getElementById(`cf${i}`).dataset.key] || '');
   if (text) { mn.textContent = text; mn.classList.add('visible'); }
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+  document.getElementById('btnSettings').classList.toggle('active');
 }
 
 // ── Deck switch ────────────────────────────────────────────────────────────
