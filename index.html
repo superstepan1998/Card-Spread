@@ -743,23 +743,28 @@ function drawLenormand() {
     front.dataset.suit = card.suit;
     front.dataset.rank = card.rank;
   });
-  setTimeout(() => flip(0, true), 300);
-  setTimeout(() => flip(1, true), 550);
-  setTimeout(() => flip(2, true), 800);
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
 }
 
 // ── Flip ───────────────────────────────────────────────────────────────────
-function flip(i, showLabel) {
+function flip(i) {
   document.getElementById(`ci${i}`).classList.add('flipped');
   flipped[i] = true;
-  if (showLabel) {
-    setTimeout(() => {
-      const front = document.getElementById(`cf${i}`);
+  setTimeout(() => {
+    const front = document.getElementById(`cf${i}`);
+    if (currentDeck === 'lenormand') {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
-    }, 360);
-  }
+    } else {
+      const key = front.dataset.key;
+      const firstLine = (MEANINGS[key] || '').split('\n')[0];
+      const isRev = front.classList.contains('rev');
+      document.getElementById(`lbl${i}`).textContent = isRev ? firstLine + ' (Rev.)' : firstLine;
+    }
+  }, 360);
 }
 
 function lenMeaning(i) {
@@ -803,7 +808,7 @@ function tap(i) {
   clearTimeout(tapTimer);
   tapTimer = setTimeout(() => {
     if (!flipped[i]) {
-      flip(i, currentDeck === 'lenormand');
+      flip(i);
       return;
     }
     toggleAllMeanings();
@@ -814,9 +819,9 @@ function getMeaning(i) {
   const front = document.getElementById(`cf${i}`);
   const key = front.dataset.key;
   const upright = MEANINGS[key] || '';
-  if (!front.classList.contains('rev') || !REVERSED[key]) return upright;
-  const header = upright.split('\n')[0] + ' (Rev.)';
-  return header + '\n' + REVERSED[key];
+  const body = upright.split('\n').slice(1).join('\n');
+  if (!front.classList.contains('rev') || !REVERSED[key]) return body;
+  return REVERSED[key];
 }
 
 function toggleAllMeanings() {
