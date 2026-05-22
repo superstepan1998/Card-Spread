@@ -775,6 +775,7 @@ let drawnLenormand = [];
 let meaningsVisible = false;
 let lastTap = 0;
 let tapTimer = null;
+let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
 const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null };
@@ -809,6 +810,7 @@ function updateDeckCount() {
 
 // ── Draw ───────────────────────────────────────────────────────────────────
 function draw() {
+  hasDrawn = true;
   meaningsVisible = false;
   closeSettings();
   for (let i = 0; i < 3; i++) {
@@ -823,6 +825,20 @@ function draw() {
   else if (currentDeck === 'russian') drawRussian();
   else if (currentDeck === 'marseille') drawMarseille();
   else drawTarot();
+}
+
+function resetCards() {
+  hasDrawn = false;
+  meaningsVisible = false;
+  for (let i = 0; i < 3; i++) {
+    document.getElementById(`ci${i}`).classList.remove('flipped');
+    document.getElementById(`lbl${i}`).textContent = '';
+    const mn = document.getElementById(`mn${i}`);
+    mn.textContent = '';
+    mn.classList.remove('visible');
+    flipped[i] = false;
+  }
+  updateDeckCount();
 }
 
 function drawTarot() {
@@ -985,6 +1001,10 @@ function tap(i) {
 
   clearTimeout(tapTimer);
   tapTimer = setTimeout(() => {
+    if (!hasDrawn) {
+      draw();
+      return;
+    }
     if (!flipped[i]) {
       flip(i);
       return;
@@ -1047,8 +1067,7 @@ function switchDeck(deck) {
       front.appendChild(img);
     }
   }
-  updateDeckCount();
-  draw();
+  resetCards();
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -1061,8 +1080,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-draw();
-updateDeckCount();
+resetCards();
 </script>
 </body>
 </html>
