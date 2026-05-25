@@ -476,7 +476,7 @@
 
 <div class="spread" id="spread">
   <div class="slot" id="slot0">
-    <div class="card-wrap" onclick="tap(0)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
+    <div class="card-wrap" onclick="tap(0)">
       <div class="card-inner" id="ci0">
         <div class="card-back"></div>
         <div class="card-front" id="cf0"><img id="img0" src="" alt=""></div>
@@ -488,7 +488,7 @@
     </div>
   </div>
   <div class="slot" id="slot1">
-    <div class="card-wrap" onclick="tap(1)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
+    <div class="card-wrap" onclick="tap(1)">
       <div class="card-inner" id="ci1">
         <div class="card-back"></div>
         <div class="card-front" id="cf1"><img id="img1" src="" alt=""></div>
@@ -500,7 +500,7 @@
     </div>
   </div>
   <div class="slot" id="slot2">
-    <div class="card-wrap" onclick="tap(2)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
+    <div class="card-wrap" onclick="tap(2)">
       <div class="card-inner" id="ci2">
         <div class="card-back"></div>
         <div class="card-front" id="cf2"><img id="img2" src="" alt=""></div>
@@ -1152,7 +1152,6 @@ function lenMeaning(i) {
 }
 
 function tap(i) {
-  if (lpFired) { lpFired = false; return; }
   const now = Date.now();
   const gap = now - lastTap;
   lastTap = now;
@@ -1200,23 +1199,13 @@ function toggleAllMeanings() {
   }
 }
 
-// ── Long press → copy ─────────────────────────────────────────────────────
-let lpTimer = null;
-let lpFired = false;
-
-function pressStart(e) {
-  e.preventDefault();
-  lpFired = false;
-  clearTimeout(lpTimer);
-  lpTimer = setTimeout(() => {
-    lpFired = true;
+// ── 4-finger tap → copy ───────────────────────────────────────────────────
+document.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 4) {
+    e.preventDefault();
     copyCards();
-  }, 600);
-}
-
-function pressEnd() {
-  clearTimeout(lpTimer);
-}
+  }
+}, { passive: false });
 
 function showToast(msg) {
   const t = document.getElementById('toast');
