@@ -416,6 +416,30 @@
       border-radius: 14px;
     }
 
+    /* Bicycle mode — standard playing cards */
+    .bicycle-mode .card-back {
+      background: #1a56a0;
+      position: relative;
+    }
+    .bicycle-mode .card-back::after {
+      content: '';
+      position: absolute;
+      inset: 7px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 3px;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent, transparent 5px,
+        rgba(255,255,255,0.06) 5px, rgba(255,255,255,0.06) 10px
+      );
+    }
+    .bicycle-mode .card-front {
+      background: #fff;
+    }
+    .bicycle-mode .card-front img {
+      object-fit: contain;
+    }
+
     /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
     .russian-mode .card-back {
       background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Russian_style_card_back.jpg') center / cover no-repeat;
@@ -531,6 +555,7 @@
       <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
       <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Lenormand</button>
       <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
+      <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')" style="grid-column:1/-1">Bicycle</button>
     </div>
   </div>
   <!-- Reshuffle -->
@@ -551,7 +576,7 @@
     <div class="ai-response" id="aiResponse"></div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 37</div>
+  <div class="deck-count" style="text-align:right">build 38</div>
 </div>
 
 <div class="controls" id="controls">
@@ -946,10 +971,10 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null };
+const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null, bicycle: null };
 
 function deckSource(name) {
-  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND;
+  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND; // bicycle reuses LENORMAND (same 36-card pool)
 }
 
 function pickCards(name, count) {
@@ -991,6 +1016,7 @@ function draw() {
   }
   if (currentDeck === 'lenormand') drawLenormand();
   else if (currentDeck === 'russian') drawRussian();
+  else if (currentDeck === 'bicycle') drawBicycle();
   else if (currentDeck === 'marseille') drawMarseille();
   else drawTarot();
 }
@@ -1093,6 +1119,31 @@ function drawRussian() {
   setTimeout(() => flip(2), 800);
 }
 
+const BIKE_SUIT = { '♣': 'club', '♥': 'heart', '♦': 'diamond', '♠': 'spade' };
+const BIKE_RANK_NAME = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
+const BIKE_SUIT_NAME = { '♣': 'Clubs', '♥': 'Hearts', '♦': 'Diamonds', '♠': 'Spades' };
+
+function drawBicycle() {
+  const shuffled = pickCards('bicycle', 3);
+  drawnLenormand = shuffled;
+  shuffled.forEach((card, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    front.dataset.name = card.name;
+    front.dataset.suit = card.suit;
+    front.dataset.rank = String(card.rank);
+    front.innerHTML = '';
+    const el = document.createElement('img');
+    el.id = `img${i}`; el.alt = '';
+    el.src = `https://commons.wikimedia.org/wiki/Special:FilePath/Playing_card_${BIKE_SUIT[card.suit]}_${card.rank}.svg`;
+    front.appendChild(el);
+  });
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
+}
+
 function drawLenormand() {
   const shuffled = pickCards('lenormand', 3);
   drawnLenormand = shuffled;
@@ -1120,6 +1171,12 @@ function flip(i) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
+    } else if (currentDeck === 'bicycle') {
+      const r = front.dataset.rank;
+      const s = front.dataset.suit;
+      const rn = BIKE_RANK_NAME[r] || r;
+      const sn = BIKE_SUIT_NAME[s] || s;
+      document.getElementById(`lbl${i}`).textContent = `${rn} of ${sn}`;
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
@@ -1195,7 +1252,7 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : getMeaning(i);
+      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : currentDeck === 'bicycle' ? '' : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -1351,12 +1408,13 @@ function toggleSettings() {
 // ── Deck switch ────────────────────────────────────────────────────────────
 function switchDeck(deck) {
   currentDeck = deck;
-  const isLen = deck === 'lenormand' || deck === 'russian';
+  const isLen = deck === 'lenormand' || deck === 'russian' || deck === 'bicycle';
   document.body.classList.toggle('lenormand-mode', isLen);
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('russian-mode', deck === 'russian');
+  document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
 
-  ['tarot', 'marseille', 'lenormand', 'russian'].forEach(d => {
+  ['tarot', 'marseille', 'lenormand', 'russian', 'bicycle'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
