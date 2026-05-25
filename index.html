@@ -418,20 +418,8 @@
 
     /* Bicycle mode — standard playing cards */
     .bicycle-mode .card-back {
-      background: #1a56a0;
-      position: relative;
-    }
-    .bicycle-mode .card-back::after {
-      content: '';
-      position: absolute;
-      inset: 7px;
-      border: 2px solid rgba(255,255,255,0.25);
-      border-radius: 3px;
-      background: repeating-linear-gradient(
-        45deg,
-        transparent, transparent 5px,
-        rgba(255,255,255,0.06) 5px, rgba(255,255,255,0.06) 10px
-      );
+      background: url('https://upload.wikimedia.org/wikipedia/commons/4/4f/Bicyclebackside.jpg') center / cover no-repeat;
+      box-shadow: none;
     }
     .bicycle-mode .card-front {
       background: #fff;
@@ -576,7 +564,7 @@
     <div class="ai-response" id="aiResponse"></div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 38</div>
+  <div class="deck-count" style="text-align:right">build 39</div>
 </div>
 
 <div class="controls" id="controls">
@@ -1119,9 +1107,14 @@ function drawRussian() {
   setTimeout(() => flip(2), 800);
 }
 
-const BIKE_SUIT = { '♣': 'club', '♥': 'heart', '♦': 'diamond', '♠': 'spade' };
 const BIKE_RANK_NAME = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
 const BIKE_SUIT_NAME = { '♣': 'Clubs', '♥': 'Hearts', '♦': 'Diamonds', '♠': 'Spades' };
+const BIKE_API_SUIT = { '♣': 'C', '♥': 'H', '♦': 'D', '♠': 'S' };
+
+function bikeUrl(rank, suit) {
+  const r = String(rank) === '10' ? '0' : String(rank);
+  return `https://deckofcardsapi.com/static/img/${r}${BIKE_API_SUIT[suit]}.png`;
+}
 
 function drawBicycle() {
   const shuffled = pickCards('bicycle', 3);
@@ -1136,7 +1129,7 @@ function drawBicycle() {
     front.innerHTML = '';
     const el = document.createElement('img');
     el.id = `img${i}`; el.alt = '';
-    el.src = `https://commons.wikimedia.org/wiki/Special:FilePath/Playing_card_${BIKE_SUIT[card.suit]}_${card.rank}.svg`;
+    el.src = bikeUrl(card.rank, card.suit);
     front.appendChild(el);
   });
   setTimeout(() => flip(0), 300);
