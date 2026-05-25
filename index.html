@@ -58,6 +58,9 @@
       cursor: pointer;
       flex-shrink: 0;
       touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     /* Lenormand cards are narrower in ratio; adjust height */
@@ -77,6 +80,12 @@
     }
     .card-inner.flipped { transform: rotateY(180deg); }
 
+    .card-back, .card-front, .card-back *, .card-front * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      pointer-events: none;
+    }
     .card-back, .card-front {
       position: absolute;
       width: 100%; height: 100%;
@@ -467,7 +476,7 @@
 
 <div class="spread" id="spread">
   <div class="slot" id="slot0">
-    <div class="card-wrap" onclick="tap(0)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
+    <div class="card-wrap" onclick="tap(0)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
       <div class="card-inner" id="ci0">
         <div class="card-back"></div>
         <div class="card-front" id="cf0"><img id="img0" src="" alt=""></div>
@@ -479,7 +488,7 @@
     </div>
   </div>
   <div class="slot" id="slot1">
-    <div class="card-wrap" onclick="tap(1)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
+    <div class="card-wrap" onclick="tap(1)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
       <div class="card-inner" id="ci1">
         <div class="card-back"></div>
         <div class="card-front" id="cf1"><img id="img1" src="" alt=""></div>
@@ -491,7 +500,7 @@
     </div>
   </div>
   <div class="slot" id="slot2">
-    <div class="card-wrap" onclick="tap(2)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
+    <div class="card-wrap" onclick="tap(2)" ontouchstart="pressStart(event)" ontouchend="pressEnd()" ontouchmove="pressEnd()">
       <div class="card-inner" id="ci2">
         <div class="card-back"></div>
         <div class="card-front" id="cf2"><img id="img2" src="" alt=""></div>
@@ -1195,7 +1204,8 @@ function toggleAllMeanings() {
 let lpTimer = null;
 let lpFired = false;
 
-function pressStart() {
+function pressStart(e) {
+  e.preventDefault();
   lpFired = false;
   clearTimeout(lpTimer);
   lpTimer = setTimeout(() => {
