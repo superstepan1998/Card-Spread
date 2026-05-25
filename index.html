@@ -172,7 +172,10 @@
       background: #111;
       border: 1px solid #2a2a2a;
       border-radius: 6px;
-      min-width: 220px;
+      min-width: 260px;
+      max-width: calc(100vw - 40px);
+      max-height: 80vh;
+      overflow-y: auto;
       z-index: 100;
     }
     .settings-panel.open { display: flex; }
@@ -255,6 +258,143 @@
     /* Hide reversed row in Lenormand mode */
     .lenormand-mode .rev-toggle { display: none; }
 
+    /* ── AI Panel ──────────────────────────────────────────────── */
+    .btn-ai {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 13px;
+      line-height: 0;
+    }
+    .btn-ai svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
+    .btn-ai:hover svg { fill: #888; }
+    .btn-ai.active svg { fill: #c8a96e; }
+
+    .ai-panel {
+      position: fixed;
+      bottom: 80px;
+      left: 16px;
+      right: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px 18px;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      z-index: 100;
+      max-height: 72vh;
+    }
+    .ai-panel.open { display: flex; }
+
+    .ai-key-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .ai-key-label {
+      color: #555;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .ai-key-input {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #888;
+      font-size: 0.75rem;
+      padding: 7px 10px;
+      font-family: monospace;
+      width: 100%;
+    }
+    .ai-key-input:focus { outline: none; border-color: #444; color: #aaa; }
+
+    .ai-question {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #ddd;
+      font-size: 0.9rem;
+      padding: 9px 12px;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      width: 100%;
+      resize: none;
+      min-height: 56px;
+      max-height: 120px;
+    }
+    .ai-question:focus { outline: none; border-color: #444; }
+    .ai-question::placeholder { color: #3a3a3a; }
+
+    .ai-send-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #888;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .ai-send-btn:hover:not(:disabled) { color: #ccc; border-color: #555; }
+    .ai-send-btn:disabled { color: #333; cursor: default; }
+
+    .ai-response {
+      color: #ccc;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 38vh;
+      display: none;
+      border-top: 1px solid #1e1e1e;
+      padding-top: 10px;
+    }
+    .ai-response.visible { display: block; }
+
+    .ai-loading {
+      color: #444;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.82rem;
+      text-align: center;
+      letter-spacing: 1px;
+      display: none;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .ai-loading.visible { display: block; }
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    /* ── Toast ─────────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #222;
+      border: 1px solid #333;
+      color: #bbb;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* Lenormand card back — SVG sprite at col 13 (card back column) */
     .lenormand-mode .card-back {
       background: url('russian-deck.svg') -2273px -14px / 2447px 1030px no-repeat;
@@ -327,7 +467,7 @@
 
 <div class="spread" id="spread">
   <div class="slot" id="slot0">
-    <div class="card-wrap" onclick="tap(0)">
+    <div class="card-wrap" onclick="tap(0)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
       <div class="card-inner" id="ci0">
         <div class="card-back"></div>
         <div class="card-front" id="cf0"><img id="img0" src="" alt=""></div>
@@ -339,7 +479,7 @@
     </div>
   </div>
   <div class="slot" id="slot1">
-    <div class="card-wrap" onclick="tap(1)">
+    <div class="card-wrap" onclick="tap(1)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
       <div class="card-inner" id="ci1">
         <div class="card-back"></div>
         <div class="card-front" id="cf1"><img id="img1" src="" alt=""></div>
@@ -351,7 +491,7 @@
     </div>
   </div>
   <div class="slot" id="slot2">
-    <div class="card-wrap" onclick="tap(2)">
+    <div class="card-wrap" onclick="tap(2)" onpointerdown="pressStart()" onpointerup="pressEnd()" onpointercancel="pressEnd()">
       <div class="card-inner" id="ci2">
         <div class="card-back"></div>
         <div class="card-front" id="cf2"><img id="img2" src="" alt=""></div>
@@ -363,6 +503,8 @@
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div class="settings-panel" id="settingsPanel">
   <!-- Reversed toggle (Tarot only) -->
@@ -386,6 +528,18 @@
   <div class="reshuffle-row">
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
+  </div>
+  <!-- API Key -->
+  <div class="ai-key-row">
+    <span class="ai-key-label">Anthropic API Key</span>
+    <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+  <!-- Ask Claude -->
+  <div class="reshuffle-row">
+    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
+    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
+    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
+    <div class="ai-response" id="aiResponse"></div>
   </div>
 </div>
 
@@ -989,6 +1143,7 @@ function lenMeaning(i) {
 }
 
 function tap(i) {
+  if (lpFired) { lpFired = false; return; }
   const now = Date.now();
   const gap = now - lastTap;
   lastTap = now;
@@ -1036,14 +1191,164 @@ function toggleAllMeanings() {
   }
 }
 
+// ── Long press → copy ─────────────────────────────────────────────────────
+let lpTimer = null;
+let lpFired = false;
+
+function pressStart() {
+  lpFired = false;
+  clearTimeout(lpTimer);
+  lpTimer = setTimeout(() => {
+    lpFired = true;
+    copyCards();
+  }, 600);
+}
+
+function pressEnd() {
+  clearTimeout(lpTimer);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function copyCards() {
+  const cards = getCardsForReading();
+  if (!cards.length) return;
+  const deckName = currentDeck.charAt(0).toUpperCase() + currentDeck.slice(1);
+  const text = `${deckName}\n${cards.join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied'));
+}
+
+// ── AI ────────────────────────────────────────────────────────────────────
+const AI_KEY_LS = 'tarot_ak';
+
+
+function getCardsForReading() {
+  const lines = [];
+  for (let i = 0; i < 3; i++) {
+    const front = document.getElementById(`cf${i}`);
+    if (!front) continue;
+    const lbl   = document.getElementById(`lbl${i}`).textContent.trim();
+    const isRev = front.classList.contains('rev');
+    if (lbl) {
+      lines.push(`Card ${i + 1}: ${lbl}${isRev ? ' (Reversed)' : ''}`);
+    } else if (front.dataset.rank) {
+      lines.push(`Card ${i + 1}: ${front.dataset.rank}${front.dataset.suit}`);
+    } else if (front.dataset.key) {
+      const first = (MEANINGS[front.dataset.key] || front.dataset.key).split('\n')[0];
+      lines.push(`Card ${i + 1}: ${first}${isRev ? ' (Reversed)' : ''}`);
+    }
+  }
+  return lines;
+}
+
+async function askClaude() {
+  const keyInput = document.getElementById('aiKeyInput');
+  let apiKey = keyInput.value.trim() || localStorage.getItem(AI_KEY_LS) || '';
+  if (!apiKey) {
+    keyInput.focus();
+    return;
+  }
+  localStorage.setItem(AI_KEY_LS, apiKey);
+
+  const question = document.getElementById('aiQuestion').value.trim();
+  const cards    = getCardsForReading();
+
+  const sendBtn  = document.getElementById('aiSendBtn');
+  const loading  = document.getElementById('aiLoading');
+  const response = document.getElementById('aiResponse');
+
+  sendBtn.disabled = true;
+  loading.classList.add('visible');
+  response.classList.remove('visible');
+  response.textContent = '';
+
+  const deckName  = currentDeck.charAt(0).toUpperCase() + currentDeck.slice(1);
+  const cardBlock = cards.length ? cards.join('\n') : '(no cards drawn yet)';
+  const userMsg   = question
+    ? `My question: ${question}\n\nDeck: ${deckName}\n${cardBlock}`
+    : `Deck: ${deckName}\n${cardBlock}\n\nPlease give me a reading.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 600,
+        stream: true,
+        system: 'You are an insightful tarot reader. Interpret the spread in relation to the question. Be direct, poetic, and grounded. Weave the cards together into a unified reading — do not list them separately. Keep it under 180 words.',
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    loading.classList.remove('visible');
+    response.classList.add('visible');
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            response.textContent += parsed.delta.text;
+            response.scrollTop = response.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+  } catch (err) {
+    loading.classList.remove('visible');
+    response.textContent = '⚠ ' + err.message;
+    response.classList.add('visible');
+    if (/auth|key|401/i.test(err.message)) {
+      localStorage.removeItem(AI_KEY_LS);
+      document.getElementById('aiKeyInput').value = '';
+      document.getElementById('aiKeyInput').focus();
+    }
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 function closeSettings() {
   document.getElementById('settingsPanel').classList.remove('open');
   document.getElementById('btnSettings').classList.remove('active');
 }
 function toggleSettings() {
-  document.getElementById('settingsPanel').classList.toggle('open');
+  const panel = document.getElementById('settingsPanel');
+  panel.classList.toggle('open');
   document.getElementById('btnSettings').classList.toggle('active');
+  if (panel.classList.contains('open')) {
+    const saved = localStorage.getItem(AI_KEY_LS) || '';
+    document.getElementById('aiKeyInput').value = saved;
+  }
 }
 
 // ── Deck switch ────────────────────────────────────────────────────────────
@@ -1073,7 +1378,7 @@ function switchDeck(deck) {
 // ── Init ───────────────────────────────────────────────────────────────────
 document.addEventListener('click', (e) => {
   const panel = document.getElementById('settingsPanel');
-  const btn = document.getElementById('btnSettings');
+  const btn   = document.getElementById('btnSettings');
   if (panel.classList.contains('open') &&
       !panel.contains(e.target) && !btn.contains(e.target)) {
     closeSettings();
