@@ -1153,26 +1153,15 @@ function bikeUrl(rank, suit) {
   return `https://deckofcardsapi.com/static/img/${r}${BIKE_API_SUIT[suit]}.png`;
 }
 
-// Wikimedia Commons hash map for Playing_card_{suit}_{rank}.svg thumbnails
-const RED_HASH = {
-  'spade_A':'2/25','spade_K':'9/9f','spade_Q':'5/51','spade_J':'b/bd',
-  'spade_10':'8/87','spade_9':'e/e0','spade_8':'2/21','spade_7':'6/66','spade_6':'d/d2',
-  'heart_A':'5/57','heart_K':'d/dc','heart_Q':'7/72','heart_J':'4/46',
-  'heart_10':'9/98','heart_9':'5/50','heart_8':'5/50','heart_7':'9/94','heart_6':'c/cd',
-  'diamond_A':'d/d3','diamond_K':'7/78','diamond_Q':'0/0b','diamond_J':'a/af',
-  'diamond_10':'3/34','diamond_9':'9/9e','diamond_8':'7/78','diamond_7':'e/e6','diamond_6':'8/80',
-  'club_A':'3/36','club_K':'2/22','club_Q':'f/f2','club_J':'b/b7',
-  'club_10':'3/3e','club_9':'2/27','club_8':'e/eb','club_7':'4/4b','club_6':'a/a0',
-};
+// saulspatz/SVGCards — public-domain Byron Knoll jumbo-index deck
 const RED_SUIT = { '♣':'club','♥':'heart','♦':'diamond','♠':'spade' };
+const RED_RANK = { A:'Ace', K:'King', Q:'Queen', J:'Jack' };
+const RED_BASE = 'https://raw.githubusercontent.com/saulspatz/SVGCards/master/Decks/Vertical2/svgs/';
 
 function redUrl(rank, suit) {
   const sn = RED_SUIT[suit];
-  const rn = String(rank);
-  const hash = RED_HASH[sn + '_' + rn];
-  if (!hash) return '';
-  const fn = `Playing_card_${sn}_${rn}.svg`;
-  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${hash}/${fn}/226px-${fn}.png`;
+  const rn = RED_RANK[rank] || String(rank);
+  return `${RED_BASE}${sn}${rn}.svg`;
 }
 
 function drawBicycle() {
