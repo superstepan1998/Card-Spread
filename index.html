@@ -417,6 +417,8 @@
     }
 
     /* Bicycle mode — standard playing cards */
+    .bicycle-mode .card-wrap { width: 130px; height: 182px; }
+    .bicycle-mode .card-info { height: 182px; }
     .bicycle-mode .card-back {
       background: url('https://upload.wikimedia.org/wikipedia/commons/4/4f/Bicyclebackside.jpg') center / cover no-repeat;
       box-shadow: none;
@@ -425,15 +427,10 @@
       background: #fff;
     }
     .bicycle-mode .card-front img {
-      object-fit: contain;
-    }
-    .bicycle-mode .card-front::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      box-shadow: inset 0 0 0 4px #fff;
-      border-radius: 7px;
-      pointer-events: none;
+      object-fit: cover;
+      width: calc(100% + 10px);
+      height: calc(100% + 10px);
+      margin: -5px;
     }
 
     /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
