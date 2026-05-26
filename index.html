@@ -427,6 +427,14 @@
     .bicycle-mode .card-front img {
       object-fit: contain;
     }
+    .bicycle-mode .card-front::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 0 4px #fff;
+      border-radius: 7px;
+      pointer-events: none;
+    }
 
     /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
     .russian-mode .card-back {
