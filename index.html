@@ -440,6 +440,29 @@
       pointer-events: none;
     }
 
+    /* Red mode — red-back Jumbo Index playing cards (Wikimedia SVG faces) */
+    .red-mode .card-wrap {
+      width: 173px;
+    }
+    .red-mode .card-back {
+      background: url('bicycle-back-red.jpg') center / cover no-repeat;
+      box-shadow: none;
+    }
+    .red-mode .card-front {
+      background: #fff;
+    }
+    .red-mode .card-front img {
+      object-fit: cover;
+    }
+    .red-mode .card-front::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid #fff;
+      border-radius: 7px;
+      pointer-events: none;
+    }
+
     /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
     .russian-mode .card-back {
       background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Russian_style_card_back.jpg') center / cover no-repeat;
@@ -555,7 +578,8 @@
       <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
       <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Lenormand</button>
       <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
-      <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')" style="grid-column:1/-1">Bicycle</button>
+      <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')">Bicycle</button>
+      <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Red</button>
     </div>
   </div>
   <!-- Reshuffle -->
@@ -576,7 +600,7 @@
     <div class="ai-response" id="aiResponse"></div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 41</div>
+  <div class="deck-count" style="text-align:right">build 42</div>
 </div>
 
 <div class="controls" id="controls">
@@ -971,10 +995,10 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null, bicycle: null };
+const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null, bicycle: null, red: null };
 
 function deckSource(name) {
-  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND; // bicycle reuses LENORMAND (same 36-card pool)
+  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND; // bicycle/red reuse LENORMAND (same 36-card pool)
 }
 
 function pickCards(name, count) {
@@ -1017,6 +1041,7 @@ function draw() {
   if (currentDeck === 'lenormand') drawLenormand();
   else if (currentDeck === 'russian') drawRussian();
   else if (currentDeck === 'bicycle') drawBicycle();
+  else if (currentDeck === 'red') drawRed();
   else if (currentDeck === 'marseille') drawMarseille();
   else drawTarot();
 }
@@ -1128,6 +1153,28 @@ function bikeUrl(rank, suit) {
   return `https://deckofcardsapi.com/static/img/${r}${BIKE_API_SUIT[suit]}.png`;
 }
 
+// Wikimedia Commons hash map for Playing_card_{suit}_{rank}.svg thumbnails
+const RED_HASH = {
+  'spade_A':'2/25','spade_K':'9/9f','spade_Q':'5/51','spade_J':'b/bd',
+  'spade_10':'8/87','spade_9':'e/e0','spade_8':'2/21','spade_7':'6/66','spade_6':'d/d2',
+  'heart_A':'5/57','heart_K':'d/dc','heart_Q':'7/72','heart_J':'4/46',
+  'heart_10':'9/98','heart_9':'5/50','heart_8':'5/50','heart_7':'9/94','heart_6':'c/cd',
+  'diamond_A':'d/d3','diamond_K':'7/78','diamond_Q':'0/0b','diamond_J':'a/af',
+  'diamond_10':'3/34','diamond_9':'9/9e','diamond_8':'7/78','diamond_7':'e/e6','diamond_6':'8/80',
+  'club_A':'3/36','club_K':'2/22','club_Q':'f/f2','club_J':'b/b7',
+  'club_10':'3/3e','club_9':'2/27','club_8':'e/eb','club_7':'4/4b','club_6':'a/a0',
+};
+const RED_SUIT = { '♣':'club','♥':'heart','♦':'diamond','♠':'spade' };
+
+function redUrl(rank, suit) {
+  const sn = RED_SUIT[suit];
+  const rn = String(rank);
+  const hash = RED_HASH[sn + '_' + rn];
+  if (!hash) return '';
+  const fn = `Playing_card_${sn}_${rn}.svg`;
+  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${hash}/${fn}/226px-${fn}.png`;
+}
+
 function drawBicycle() {
   const shuffled = pickCards('bicycle', 3);
   drawnLenormand = shuffled;
@@ -1142,6 +1189,27 @@ function drawBicycle() {
     const el = document.createElement('img');
     el.id = `img${i}`; el.alt = '';
     el.src = bikeUrl(card.rank, card.suit);
+    front.appendChild(el);
+  });
+  setTimeout(() => flip(0), 300);
+  setTimeout(() => flip(1), 550);
+  setTimeout(() => flip(2), 800);
+}
+
+function drawRed() {
+  const shuffled = pickCards('red', 3);
+  drawnLenormand = shuffled;
+  shuffled.forEach((card, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    front.dataset.name = card.name;
+    front.dataset.suit = card.suit;
+    front.dataset.rank = String(card.rank);
+    front.innerHTML = '';
+    const el = document.createElement('img');
+    el.id = `img${i}`; el.alt = '';
+    el.src = redUrl(card.rank, card.suit);
     front.appendChild(el);
   });
   setTimeout(() => flip(0), 300);
@@ -1176,7 +1244,7 @@ function flip(i) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
-    } else if (currentDeck === 'bicycle') {
+    } else if (currentDeck === 'bicycle' || currentDeck === 'red') {
       const r = front.dataset.rank;
       const s = front.dataset.suit;
       const rn = BIKE_RANK_NAME[r] || r;
@@ -1257,7 +1325,7 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : currentDeck === 'bicycle' ? '' : getMeaning(i);
+      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : (currentDeck === 'bicycle' || currentDeck === 'red') ? '' : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -1413,13 +1481,14 @@ function toggleSettings() {
 // ── Deck switch ────────────────────────────────────────────────────────────
 function switchDeck(deck) {
   currentDeck = deck;
-  const isLen = deck === 'lenormand' || deck === 'russian' || deck === 'bicycle';
+  const isLen = deck === 'lenormand' || deck === 'russian' || deck === 'bicycle' || deck === 'red';
   document.body.classList.toggle('lenormand-mode', isLen);
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('russian-mode', deck === 'russian');
   document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
+  document.body.classList.toggle('red-mode', deck === 'red');
 
-  ['tarot', 'marseille', 'lenormand', 'russian', 'bicycle'].forEach(d => {
+  ['tarot', 'marseille', 'lenormand', 'russian', 'bicycle', 'red'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
