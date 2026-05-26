@@ -416,7 +416,10 @@
       border-radius: 14px;
     }
 
-    /* Bicycle mode — standard playing cards */
+    /* Bicycle mode — standard playing cards (226×314 px images, ratio 0.720) */
+    .bicycle-mode .card-wrap {
+      width: 173px; /* matches image ratio: 226/314 × 240 ≈ 173 → cover clips nothing */
+    }
     .bicycle-mode .card-back {
       background: url('https://upload.wikimedia.org/wikipedia/commons/4/4f/Bicyclebackside.jpg') center / cover no-repeat, #1a56a0;
       box-shadow: none;
@@ -426,9 +429,15 @@
     }
     .bicycle-mode .card-front img {
       object-fit: cover;
-      margin: -3px;
-      width: calc(100% + 6px);
-      height: calc(100% + 6px);
+    }
+    /* White overlay hides the thin black border that's baked into the card images */
+    .bicycle-mode .card-front::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid #fff;
+      border-radius: 7px;
+      pointer-events: none;
     }
 
     /* Russian mode — 1911 Dondorf court/ace images + CSS pip cards */
