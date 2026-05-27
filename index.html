@@ -394,6 +394,72 @@
     /* Hide reversed row in Lenormand mode */
     .lenormand-mode .rev-toggle { display: none; }
 
+    /* ── History ──────────────────────────────────────────────────── */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .history-clear-btn {
+      background: none;
+      border: none;
+      color: #444;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 2px 0;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      transition: color 0.2s;
+    }
+    .history-clear-btn:hover { color: #888; }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .history-entry {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 4px;
+      padding: 9px 11px;
+      cursor: default;
+    }
+    .history-entry-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .history-date {
+      color: #555;
+      font-size: 0.65rem;
+      letter-spacing: 0.8px;
+    }
+    .history-deck {
+      color: #444;
+      font-size: 0.62rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .history-cards {
+      color: #999;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+    .history-cards span {
+      display: block;
+    }
+    .history-empty {
+      color: #3a3a3a;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+      padding: 10px 0;
+    }
+
     /* ── AI Panel ──────────────────────────────────────────────── */
     .btn-ai {
       background: transparent;
@@ -725,6 +791,16 @@
     <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
     <div class="ai-loading" id="aiLoading">Reading the cards…</div>
     <div class="ai-response" id="aiResponse"></div>
+  </div>
+  <!-- History -->
+  <div class="reshuffle-row">
+    <div class="history-header">
+      <span class="setting-label">History</span>
+      <button class="history-clear-btn" onclick="clearHistory()">Clear</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No readings yet</div>
+    </div>
   </div>
   <!-- Version -->
   <div class="deck-count" style="text-align:right">build 43</div>
@@ -1199,6 +1275,7 @@ function draw() {
   else if (currentDeck === 'red') drawRed();
   else if (currentDeck === 'marseille') drawMarseille();
   else drawTarot();
+  setTimeout(saveToHistory, 1500);
 }
 
 function resetCards() {
@@ -1607,6 +1684,61 @@ async function askClaude() {
   }
 }
 
+// ── History ────────────────────────────────────────────────────────────────
+const HISTORY_KEY = 'readingHistory';
+const HISTORY_MAX = 30;
+
+const DECK_LABEL = {
+  tarot:'Tarot', marseille:'Marseille', lenormand:'Lenormand',
+  russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo'
+};
+
+function saveToHistory() {
+  const cards = [0,1,2].map(i => document.getElementById(`lbl${i}`).textContent).filter(Boolean);
+  if (cards.length < 3) return;
+  const entry = {
+    ts: Date.now(),
+    deck: currentDeck,
+    cards,
+  };
+  const list = loadHistory();
+  list.unshift(entry);
+  if (list.length > HISTORY_MAX) list.length = HISTORY_MAX;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+}
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = loadHistory();
+  const el = document.getElementById('historyList');
+  if (!list.length) {
+    el.innerHTML = '<div class="history-empty">No readings yet</div>';
+    return;
+  }
+  el.innerHTML = list.map(e => {
+    const d = new Date(e.ts);
+    const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
+                  + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+    const deck = DECK_LABEL[e.deck] || e.deck;
+    const cardLines = e.cards.map(c => `<span>${c}</span>`).join('');
+    return `<div class="history-entry">
+      <div class="history-entry-meta">
+        <span class="history-date">${dateStr}</span>
+        <span class="history-deck">${deck}</span>
+      </div>
+      <div class="history-cards">${cardLines}</div>
+    </div>`;
+  }).join('');
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 function closeSettings() {
   document.getElementById('settingsPanel').classList.remove('open');
@@ -1619,6 +1751,10 @@ function toggleSettings() {
   if (panel.classList.contains('open')) {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
+    renderHistory();
+    // close cosmic if open
+    document.getElementById('cosmicPanel').classList.remove('open');
+    document.getElementById('btnCosmic').classList.remove('active');
   }
 }
 
