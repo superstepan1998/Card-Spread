@@ -1246,7 +1246,7 @@ function pickCards(name, count) {
 function reshuffleAll() {
   Object.keys(deckRemaining).forEach(k => { deckRemaining[k] = null; });
   updateDeckCount();
-  draw();
+  resetCards();
 }
 
 function updateDeckCount() {
