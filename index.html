@@ -780,11 +780,6 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
-  <!-- API Key -->
-  <div class="ai-key-row">
-    <span class="ai-key-label">Anthropic API Key</span>
-    <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
-  </div>
   <!-- Ask Claude -->
   <div class="reshuffle-row">
     <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
@@ -806,6 +801,11 @@
     <div class="history-list" id="historyList">
       <div class="history-empty">No readings yet</div>
     </div>
+  </div>
+  <!-- API Key -->
+  <div class="ai-key-row">
+    <span class="ai-key-label">Anthropic API Key</span>
+    <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <!-- Version -->
   <div class="deck-count" style="text-align:right">build 43</div>
