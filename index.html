@@ -780,13 +780,6 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
-  <!-- Ask Claude -->
-  <div class="reshuffle-row">
-    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
-    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
-    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
-    <div class="ai-response" id="aiResponse"></div>
-  </div>
   <!-- Birth date -->
   <div class="ai-key-row">
     <span class="ai-key-label">Date of Birth</span>
@@ -801,6 +794,13 @@
     <div class="history-list" id="historyList">
       <div class="history-empty">No readings yet</div>
     </div>
+  </div>
+  <!-- Ask Claude -->
+  <div class="reshuffle-row">
+    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
+    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
+    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
+    <div class="ai-response" id="aiResponse"></div>
   </div>
   <!-- API Key -->
   <div class="ai-key-row">
