@@ -147,6 +147,133 @@
     }
     .meaning-text.visible { display: block; }
 
+    /* ── Cosmic Panel ───────────────────────────────────────────── */
+    .btn-cosmic {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 13px;
+      font-size: 20px;
+      line-height: 1;
+      opacity: 0.45;
+      transition: opacity 0.2s;
+    }
+    .btn-cosmic:hover { opacity: 0.8; }
+    .btn-cosmic.active { opacity: 1; }
+
+    .cosmic-panel {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px 22px;
+      background: #0d0d18;
+      border: 1px solid rgba(160,130,80,0.25);
+      border-radius: 6px;
+      min-width: 270px;
+      max-width: calc(100vw - 40px);
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 100;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    }
+    .cosmic-panel.open { display: flex; }
+
+    .cosmic-moon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cosmic-moon-emoji { font-size: 26px; line-height: 1; }
+    .cosmic-moon-info { display: flex; flex-direction: column; gap: 1px; }
+    .cosmic-moon-name {
+      color: #c9a84c;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+    .cosmic-sun-text {
+      color: #888;
+      font-size: 0.72rem;
+      letter-spacing: 0.8px;
+    }
+    .cosmic-retro-badge {
+      display: inline-block;
+      margin-top: 4px;
+      background: rgba(180,60,60,0.15);
+      border: 1px solid rgba(180,60,60,0.4);
+      color: #d07070;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .cosmic-divider-line {
+      border: none;
+      border-top: 1px solid rgba(160,130,80,0.12);
+    }
+
+    .cosmic-personal-header {
+      color: #7a6a40;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .cosmic-sign-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .cosmic-sign-emoji { font-size: 20px; }
+    .cosmic-sign-name { color: #c9a84c; font-size: 0.88rem; letter-spacing: 0.5px; }
+
+    .cosmic-message {
+      color: #d4c49a;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      font-style: italic;
+      margin: 0;
+    }
+    .cosmic-retro-msg {
+      color: #c07070;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      font-style: italic;
+      margin: 6px 0 0;
+      padding: 8px 10px;
+      border-left: 2px solid rgba(180,60,60,0.4);
+    }
+
+    .cosmic-birth-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cosmic-birth-label {
+      color: #555;
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .cosmic-birth-input {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #aaa;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.82rem;
+      padding: 6px 10px;
+      width: 100%;
+      outline: none;
+    }
+    .cosmic-birth-input:focus { border-color: rgba(160,130,80,0.4); color: #ccc; }
+
     /* ── Controls ───────────────────────────────────────────────── */
     .controls {
       position: fixed;
@@ -600,13 +727,41 @@
     <div class="ai-response" id="aiResponse"></div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 42</div>
+  <div class="deck-count" style="text-align:right">build 43</div>
+</div>
+
+<!-- Cosmic Panel -->
+<div class="cosmic-panel" id="cosmicPanel">
+  <div class="cosmic-moon-row">
+    <span class="cosmic-moon-emoji" id="cMoonEmoji">🌑</span>
+    <div class="cosmic-moon-info">
+      <span class="cosmic-moon-name" id="cMoonName">New Moon</span>
+      <span class="cosmic-sun-text" id="cSunText">☀️ Sun in Aries</span>
+      <span class="cosmic-retro-badge" id="cRetroBadge" style="display:none">☿ Mercury Retrograde</span>
+    </div>
+  </div>
+  <hr class="cosmic-divider-line">
+  <div>
+    <div class="cosmic-personal-header">Your sky today</div>
+    <div class="cosmic-sign-row">
+      <span class="cosmic-sign-emoji" id="cSignEmoji">♌</span>
+      <span class="cosmic-sign-name" id="cSignName">Leo</span>
+    </div>
+    <p class="cosmic-message" id="cMessage"></p>
+    <p class="cosmic-retro-msg" id="cRetroMsg" style="display:none"></p>
+  </div>
+  <hr class="cosmic-divider-line">
+  <div class="cosmic-birth-row">
+    <span class="cosmic-birth-label">Your birth date</span>
+    <input type="date" class="cosmic-birth-input" id="cBirthInput" value="1998-07-23">
+  </div>
 </div>
 
 <div class="controls" id="controls">
   <button class="btn-ai" id="btnCopy" onclick="copyCards()" title="Copy cards">
     <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
   </button>
+  <button class="btn-cosmic" id="btnCosmic" onclick="toggleCosmic()" title="Cosmic context">🌙</button>
   <button class="btn-settings" id="btnSettings" onclick="toggleSettings()">
     <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
   </button>
@@ -1500,6 +1655,184 @@ document.addEventListener('click', (e) => {
   if (panel.classList.contains('open') &&
       !panel.contains(e.target) && !btn.contains(e.target)) {
     closeSettings();
+  }
+});
+
+// ── Cosmic Context ─────────────────────────────────────────────────────────
+
+const COSMIC_SIGNS = [
+  { name:'Capricorn', emoji:'♑', el:'Earth', m1:12, d1:22, m2:1,  d2:19 },
+  { name:'Aquarius',  emoji:'♒', el:'Air',   m1:1,  d1:20, m2:2,  d2:18 },
+  { name:'Pisces',    emoji:'♓', el:'Water', m1:2,  d1:19, m2:3,  d2:20 },
+  { name:'Aries',     emoji:'♈', el:'Fire',  m1:3,  d1:21, m2:4,  d2:19 },
+  { name:'Taurus',    emoji:'♉', el:'Earth', m1:4,  d1:20, m2:5,  d2:20 },
+  { name:'Gemini',    emoji:'♊', el:'Air',   m1:5,  d1:21, m2:6,  d2:20 },
+  { name:'Cancer',    emoji:'♋', el:'Water', m1:6,  d1:21, m2:7,  d2:22 },
+  { name:'Leo',       emoji:'♌', el:'Fire',  m1:7,  d1:23, m2:8,  d2:22 },
+  { name:'Virgo',     emoji:'♍', el:'Earth', m1:8,  d1:23, m2:9,  d2:22 },
+  { name:'Libra',     emoji:'♎', el:'Air',   m1:9,  d1:23, m2:10, d2:22 },
+  { name:'Scorpio',   emoji:'♏', el:'Water', m1:10, d1:23, m2:11, d2:21 },
+  { name:'Sagittarius',emoji:'♐',el:'Fire',  m1:11, d1:22, m2:12, d2:21 },
+];
+
+function getSign(month, day) {
+  for (const s of COSMIC_SIGNS) {
+    if (s.m1 <= s.m2) {
+      if ((month === s.m1 && day >= s.d1) || (month === s.m2 && day <= s.d2) ||
+          (month > s.m1 && month < s.m2)) return s;
+    } else {
+      if ((month === s.m1 && day >= s.d1) || (month === s.m2 && day <= s.d2) ||
+          month > s.m1 || month < s.m2) return s;
+    }
+  }
+  return COSMIC_SIGNS[0];
+}
+
+function getMoonPhase(date) {
+  const REF = new Date('2000-01-06T18:14:00Z');
+  const LUNAR = 29.530588853;
+  const age = (((date - REF) / 86400000) % LUNAR + LUNAR) % LUNAR;
+  const phases = [
+    { name:'New Moon',        emoji:'🌑' },
+    { name:'Waxing Crescent', emoji:'🌒' },
+    { name:'First Quarter',   emoji:'🌓' },
+    { name:'Waxing Gibbous',  emoji:'🌔' },
+    { name:'Full Moon',       emoji:'🌕' },
+    { name:'Waning Gibbous',  emoji:'🌖' },
+    { name:'Last Quarter',    emoji:'🌗' },
+    { name:'Waning Crescent', emoji:'🌘' },
+  ];
+  const idx = Math.floor((age / LUNAR) * 8) % 8;
+  return { ...phases[idx], age };
+}
+
+// Hardcoded Mercury retrograde windows 2024–2027
+const MERCURY_RETRO_WINDOWS = [
+  ['2024-04-01','2024-04-25'],['2024-08-05','2024-08-28'],['2024-11-25','2024-12-15'],
+  ['2025-01-17','2025-02-11'],['2025-05-15','2025-06-08'],['2025-09-09','2025-10-03'],
+  ['2025-12-31','2026-01-24'],['2026-04-09','2026-05-03'],['2026-08-14','2026-09-07'],
+  ['2026-12-13','2027-01-05'],
+];
+function isMercuryRetro(date) {
+  return MERCURY_RETRO_WINDOWS.some(([a,b]) => date >= new Date(a) && date <= new Date(b+'T23:59:59'));
+}
+
+const COSMIC_MSGS = {
+  'New Moon': {
+    Fire:  'A bold new chapter is calling you. Set one clear intention today — your will is the spark.',
+    Earth: 'Plant your seeds deliberately now. What you begin with patience will grow beyond what you imagine.',
+    Air:   'Fresh ideas are arriving fast. Write them down — the ones that return tomorrow are worth pursuing.',
+    Water: 'Your intuition is unusually quiet and clear. Trust what you feel without needing to explain it.',
+  },
+  'Waxing Crescent': {
+    Fire:  'The spark is lit — act on your intentions before doubt has time to catch up with you.',
+    Earth: 'Small, consistent steps compound. Show up for your goals even when progress feels invisible.',
+    Air:   'The conversations you start now carry real momentum. Reach out to the right people.',
+    Water: 'Emotional clarity is building. Let hope, not fear, guide your next step forward.',
+  },
+  'First Quarter': {
+    Fire:  'Obstacles are fuel for you. Meet resistance with the boldness that defines you.',
+    Earth: 'Discomfort is the price of growth right now. Your persistence will outlast the friction.',
+    Air:   'Stop weighing every option — commit to the best one. Decisive action opens the next door.',
+    Water: 'Honor your feelings without letting them hold you in place. Move through, not around.',
+  },
+  'Waxing Gibbous': {
+    Fire:  'You are close. Refine and polish rather than restart — your efforts are nearly ready to land.',
+    Earth: 'Details matter most right now. A careful review today prevents problems next week.',
+    Air:   'Sharpen how you communicate your ideas. The framing will make all the difference.',
+    Water: 'Fine-tune your approach with patience — for others and especially for yourself.',
+  },
+  'Full Moon': {
+    Fire:  'Your energy is magnetic right now. Step fully into the spotlight — you were made for this.',
+    Earth: 'The results of your quiet, steady work are coming into the light. Accept what you have built.',
+    Air:   'A revelation or long-overdue conversation arrives. The clarity you have been circling is here.',
+    Water: 'Deep emotions are rising to the surface. Let yourself feel completely — this is where healing lives.',
+  },
+  'Waning Gibbous': {
+    Fire:  'Share your experience openly. Your journey lights the way for more people than you know.',
+    Earth: 'Express genuine gratitude for what has arrived. Generosity now opens unexpected doors.',
+    Air:   'Teach what you have learned. Ideas gain real power when they spread to the right minds.',
+    Water: 'Emotional generosity flows easily now. Give what you once wished you had received.',
+  },
+  'Last Quarter': {
+    Fire:  'Release what you have been forcing. The path ahead clears the moment you stop pushing.',
+    Earth: 'Clear out the old — possessions, habits, commitments that no longer fit. Space is coming.',
+    Air:   'Forgive the miscommunications and misunderstandings. Release the loops still running in your mind.',
+    Water: 'Old wounds ask for your attention one final time. Tend to them gently, then let them go.',
+  },
+  'Waning Crescent': {
+    Fire:  'Rest without guilt. Even fire needs oxygen — your next burst of energy is quietly preparing.',
+    Earth: 'Slow down and restore. Your body and spirit are doing deep, invisible work right now.',
+    Air:   'Quiet the mind completely. The insights you need will arrive in stillness, not in analysis.',
+    Water: 'Surrender and trust the process. The universe is composting the old into something new.',
+  },
+};
+
+const RETRO_MSGS = {
+  Fire:  'Mercury is retrograde — slow down before you speak or act. Revisit rather than launch new things.',
+  Earth: 'Back up important files, re-read contracts carefully, and hold off on major purchases if you can.',
+  Air:   'Miscommunications are magnified right now. Over-explain everything and read twice before you send.',
+  Water: 'Old conversations and feelings are resurfacing. They still have something important to teach you.',
+};
+
+function renderCosmic() {
+  const today = new Date();
+  const moon  = getMoonPhase(today);
+  const retro = isMercuryRetro(today);
+
+  const birthVal = document.getElementById('cBirthInput').value || '1998-07-23';
+  const [by, bm, bd] = birthVal.split('-').map(Number);
+  const userSign   = getSign(bm, bd);
+  const todaySign  = getSign(today.getMonth()+1, today.getDate());
+
+  document.getElementById('cMoonEmoji').textContent  = moon.emoji;
+  document.getElementById('cMoonName').textContent   = moon.name;
+  document.getElementById('cSunText').textContent    = `☀️ Sun in ${todaySign.name}`;
+  document.getElementById('cSignEmoji').textContent  = userSign.emoji;
+  document.getElementById('cSignName').textContent   = userSign.name;
+  document.getElementById('cMessage').textContent    = (COSMIC_MSGS[moon.name]||{})[userSign.el] || '';
+
+  const retroBadge = document.getElementById('cRetroBadge');
+  const retroMsg   = document.getElementById('cRetroMsg');
+  if (retro) {
+    retroBadge.style.display = 'inline-block';
+    retroMsg.textContent     = RETRO_MSGS[userSign.el] || '';
+    retroMsg.style.display   = 'block';
+  } else {
+    retroBadge.style.display = 'none';
+    retroMsg.style.display   = 'none';
+  }
+}
+
+function toggleCosmic() {
+  const panel = document.getElementById('cosmicPanel');
+  const btn   = document.getElementById('btnCosmic');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  if (isOpen) {
+    renderCosmic();
+    // close settings if open
+    document.getElementById('settingsPanel').classList.remove('open');
+    document.getElementById('btnSettings').classList.remove('active');
+  }
+}
+
+document.getElementById('cBirthInput').addEventListener('change', () => {
+  localStorage.setItem('cosmicBirth', document.getElementById('cBirthInput').value);
+  renderCosmic();
+});
+
+// Restore saved birth date
+const savedBirth = localStorage.getItem('cosmicBirth');
+if (savedBirth) document.getElementById('cBirthInput').value = savedBirth;
+
+// Close cosmic panel on outside click
+document.addEventListener('click', e => {
+  const panel = document.getElementById('cosmicPanel');
+  const btn   = document.getElementById('btnCosmic');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+    panel.classList.remove('open');
+    btn.classList.remove('active');
   }
 });
 
