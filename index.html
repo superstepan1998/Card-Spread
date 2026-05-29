@@ -727,10 +727,8 @@
       background: #e4e0cd;
     }
     .russian-mode .card-front img {
-      object-fit: cover;
-      transform: scale(1.1);
+      object-fit: contain;
       border-radius: 5px;
-      filter: sepia(0.1) contrast(1.04) brightness(1.02);
     }
     .russian-pip {
       width: 100%; height: 100%;
@@ -878,7 +876,7 @@
     <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 46</div>
+  <div class="deck-count" style="text-align:right">build 47</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -920,10 +918,11 @@ const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 
 // High-res individual scans from Wikimedia (rank+suit → local filename)
 const RUSSIAN_LOCAL = {
-  'K♥':'rc_Kh.jpg','K♦':'rc_Kd.jpg','K♣':'rc_Kc.jpg','K♠':'rc_Ks.jpg',
-  'Q♥':'rc_Qh.jpg','Q♦':'rc_Qd.jpg','Q♣':'rc_Qc.jpg','Q♠':'rc_Qs.jpg',
-  'J♥':'rc_Jh.jpg','J♦':'rc_Jd.jpg','J♣':'rc_Jc.jpg','J♠':'rc_Js.jpg',
-  'A♥':'rc_Ah.jpg','A♦':'rc_Ad.jpg','A♣':'rc_Ac.jpg','A♠':'rc_As.jpg',
+  // Great-grandmother's deck — full 36 cards (vintage Russian)
+  '6♠':'rc_6s.jpg','7♠':'rc_7s.jpg','8♠':'rc_8s.jpg','9♠':'rc_9s.jpg','10♠':'rc_10s.jpg','J♠':'rc_Js.jpg','Q♠':'rc_Qs.jpg','K♠':'rc_Ks.jpg','A♠':'rc_As.jpg',
+  '6♣':'rc_6c.jpg','7♣':'rc_7c.jpg','8♣':'rc_8c.jpg','9♣':'rc_9c.jpg','10♣':'rc_10c.jpg','J♣':'rc_Jc.jpg','Q♣':'rc_Qc.jpg','K♣':'rc_Kc.jpg','A♣':'rc_Ac.jpg',
+  '6♥':'rc_6h.jpg','7♥':'rc_7h.jpg','8♥':'rc_8h.jpg','9♥':'rc_9h.jpg','10♥':'rc_10h.jpg','J♥':'rc_Jh.jpg','Q♥':'rc_Qh.jpg','K♥':'rc_Kh.jpg','A♥':'rc_Ah.jpg',
+  '6♦':'rc_6d.jpg','7♦':'rc_7d.jpg','8♦':'rc_8d.jpg','9♦':'rc_9d.jpg','10♦':'rc_10d.jpg','J♦':'rc_Jd.jpg','Q♦':'rc_Qd.jpg','K♦':'rc_Kd.jpg','A♦':'rc_Ad.jpg',
 };
 
 // ── Meanings (English) ───────────────────────────────────────────────────
