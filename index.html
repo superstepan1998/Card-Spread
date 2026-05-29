@@ -876,7 +876,7 @@
     <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 48</div>
+  <div class="deck-count" style="text-align:right">build 49</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -918,11 +918,11 @@ const WIKI = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
 
 // High-res individual scans from Wikimedia (rank+suit → local filename)
 const RUSSIAN_LOCAL = {
-  // Great-grandmother's heirloom deck — all 36 cards, individually photographed
-  '6♠':'rc_6s.jpg','7♠':'rc_7s.jpg','8♠':'rc_8s.jpg','9♠':'rc_9s.jpg','10♠':'rc_10s.jpg','J♠':'rc_Js.jpg','Q♠':'rc_Qs.jpg','K♠':'rc_Ks.jpg','A♠':'rc_As.jpg',
-  '6♣':'rc_6c.jpg','7♣':'rc_7c.jpg','8♣':'rc_8c.jpg','9♣':'rc_9c.jpg','10♣':'rc_10c.jpg','J♣':'rc_Jc.jpg','Q♣':'rc_Qc.jpg','K♣':'rc_Kc.jpg','A♣':'rc_Ac.jpg',
-  '6♥':'rc_6h.jpg','7♥':'rc_7h.jpg','8♥':'rc_8h.jpg','9♥':'rc_9h.jpg','10♥':'rc_10h.jpg','J♥':'rc_Jh.jpg','Q♥':'rc_Qh.jpg','K♥':'rc_Kh.jpg','A♥':'rc_Ah.jpg',
-  '6♦':'rc_6d.jpg','7♦':'rc_7d.jpg','8♦':'rc_8d.jpg','9♦':'rc_9d.jpg','10♦':'rc_10d.jpg','J♦':'rc_Jd.jpg','Q♦':'rc_Qd.jpg','K♦':'rc_Kd.jpg','A♦':'rc_Ad.jpg',
+  // Great-grandmother's heirloom deck — all 36 cards, masked (blue removed), transparent PNG
+  '6♠':'rc_6s.png','7♠':'rc_7s.png','8♠':'rc_8s.png','9♠':'rc_9s.png','10♠':'rc_10s.png','J♠':'rc_Js.png','Q♠':'rc_Qs.png','K♠':'rc_Ks.png','A♠':'rc_As.png',
+  '6♣':'rc_6c.png','7♣':'rc_7c.png','8♣':'rc_8c.png','9♣':'rc_9c.png','10♣':'rc_10c.png','J♣':'rc_Jc.png','Q♣':'rc_Qc.png','K♣':'rc_Kc.png','A♣':'rc_Ac.png',
+  '6♥':'rc_6h.png','7♥':'rc_7h.png','8♥':'rc_8h.png','9♥':'rc_9h.png','10♥':'rc_10h.png','J♥':'rc_Jh.png','Q♥':'rc_Qh.png','K♥':'rc_Kh.png','A♥':'rc_Ah.png',
+  '6♦':'rc_6d.png','7♦':'rc_7d.png','8♦':'rc_8d.png','9♦':'rc_9d.png','10♦':'rc_10d.png','J♦':'rc_Jd.png','Q♦':'rc_Qd.png','K♦':'rc_Kd.png','A♦':'rc_Ad.png',
 };
 
 // ── Meanings (English) ───────────────────────────────────────────────────
@@ -1442,7 +1442,7 @@ function drawRussian() {
       front.innerHTML = '';
       const el = document.createElement('img');
       el.id = `img${i}`; el.alt = '';
-      el.src = localFile + '?v=heir-base1';
+      el.src = localFile + '?v=masked1';
       front.appendChild(el);
     } else {
       const color = (card.suit === '♥' || card.suit === '♦') ? '#b01020' : '#111';
