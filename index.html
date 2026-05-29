@@ -108,6 +108,19 @@
       width: 100%; height: 100%;
       object-fit: cover; display: block;
     }
+    /* Fallback shown when a remote card image fails to load */
+    .card-fallback {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      background: #f4f1e8; color: #222;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      border-radius: 7px;
+    }
+    .card-fallback .fb-rank { font-size: 2.4rem; font-weight: bold; line-height: 1; }
+    .card-fallback .fb-suit { font-size: 2.8rem; line-height: 1; }
+    .card-fallback.red { color: #b01020; }
     /* Marseille images are 813×1536 (ratio 0.529); shrink wrap to avoid height crop,
        then scale 5% to push white image border outside the overflow:hidden clip */
     .marseille-mode .card-wrap { width: 146px; }
@@ -832,7 +845,7 @@
     <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 43</div>
+  <div class="deck-count" style="text-align:right">build 44</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1257,10 +1270,20 @@ function deckSource(name) {
   return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND; // bicycle/red reuse LENORMAND (same 36-card pool)
 }
 
+// Fisher–Yates: uniform, unbiased shuffle (sort(()=>random-0.5) is not)
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function pickCards(name, count) {
   const source = deckSource(name);
   if (!deckRemaining[name] || deckRemaining[name].length < count) {
-    deckRemaining[name] = [...source].sort(() => Math.random() - 0.5);
+    deckRemaining[name] = shuffle(source);
   }
   const picked = deckRemaining[name].splice(0, count);
   updateDeckCount();
@@ -1484,6 +1507,7 @@ function drawLenormand() {
 function flip(i) {
   document.getElementById(`ci${i}`).classList.add('flipped');
   flipped[i] = true;
+  if (navigator.vibrate) navigator.vibrate(8); // subtle tactile tick on reveal
   setTimeout(() => {
     const front = document.getElementById(`cf${i}`);
     if (currentDeck === 'lenormand' || currentDeck === 'russian') {
@@ -1996,6 +2020,29 @@ document.addEventListener('click', e => {
     btn.classList.remove('active');
   }
 });
+
+// ── Image fallback ───────────────────────────────────────────────────────
+// If a remote card image fails (CDN down / offline), show rank+suit or name
+// instead of a blank white card.
+document.getElementById('spread').addEventListener('error', (e) => {
+  const img = e.target;
+  if (img.tagName !== 'IMG') return;
+  const front = img.closest('.card-front');
+  if (!front || front.querySelector('.card-fallback')) return;
+  img.style.display = 'none';
+  const suit = front.dataset.suit || '';
+  const isRed = suit === '♥' || suit === '♦';
+  const fb = document.createElement('div');
+  fb.className = 'card-fallback' + (isRed ? ' red' : '');
+  if (front.dataset.rank) {
+    fb.innerHTML = `<span class="fb-rank">${front.dataset.rank}</span><span class="fb-suit">${suit}</span>`;
+  } else {
+    const key = front.dataset.key || '';
+    const name = (MEANINGS[key] || key).split('\n')[0] || '?';
+    fb.innerHTML = `<span class="fb-rank" style="font-size:1.1rem;text-align:center;padding:0 8px">${name}</span>`;
+  }
+  front.appendChild(fb);
+}, true);
 
 resetCards();
 </script>
