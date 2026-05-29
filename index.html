@@ -398,6 +398,19 @@
     #btnRussian.active { background: #3a3020; border-color: #9b7a4e; color: #e8ccaa; }
     #btnRussian:hover:not(.active) { background: #32281e; border-color: #8a6a40; color: #ddc090; }
 
+    /* Card count picker */
+    .count-picker { display: flex; gap: 4px; }
+    .count-btn {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px;
+      color: #666; font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.78rem; letter-spacing: 1px; padding: 4px 16px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .count-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
+    .count-btn:hover:not(.active) { color: #aaa; border-color: #444; }
+    /* One-card mode hides the other two slots */
+    .one-card #slot1, .one-card #slot2 { display: none; }
+
     /* Reshuffle row */
     .reshuffle-row {
       display: flex;
@@ -812,6 +825,14 @@
       <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Bicycle JUMBO</button>
     </div>
   </div>
+  <!-- Card count -->
+  <div class="setting-row">
+    <span class="setting-label">Cards</span>
+    <div class="count-picker">
+      <button class="count-btn" id="cnt1" onclick="setCardCount(1)">1</button>
+      <button class="count-btn active" id="cnt3" onclick="setCardCount(3)">3</button>
+    </div>
+  </div>
   <!-- Reshuffle -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
@@ -845,7 +866,7 @@
     <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 44</div>
+  <div class="deck-count" style="text-align:right">build 45</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1257,6 +1278,7 @@ const LEN_ICON = {
 // ── State ──────────────────────────────────────────────────────────────────
 let flipped = [false, false, false];
 let currentDeck = 'tarot';
+let cardCount = 3;
 let drawnLenormand = [];
 let meaningsVisible = false;
 let lastTap = 0;
@@ -1340,9 +1362,23 @@ function resetCards() {
   updateDeckCount();
 }
 
+// Stagger the card reveals: flip(0)@300ms, flip(1)@550ms, flip(2)@800ms
+function scheduleFlips(n) {
+  for (let i = 0; i < n; i++) setTimeout(() => flip(i), 300 + i * 250);
+}
+
+function setCardCount(n) {
+  cardCount = n;
+  localStorage.setItem('cardCount', n);
+  document.body.classList.toggle('one-card', n === 1);
+  document.getElementById('cnt1').classList.toggle('active', n === 1);
+  document.getElementById('cnt3').classList.toggle('active', n === 3);
+  resetCards();
+}
+
 function drawTarot() {
   const allowRev = !document.getElementById('revToggle').checked;
-  const shuffled = pickCards('tarot', 3);
+  const shuffled = pickCards('tarot', cardCount);
   shuffled.forEach((img, i) => {
     const front = document.getElementById(`cf${i}`);
     front.className = 'card-front';
@@ -1356,14 +1392,12 @@ function drawTarot() {
     const rev = !allowRev && Math.random() < 0.3;
     if (rev) front.classList.add('rev');
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 function drawMarseille() {
   const allowRev = !document.getElementById('revToggle').checked;
-  const shuffled = pickCards('marseille', 3);
+  const shuffled = pickCards('marseille', cardCount);
   shuffled.forEach((img, i) => {
     const key = img.replace('.jpg', '');
     const front = document.getElementById(`cf${i}`);
@@ -1378,13 +1412,11 @@ function drawMarseille() {
     const rev = !allowRev && Math.random() < 0.3;
     if (rev) front.classList.add('rev');
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 function drawRussian() {
-  const shuffled = pickCards('russian', 3);
+  const shuffled = pickCards('russian', cardCount);
   drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -1419,9 +1451,7 @@ function drawRussian() {
       front.innerHTML = `<div class="russian-pip">${corners}${pips}</div>`;
     }
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 const BIKE_RANK_NAME = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
@@ -1445,7 +1475,7 @@ function redUrl(rank, suit) {
 }
 
 function drawBicycle() {
-  const shuffled = pickCards('bicycle', 3);
+  const shuffled = pickCards('bicycle', cardCount);
   drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -1460,13 +1490,11 @@ function drawBicycle() {
     el.src = bikeUrl(card.rank, card.suit);
     front.appendChild(el);
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 function drawRed() {
-  const shuffled = pickCards('red', 3);
+  const shuffled = pickCards('red', cardCount);
   drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -1481,13 +1509,11 @@ function drawRed() {
     el.src = redUrl(card.rank, card.suit);
     front.appendChild(el);
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 function drawLenormand() {
-  const shuffled = pickCards('lenormand', 3);
+  const shuffled = pickCards('lenormand', cardCount);
   drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -1498,9 +1524,7 @@ function drawLenormand() {
     front.dataset.suit = card.suit;
     front.dataset.rank = card.rank;
   });
-  setTimeout(() => flip(0), 300);
-  setTimeout(() => flip(1), 550);
-  setTimeout(() => flip(2), 800);
+  scheduleFlips(shuffled.length);
 }
 
 // ── Flip ───────────────────────────────────────────────────────────────────
@@ -1744,7 +1768,7 @@ const DECK_LABEL = {
 
 function saveToHistory() {
   const cards = [0,1,2].map(i => document.getElementById(`lbl${i}`).textContent).filter(Boolean);
-  if (cards.length < 3) return;
+  if (cards.length < cardCount) return;
   const entry = {
     ts: Date.now(),
     deck: currentDeck,
@@ -2010,6 +2034,10 @@ document.getElementById('cBirthInput').addEventListener('change', () => {
 // Restore saved birth date
 const savedBirth = localStorage.getItem('cosmicBirth');
 if (savedBirth) document.getElementById('cBirthInput').value = savedBirth;
+
+// Restore saved card count (1 or 3)
+const savedCount = parseInt(localStorage.getItem('cardCount'), 10);
+if (savedCount === 1) setCardCount(1);
 
 // Close cosmic panel on outside click
 document.addEventListener('click', e => {
