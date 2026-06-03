@@ -795,72 +795,6 @@
       transform: translate(-50%, -50%);
       font-size: 6rem; line-height: 1; user-select: none;
     }
-
-    /* ── Card detail modal ──────────────────────────────────────────── */
-    .card-modal {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.86);
-      display: none;
-      align-items: center; justify-content: center;
-      flex-direction: column;
-      z-index: 300;
-      padding: 32px 22px;
-      -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-    }
-    .card-modal.open { display: flex; }
-    .card-modal-card {
-      width: 210px; height: 322px;
-      position: relative;
-      margin-bottom: 20px;
-      filter: drop-shadow(0 10px 28px rgba(0,0,0,0.6));
-    }
-    .card-modal-card .card-front {
-      position: absolute; inset: 0;
-      transform: none !important;
-      width: 100%; height: 100%;
-    }
-    .card-modal-title {
-      color: #c9a84c;
-      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 1.15rem;
-      letter-spacing: 1px;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    .card-modal-body {
-      color: #cfcfcf;
-      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      text-align: center;
-      white-space: pre-line;
-      max-width: 360px;
-      max-height: 34vh;
-      overflow-y: auto;
-    }
-    .card-modal-hint {
-      color: #555;
-      font-size: 0.65rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-top: 18px;
-    }
-    /* ── Saved readings ─────────────────────────────────────────────── */
-    .saved-name {
-      color: #c9a84c;
-      font-size: 0.8rem;
-      letter-spacing: 0.5px;
-      font-family: 'Palatino Linotype', Palatino, serif;
-    }
-    .saved-del {
-      background: none; border: none;
-      color: #444;
-      font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase;
-      cursor: pointer; padding: 2px 0;
-      font-family: 'Palatino Linotype', Palatino, serif;
-      transition: color 0.2s;
-    }
-    .saved-del:hover { color: #b05050; }
   </style>
 </head>
 <body>
@@ -906,14 +840,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Card detail modal -->
-<div class="card-modal" id="cardModal" onclick="closeCardModal()">
-  <div class="card-modal-card" id="cardModalCard"></div>
-  <div class="card-modal-title" id="cardModalTitle"></div>
-  <div class="card-modal-body" id="cardModalBody"></div>
-  <div class="card-modal-hint">Tap anywhere to close</div>
-</div>
-
 <div class="settings-panel" id="settingsPanel">
   <!-- Reversed toggle (Tarot only) -->
   <div class="setting-row rev-toggle">
@@ -947,20 +873,6 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
-  <!-- Save reading -->
-  <div class="reshuffle-row">
-    <button class="reshuffle-btn" onclick="saveCurrentReading()">Save This Reading</button>
-  </div>
-  <!-- Saved readings -->
-  <div class="reshuffle-row">
-    <div class="history-header">
-      <span class="setting-label">Saved</span>
-      <button class="history-clear-btn" onclick="clearSaved()">Clear</button>
-    </div>
-    <div class="history-list" id="savedList">
-      <div class="history-empty">No saved readings</div>
-    </div>
-  </div>
   <!-- History -->
   <div class="reshuffle-row">
     <div class="history-header">
@@ -993,7 +905,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 52</div>
+  <div class="deck-count" style="text-align:right">build 51</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1458,7 +1370,6 @@ function draw() {
   hasDrawn = true;
   meaningsVisible = false;
   closeSettings();
-  closeCardModal();
   for (let i = 0; i < 3; i++) {
     document.getElementById(`ci${i}`).classList.remove('flipped');
     document.getElementById(`lbl${i}`).textContent = '';
@@ -1729,57 +1640,8 @@ function tap(i) {
       flip(i);
       return;
     }
-    openCardModal(i);
+    toggleAllMeanings();
   }, 300);
-}
-
-// ── Card detail modal ────────────────────────────────────────────────────────
-// Returns the display title for slot i across all decks.
-function cardTitle(i) {
-  const front = document.getElementById(`cf${i}`);
-  if (!front) return '';
-  if (currentDeck === 'lenormand' || currentDeck === 'russian') {
-    const name = front.dataset.name || '';
-    const icon = LEN_ICON[name] || '';
-    return icon ? `${icon} ${name}` : name;
-  }
-  if (currentDeck === 'bicycle' || currentDeck === 'red') {
-    const r = front.dataset.rank, s = front.dataset.suit;
-    return `${BIKE_RANK_NAME[r] || r} of ${BIKE_SUIT_NAME[s] || s}`;
-  }
-  const key = front.dataset.key;
-  const firstLine = (MEANINGS[key] || '').split('\n')[0];
-  return front.classList.contains('rev') ? firstLine + ' (Rev.)' : firstLine;
-}
-
-// Returns the full meaning text for slot i across all decks.
-function cardDetailText(i) {
-  if (currentDeck === 'lenormand' || currentDeck === 'russian') return lenMeaning(i);
-  if (currentDeck === 'bicycle' || currentDeck === 'red') return '';
-  return getMeaning(i);
-}
-
-function openCardModal(i) {
-  if (!flipped[i]) return;
-  const front = document.getElementById(`cf${i}`);
-  if (!front) return;
-  // Clone the rendered card face so it shows exactly as drawn (image or sprite).
-  const clone = front.cloneNode(true);
-  clone.removeAttribute('id');
-  const img = clone.querySelector('img');
-  if (img) img.removeAttribute('id');
-  const holder = document.getElementById('cardModalCard');
-  holder.innerHTML = '';
-  holder.appendChild(clone);
-
-  document.getElementById('cardModalTitle').textContent = cardTitle(i) || 'Card';
-  const body = cardDetailText(i);
-  document.getElementById('cardModalBody').textContent = body || 'No description for this deck.';
-  document.getElementById('cardModal').classList.add('open');
-}
-
-function closeCardModal() {
-  document.getElementById('cardModal').classList.remove('open');
 }
 
 function getMeaning(i) {
@@ -1943,10 +1805,10 @@ const DECK_LABEL = {
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo'
 };
 
-// Capture the full render state of the current spread so it can be replayed.
-function captureSpread() {
+function saveToHistory() {
   const cards = [0,1,2].map(i => document.getElementById(`lbl${i}`).textContent).filter(Boolean);
-  if (cards.length < cardCount) return null;
+  if (cards.length < cardCount) return;
+  // Capture the full render state of each drawn card so the spread can be replayed.
   const slots = [];
   for (let i = 0; i < cardCount; i++) {
     const front = document.getElementById(`cf${i}`);
@@ -1963,12 +1825,13 @@ function captureSpread() {
       rev: front.classList.contains('rev'),
     });
   }
-  return { ts: Date.now(), deck: currentDeck, count: cardCount, cards, slots };
-}
-
-function saveToHistory() {
-  const entry = captureSpread();
-  if (!entry) return;
+  const entry = {
+    ts: Date.now(),
+    deck: currentDeck,
+    count: cardCount,
+    cards,
+    slots,
+  };
   const list = loadHistory();
   list.unshift(entry);
   if (list.length > HISTORY_MAX) list.length = HISTORY_MAX;
@@ -2008,8 +1871,10 @@ function renderHistory() {
   }).join('');
 }
 
-// Apply a captured spread (from history or saved) onto the table and flip it.
-function applySpread(e) {
+// Replay a saved spread from history onto the table.
+function openHistoryEntry(idx) {
+  const list = loadHistory();
+  const e = list[idx];
   if (!e || !Array.isArray(e.slots) || !e.slots.length) return;
 
   closeSettings();
@@ -2018,8 +1883,6 @@ function applySpread(e) {
   switchDeck(e.deck);          // sets currentDeck + body mode classes, runs resetCards()
   hasDrawn = true;
   meaningsVisible = false;
-  // Rebuild drawnLenormand so per-card meanings work for sprite/Russian decks.
-  drawnLenormand = e.slots.map(s => ({ name: s.name, suit: s.suit, rank: s.rank }));
 
   e.slots.forEach((s, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -2049,84 +1912,7 @@ function applySpread(e) {
   });
 
   scheduleFlips(e.slots.length);
-}
-
-// Replay a saved spread from history onto the table.
-function openHistoryEntry(idx) {
-  const e = loadHistory()[idx];
-  if (!e) return;
-  applySpread(e);
   showToast('Showing saved spread');
-}
-
-// ── Saved (named) readings ───────────────────────────────────────────────────
-const SAVED_KEY = 'savedReadings';
-const SAVED_MAX = 50;
-
-function loadSaved() {
-  try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
-}
-
-function saveCurrentReading() {
-  const entry = captureSpread();
-  if (!entry) { showToast('Draw a reading first'); return; }
-  const name = (prompt('Name this reading:', '') || '').trim();
-  if (!name) return;
-  entry.name = name;
-  const list = loadSaved();
-  list.unshift(entry);
-  if (list.length > SAVED_MAX) list.length = SAVED_MAX;
-  localStorage.setItem(SAVED_KEY, JSON.stringify(list));
-  renderSaved();
-  showToast('Reading saved');
-}
-
-function deleteSaved(idx, ev) {
-  if (ev) ev.stopPropagation();
-  const list = loadSaved();
-  list.splice(idx, 1);
-  localStorage.setItem(SAVED_KEY, JSON.stringify(list));
-  renderSaved();
-}
-
-function clearSaved() {
-  localStorage.removeItem(SAVED_KEY);
-  renderSaved();
-}
-
-function openSavedEntry(idx) {
-  const e = loadSaved()[idx];
-  if (!e) return;
-  applySpread(e);
-  showToast('Showing: ' + (e.name || 'saved reading'));
-}
-
-function renderSaved() {
-  const list = loadSaved();
-  const el = document.getElementById('savedList');
-  if (!el) return;
-  if (!list.length) {
-    el.innerHTML = '<div class="history-empty">No saved readings</div>';
-    return;
-  }
-  el.innerHTML = list.map((e, idx) => {
-    const d = new Date(e.ts);
-    const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-    const deck = DECK_LABEL[e.deck] || e.deck;
-    const cardLines = (e.cards || []).map(c => `<span>${c}</span>`).join('');
-    const nm = (e.name || 'Untitled').replace(/</g, '&lt;');
-    return `<div class="history-entry" onclick="openSavedEntry(${idx})" title="Show this reading">
-      <div class="history-entry-meta">
-        <span class="saved-name">${nm}</span>
-        <button class="saved-del" onclick="deleteSaved(${idx}, event)">Delete</button>
-      </div>
-      <div class="history-entry-meta">
-        <span class="history-date">${dateStr}</span>
-        <span class="history-deck">${deck}</span>
-      </div>
-      <div class="history-cards">${cardLines}</div>
-    </div>`;
-  }).join('');
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
@@ -2142,7 +1928,6 @@ function toggleSettings() {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
     renderHistory();
-    renderSaved();
     // keep advanced settings collapsed each time settings opens
     collapseAdvanced();
   }
