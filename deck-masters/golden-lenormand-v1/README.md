@@ -36,3 +36,10 @@ straight upright rectangle, then inset ~14px. Background detection combines
 color-distance from the desk AND a warmth test (cream card R>B vs. cool white
 desk B>R) so light card edges no longer bleed into the white desk (fixed
 cards 2, 3, 6, 7).
+
+## Rounded corners (transparent)
+After deskew, the 4 square corners are cut to the card's real rounded shape via
+a rounded-rectangle alpha mask (radius ≈ 4.5% of the short side, 0.8px feather),
+so the corners are transparent and the app's dark background shows through —
+a floating-card look. golden-back is now a transparent PNG too; golden-mode CSS
+uses transparent card-front + object-fit:contain.
