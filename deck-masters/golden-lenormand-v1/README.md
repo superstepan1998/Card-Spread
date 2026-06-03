@@ -27,3 +27,12 @@ Card order must not be changed without explicit instruction.
 - Card 9 (Flowers) and the back cover were re-photographed (IMG_1802, IMG_1803)
   because the originals ran off the bottom-right edge of the frame; both now
   capture the full card.
+
+## v1 perspective-deskew pass
+Because the camera wasn't perfectly perpendicular, straight rectangular crops
+left background wedges in the corners. Now each card is detected by its 4 real
+corners (min-area rectangle of the card mask) and perspective-warped to a
+straight upright rectangle, then inset ~14px. Background detection combines
+color-distance from the desk AND a warmth test (cream card R>B vs. cool white
+desk B>R) so light card edges no longer bleed into the white desk (fixed
+cards 2, 3, 6, 7).
