@@ -884,6 +884,14 @@
       <button class="count-btn active" id="cnt3" onclick="setCardCount(3)">3</button>
     </div>
   </div>
+  <!-- Meaning system (36-card heirloom deck only) -->
+  <div class="setting-row" id="meaningRow" style="display:none">
+    <span class="setting-label">Meanings</span>
+    <div class="count-picker">
+      <button class="count-btn" id="msLen" onclick="setMeaningSystem('lenormand')">Lenormand</button>
+      <button class="count-btn" id="msRus" onclick="setMeaningSystem('russian')">Гадание</button>
+    </div>
+  </div>
   <!-- Reshuffle -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
@@ -935,7 +943,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 52</div>
+  <div class="deck-count" style="text-align:right">build 53</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1206,6 +1214,53 @@ const LENDATA = {
   'Anchor':     ['Stability, security, work, persistence',            'stability',           '— stably, persistently'],
   'Cross':      ['Burden, fate, suffering, faith, karma',             'burden/fate',         '— as a trial, fatefully'],
 };
+
+// ── Russian gadanie (traditional 36-card playing-card fortune-telling) ──────────
+// Keyed by rank+suit. [0] = Russian label, [1] = Russian meaning.
+const RUSDATA = {
+  // ♥ Червы (love, feelings, home)
+  '6♥':  ['Шестёрка червей',  'Дорога, путь по сердечным делам. Скорая приятная встреча или поездка к близкому человеку.'],
+  '7♥':  ['Семёрка червей',   'Приятное свидание, нежная встреча. Взаимность чувств, гармония в отношениях.'],
+  '8♥':  ['Восьмёрка червей', 'Разговор по душам, признание в чувствах. Согласие и примирение.'],
+  '9♥':  ['Девятка червей',   'Любовь, крепкая взаимная привязанность. Главная карта счастья в чувствах.'],
+  '10♥': ['Десятка червей',   'Исполнение желаний, радость, успех в сердечных и семейных делах.'],
+  'J♥':  ['Валет червей',     'Молодой человек, друг или поклонник. Приятные хлопоты, искренние намерения.'],
+  'Q♥':  ['Дама червей',      'Добрая женщина, подруга или возлюбленная. Забота, тепло, искренняя любовь.'],
+  'K♥':  ['Король червей',    'Влиятельный мужчина с добрым сердцем. Покровитель, любящий человек.'],
+  'A♥':  ['Туз червей',       'Дом, семья, сердечные новости. Письмо или весть, касающаяся чувств.'],
+  // ♦ Бубны (news, money, distance)
+  '6♦':  ['Шестёрка бубён',   'Дальняя дорога, поездка по делам. Перемены, связанные с расстоянием.'],
+  '7♦':  ['Семёрка бубён',    'Приятные новости, небольшая денежная прибыль. Удачные мелкие дела.'],
+  '8♦':  ['Восьмёрка бубён',  'Деловой разговор, поездка ради выгоды. Известие о деньгах.'],
+  '9♦':  ['Девятка бубён',    'Деньги, денежный интерес. Прибыль, но иногда хлопоты и задержки.'],
+  '10♦': ['Десятка бубён',    'Большая удача в делах, крупные деньги, выгодная поездка.'],
+  'J♦':  ['Валет бубён',      'Молодой человек, вестник. Новости, известия, казённые хлопоты.'],
+  'Q♦':  ['Дама бубён',       'Светловолосая женщина, иногда соперница. Энергичная, деловая особа.'],
+  'K♦':  ['Король бубён',     'Светловолосый мужчина, человек при должности или деньгах.'],
+  'A♦':  ['Туз бубён',        'Важное известие, письмо или документ. Новости издалека.'],
+  // ♣ Кресты/Трефы (work, worries, business)
+  '6♣':  ['Шестёрка треф',    'Дорога по работе или делам. Хлопотный, но не пустой путь.'],
+  '7♣':  ['Семёрка треф',     'Мелкие хлопоты, бытовые заботы. Небольшие приятные перемены.'],
+  '8♣':  ['Восьмёрка треф',   'Деловые заботы, разговор о работе. Хлопоты, требующие усилий.'],
+  '9♣':  ['Девятка треф',     'Денежный интерес через труд. Хлопоты, иногда мелкая ссора из-за дел.'],
+  '10♣': ['Десятка треф',     'Перемены к лучшему, успех в делах после трудов. Дальняя удачная дорога.'],
+  'J♣':  ['Валет треф',       'Молодой человек, занятый делами. Хлопотливый помощник или приятель.'],
+  'Q♣':  ['Дама треф',        'Деловая женщина, занятая работой. Иногда соперница в делах.'],
+  'K♣':  ['Король треф',      'Деловой мужчина, начальник или покровитель в работе.'],
+  'A♣':  ['Туз треф',         'Известие о делах или работе. Документ, важная деловая новость.'],
+  // ♠ Пики (troubles, sorrow, obstacles)
+  '6♠':  ['Шестёрка пик',     'Грустная дорога, неприятный путь. Дорога с хлопотами или волнением.'],
+  '7♠':  ['Семёрка пик',      'Слёзы, мелкие неприятности, огорчения. Лёгкая печаль.'],
+  '8♠':  ['Восьмёрка пик',    'Тяжёлый разговор, болезнь или волнение. Неприятное известие.'],
+  '9♠':  ['Девятка пик',      'Удар, потеря, серьёзные неприятности. Самая тяжёлая карта.'],
+  '10♠': ['Десятка пик',      'Печаль, тревога, препятствия. Казённый дом или вынужденные хлопоты.'],
+  'J♠':  ['Валет пик',        'Молодой человек с дурными намерениями. Хлопоты, неискренний знакомый.'],
+  'Q♠':  ['Дама пик',         'Тёмноволосая женщина, иногда завистница или соперница.'],
+  'K♠':  ['Король пик',       'Тёмноволосый мужчина, военный или человек при власти. Иногда недруг.'],
+  'A♠':  ['Туз пик',          'Важная, нередко тревожная весть. Казённая бумага, серьёзное известие.'],
+};
+
+let meaningSystem = localStorage.getItem('meaningSystem') || 'lenormand'; // 'lenormand' | 'russian'
 
 // SVG sprite constants
 const SVG_CARD_W = 359, SVG_CARD_H = 539;
@@ -1603,7 +1658,11 @@ function flip(i) {
   if (navigator.vibrate) navigator.vibrate(8); // subtle tactile tick on reveal
   setTimeout(() => {
     const front = document.getElementById(`cf${i}`);
-    if (currentDeck === 'lenormand' || currentDeck === 'russian') {
+    if (currentDeck === 'russian' && meaningSystem === 'russian') {
+      const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
+      const d = RUSDATA[rs];
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rs;
+    } else if (currentDeck === 'lenormand' || currentDeck === 'russian') {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
@@ -1649,6 +1708,15 @@ function lenMeaning(i) {
   return text;
 }
 
+function rusMeaning(i) {
+  const front = document.getElementById(`cf${i}`);
+  if (!front) return '';
+  const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
+  const d = RUSDATA[rs];
+  if (!d) return rs;
+  return d[0] + '\n\n' + d[1];
+}
+
 function tap(i) {
   const now = Date.now();
   const gap = now - lastTap;
@@ -1688,7 +1756,9 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i) : (currentDeck === 'bicycle' || currentDeck === 'red') ? '' : getMeaning(i);
+      const text = (currentDeck === 'russian' && meaningSystem === 'russian') ? rusMeaning(i)
+                 : (currentDeck === 'lenormand' || currentDeck === 'russian') ? lenMeaning(i)
+                 : (currentDeck === 'bicycle' || currentDeck === 'red') ? '' : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -2035,6 +2105,7 @@ function toggleSettings() {
     document.getElementById('aiKeyInput').value = saved;
     renderHistory();
     renderSaved();
+    syncMeaningRow();
     // keep advanced settings collapsed each time settings opens
     collapseAdvanced();
   }
@@ -2073,6 +2144,41 @@ function switchDeck(deck) {
     }
   }
   resetCards();
+  syncMeaningRow();
+}
+
+// Show the Lenormand/Гадание toggle only on the 36-card heirloom deck.
+function syncMeaningRow() {
+  const row = document.getElementById('meaningRow');
+  if (!row) return;
+  row.style.display = (currentDeck === 'russian') ? '' : 'none';
+  const len = document.getElementById('msLen');
+  const rus = document.getElementById('msRus');
+  if (len) len.classList.toggle('active', meaningSystem === 'lenormand');
+  if (rus) rus.classList.toggle('active', meaningSystem === 'russian');
+}
+
+function setMeaningSystem(sys) {
+  meaningSystem = sys;
+  localStorage.setItem('meaningSystem', sys);
+  syncMeaningRow();
+  // refresh labels/meanings for any already-flipped cards
+  for (let i = 0; i < 3; i++) {
+    if (!flipped[i]) continue;
+    const front = document.getElementById(`cf${i}`);
+    if (!front) continue;
+    if (currentDeck === 'russian' && meaningSystem === 'russian') {
+      const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
+      const d = RUSDATA[rs];
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rs;
+    } else {
+      const name = front.dataset.name || '';
+      const icon = LEN_ICON[name] || '';
+      document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
+    }
+  }
+  // if meanings are currently shown, re-render them
+  if (meaningsVisible) { meaningsVisible = false; toggleAllMeanings(); }
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
