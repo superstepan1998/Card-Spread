@@ -20,3 +20,10 @@ shave ~6px inward to drop any background sliver, resize to 620px wide. Works for
 the neutral blue-gray back too (color-distance is per-image, not a fixed hue).
 
 Card order must not be changed without explicit instruction.
+
+## v1 revisions
+- Re-cropped tighter (plain background-color bbox, ~3px inward shave) to remove
+  the gray surface margin around every card.
+- Card 9 (Flowers) and the back cover were re-photographed (IMG_1802, IMG_1803)
+  because the originals ran off the bottom-right edge of the frame; both now
+  capture the full card.
