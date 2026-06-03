@@ -475,6 +475,22 @@
       transition: color 0.2s;
     }
     .history-clear-btn:hover { color: #888; }
+    /* ── Saved readings ─────────────────────────────────────────────── */
+    .saved-name {
+      color: #c9a84c;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      font-family: 'Palatino Linotype', Palatino, serif;
+    }
+    .saved-del {
+      background: none; border: none;
+      color: #444;
+      font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; padding: 2px 0;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      transition: color 0.2s;
+    }
+    .saved-del:hover { color: #b05050; }
     /* ── Advanced (hidden settings) ─────────────────────────────────── */
     .advanced-toggle {
       background: none;
@@ -873,6 +889,20 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
+  <!-- Save reading -->
+  <div class="reshuffle-row">
+    <button class="reshuffle-btn" onclick="saveCurrentReading()">Save This Reading</button>
+  </div>
+  <!-- Saved readings -->
+  <div class="reshuffle-row">
+    <div class="history-header">
+      <span class="setting-label">Saved</span>
+      <button class="history-clear-btn" onclick="clearSaved()">Clear</button>
+    </div>
+    <div class="history-list" id="savedList">
+      <div class="history-empty">No saved readings</div>
+    </div>
+  </div>
   <!-- History -->
   <div class="reshuffle-row">
     <div class="history-header">
@@ -905,7 +935,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 51</div>
+  <div class="deck-count" style="text-align:right">build 52</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1805,10 +1835,10 @@ const DECK_LABEL = {
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo'
 };
 
-function saveToHistory() {
+// Capture the full render state of the current spread so it can be replayed.
+function captureSpread() {
   const cards = [0,1,2].map(i => document.getElementById(`lbl${i}`).textContent).filter(Boolean);
-  if (cards.length < cardCount) return;
-  // Capture the full render state of each drawn card so the spread can be replayed.
+  if (cards.length < cardCount) return null;
   const slots = [];
   for (let i = 0; i < cardCount; i++) {
     const front = document.getElementById(`cf${i}`);
@@ -1825,13 +1855,12 @@ function saveToHistory() {
       rev: front.classList.contains('rev'),
     });
   }
-  const entry = {
-    ts: Date.now(),
-    deck: currentDeck,
-    count: cardCount,
-    cards,
-    slots,
-  };
+  return { ts: Date.now(), deck: currentDeck, count: cardCount, cards, slots };
+}
+
+function saveToHistory() {
+  const entry = captureSpread();
+  if (!entry) return;
   const list = loadHistory();
   list.unshift(entry);
   if (list.length > HISTORY_MAX) list.length = HISTORY_MAX;
@@ -1871,10 +1900,8 @@ function renderHistory() {
   }).join('');
 }
 
-// Replay a saved spread from history onto the table.
-function openHistoryEntry(idx) {
-  const list = loadHistory();
-  const e = list[idx];
+// Apply a captured spread (from history or saved) onto the table and flip it.
+function applySpread(e) {
   if (!e || !Array.isArray(e.slots) || !e.slots.length) return;
 
   closeSettings();
@@ -1883,6 +1910,8 @@ function openHistoryEntry(idx) {
   switchDeck(e.deck);          // sets currentDeck + body mode classes, runs resetCards()
   hasDrawn = true;
   meaningsVisible = false;
+  // Rebuild drawnLenormand so per-card meanings work for sprite/Russian decks.
+  drawnLenormand = e.slots.map(s => ({ name: s.name, suit: s.suit, rank: s.rank }));
 
   e.slots.forEach((s, i) => {
     const front = document.getElementById(`cf${i}`);
@@ -1912,7 +1941,84 @@ function openHistoryEntry(idx) {
   });
 
   scheduleFlips(e.slots.length);
+}
+
+// Replay a saved spread from history onto the table.
+function openHistoryEntry(idx) {
+  const e = loadHistory()[idx];
+  if (!e) return;
+  applySpread(e);
   showToast('Showing saved spread');
+}
+
+// ── Saved (named) readings ───────────────────────────────────────────────────
+const SAVED_KEY = 'savedReadings';
+const SAVED_MAX = 50;
+
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
+}
+
+function saveCurrentReading() {
+  const entry = captureSpread();
+  if (!entry) { showToast('Draw a reading first'); return; }
+  const name = (prompt('Name this reading:', '') || '').trim();
+  if (!name) return;
+  entry.name = name;
+  const list = loadSaved();
+  list.unshift(entry);
+  if (list.length > SAVED_MAX) list.length = SAVED_MAX;
+  localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+  renderSaved();
+  showToast('Reading saved');
+}
+
+function deleteSaved(idx, ev) {
+  if (ev) ev.stopPropagation();
+  const list = loadSaved();
+  list.splice(idx, 1);
+  localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+  renderSaved();
+}
+
+function clearSaved() {
+  localStorage.removeItem(SAVED_KEY);
+  renderSaved();
+}
+
+function openSavedEntry(idx) {
+  const e = loadSaved()[idx];
+  if (!e) return;
+  applySpread(e);
+  showToast('Showing: ' + (e.name || 'saved reading'));
+}
+
+function renderSaved() {
+  const list = loadSaved();
+  const el = document.getElementById('savedList');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div class="history-empty">No saved readings</div>';
+    return;
+  }
+  el.innerHTML = list.map((e, idx) => {
+    const d = new Date(e.ts);
+    const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+    const deck = DECK_LABEL[e.deck] || e.deck;
+    const cardLines = (e.cards || []).map(c => `<span>${c}</span>`).join('');
+    const nm = (e.name || 'Untitled').replace(/</g, '&lt;');
+    return `<div class="history-entry" onclick="openSavedEntry(${idx})" title="Show this reading">
+      <div class="history-entry-meta">
+        <span class="saved-name">${nm}</span>
+        <button class="saved-del" onclick="deleteSaved(${idx}, event)">Delete</button>
+      </div>
+      <div class="history-entry-meta">
+        <span class="history-date">${dateStr}</span>
+        <span class="history-deck">${deck}</span>
+      </div>
+      <div class="history-cards">${cardLines}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
@@ -1928,6 +2034,7 @@ function toggleSettings() {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
     renderHistory();
+    renderSaved();
     // keep advanced settings collapsed each time settings opens
     collapseAdvanced();
   }
