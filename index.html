@@ -487,8 +487,14 @@
       border: 1px solid #1e1e1e;
       border-radius: 4px;
       padding: 9px 11px;
-      cursor: default;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
     }
+    .history-entry:hover {
+      background: #181818;
+      border-color: #333;
+    }
+    .history-entry:active { background: #0c0c0c; }
     .history-entry-meta {
       display: flex;
       align-items: center;
@@ -1781,10 +1787,29 @@ const DECK_LABEL = {
 function saveToHistory() {
   const cards = [0,1,2].map(i => document.getElementById(`lbl${i}`).textContent).filter(Boolean);
   if (cards.length < cardCount) return;
+  // Capture the full render state of each drawn card so the spread can be replayed.
+  const slots = [];
+  for (let i = 0; i < cardCount; i++) {
+    const front = document.getElementById(`cf${i}`);
+    if (!front) continue;
+    const img = document.getElementById(`img${i}`);
+    slots.push({
+      key: front.dataset.key || '',
+      name: front.dataset.name || '',
+      suit: front.dataset.suit || '',
+      rank: front.dataset.rank || '',
+      src: img ? img.getAttribute('src') : '',
+      style: front.getAttribute('style') || '',
+      cls: front.className,
+      rev: front.classList.contains('rev'),
+    });
+  }
   const entry = {
     ts: Date.now(),
     deck: currentDeck,
+    count: cardCount,
     cards,
+    slots,
   };
   const list = loadHistory();
   list.unshift(entry);
@@ -1808,13 +1833,14 @@ function renderHistory() {
     el.innerHTML = '<div class="history-empty">No readings yet</div>';
     return;
   }
-  el.innerHTML = list.map(e => {
+  el.innerHTML = list.map((e, idx) => {
     const d = new Date(e.ts);
     const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
                   + ' · ' + d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     const deck = DECK_LABEL[e.deck] || e.deck;
     const cardLines = e.cards.map(c => `<span>${c}</span>`).join('');
-    return `<div class="history-entry">
+    const replayable = Array.isArray(e.slots) && e.slots.length;
+    return `<div class="history-entry" ${replayable ? `onclick="openHistoryEntry(${idx})" title="Show this spread"` : ''}>
       <div class="history-entry-meta">
         <span class="history-date">${dateStr}</span>
         <span class="history-deck">${deck}</span>
@@ -1822,6 +1848,50 @@ function renderHistory() {
       <div class="history-cards">${cardLines}</div>
     </div>`;
   }).join('');
+}
+
+// Replay a saved spread from history onto the table.
+function openHistoryEntry(idx) {
+  const list = loadHistory();
+  const e = list[idx];
+  if (!e || !Array.isArray(e.slots) || !e.slots.length) return;
+
+  closeSettings();
+  // Match the card-count layout the spread was drawn in.
+  if (e.count && e.count !== cardCount) setCardCount(e.count);
+  switchDeck(e.deck);          // sets currentDeck + body mode classes, runs resetCards()
+  hasDrawn = true;
+  meaningsVisible = false;
+
+  e.slots.forEach((s, i) => {
+    const front = document.getElementById(`cf${i}`);
+    if (!front) return;
+    // Reset slot
+    document.getElementById(`ci${i}`).classList.remove('flipped');
+    const lbl = document.getElementById(`lbl${i}`); if (lbl) lbl.textContent = '';
+    const mn = document.getElementById(`mn${i}`); if (mn) { mn.textContent = ''; mn.classList.remove('visible'); }
+    flipped[i] = false;
+
+    front.className = s.cls || 'card-front';
+    front.setAttribute('style', s.style || '');
+    if (s.key)  front.dataset.key  = s.key;  else delete front.dataset.key;
+    if (s.name) front.dataset.name = s.name; else delete front.dataset.name;
+    if (s.suit) front.dataset.suit = s.suit; else delete front.dataset.suit;
+    if (s.rank) front.dataset.rank = s.rank; else delete front.dataset.rank;
+
+    front.innerHTML = '';
+    if (s.src) {
+      const el = document.createElement('img');
+      el.id = `img${i}`; el.alt = '';
+      el.src = s.src;
+      front.appendChild(el);
+    } else if (front.classList.contains('russian-pip') || s.style.includes('russian-deck.svg')) {
+      // sprite-based decks render purely via the style; nothing else needed
+    }
+  });
+
+  scheduleFlips(e.slots.length);
+  showToast('Showing saved spread');
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
