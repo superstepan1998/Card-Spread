@@ -475,6 +475,24 @@
       transition: color 0.2s;
     }
     .history-clear-btn:hover { color: #888; }
+    /* ── Advanced (hidden settings) ─────────────────────────────────── */
+    .advanced-toggle {
+      background: none;
+      border: none;
+      color: #3a3a3a;
+      font-size: 0.62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 0;
+      width: 100%;
+      text-align: center;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      transition: color 0.2s;
+    }
+    .advanced-toggle:hover { color: #777; }
+    .advanced-section { display: none; }
+    .advanced-section.open { display: block; }
     .history-list {
       display: flex;
       flex-direction: column;
@@ -865,11 +883,6 @@
       <div class="history-empty">No readings yet</div>
     </div>
   </div>
-  <!-- Birth date -->
-  <div class="ai-key-row">
-    <span class="ai-key-label">Date of Birth</span>
-    <input type="date" class="cosmic-birth-input" id="cBirthInput" value="1998-07-23" style="background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#aaa;font-family:inherit;font-size:0.82rem;padding:5px 8px;outline:none;">
-  </div>
   <!-- Ask Claude -->
   <div class="reshuffle-row">
     <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
@@ -877,13 +890,22 @@
     <div class="ai-loading" id="aiLoading">Reading the cards…</div>
     <div class="ai-response" id="aiResponse"></div>
   </div>
-  <!-- API Key -->
-  <div class="ai-key-row">
-    <span class="ai-key-label">Anthropic API Key</span>
-    <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
+  <!-- Advanced (hidden: birth date + API key) -->
+  <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
+  <div class="advanced-section" id="advancedSection">
+    <!-- Birth date -->
+    <div class="ai-key-row">
+      <span class="ai-key-label">Date of Birth</span>
+      <input type="date" class="cosmic-birth-input" id="cBirthInput" value="1998-07-23" style="background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#aaa;font-family:inherit;font-size:0.82rem;padding:5px 8px;outline:none;">
+    </div>
+    <!-- API Key -->
+    <div class="ai-key-row">
+      <span class="ai-key-label">Anthropic API Key</span>
+      <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 49</div>
+  <div class="deck-count" style="text-align:right">build 50</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1907,10 +1929,21 @@ function toggleSettings() {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
     renderHistory();
+    // keep advanced settings collapsed each time settings opens
+    collapseAdvanced();
     // close cosmic if open
     document.getElementById('cosmicPanel').classList.remove('open');
     document.getElementById('btnCosmic').classList.remove('active');
   }
+}
+function collapseAdvanced() {
+  document.getElementById('advancedSection').classList.remove('open');
+  document.getElementById('advancedToggle').textContent = 'Advanced ▾';
+}
+function toggleAdvanced() {
+  const sec = document.getElementById('advancedSection');
+  const open = sec.classList.toggle('open');
+  document.getElementById('advancedToggle').textContent = open ? 'Advanced ▴' : 'Advanced ▾';
 }
 
 // ── Deck switch ────────────────────────────────────────────────────────────
