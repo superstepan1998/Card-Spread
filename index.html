@@ -857,14 +857,6 @@
 <div class="toast" id="toast"></div>
 
 <div class="settings-panel" id="settingsPanel">
-  <!-- Reversed toggle (Tarot only) -->
-  <div class="setting-row rev-toggle">
-    <span class="setting-label">Reversed</span>
-    <label class="toggle-wrap">
-      <input type="checkbox" id="revToggle">
-      <div class="toggle-track"><div class="toggle-thumb"></div></div>
-    </label>
-  </div>
   <!-- Deck picker -->
   <div class="setting-row">
     <div class="deck-picker">
@@ -883,6 +875,14 @@
       <button class="count-btn" id="cnt1" onclick="setCardCount(1)">1</button>
       <button class="count-btn active" id="cnt3" onclick="setCardCount(3)">3</button>
     </div>
+  </div>
+  <!-- Reversed toggle (Tarot only) -->
+  <div class="setting-row rev-toggle">
+    <span class="setting-label">Reversed</span>
+    <label class="toggle-wrap">
+      <input type="checkbox" id="revToggle">
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </label>
   </div>
   <!-- Meaning system (36-card heirloom deck only) -->
   <div class="setting-row" id="meaningRow" style="display:none">
@@ -943,7 +943,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 53</div>
+  <div class="deck-count" style="text-align:right">build 54</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -1714,7 +1714,8 @@ function rusMeaning(i) {
   const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
   const d = RUSDATA[rs];
   if (!d) return rs;
-  return d[0] + '\n\n' + d[1];
+  // Title is already shown as the card label above — return only the meaning text.
+  return d[1];
 }
 
 function tap(i) {
