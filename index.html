@@ -905,7 +905,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 50</div>
+  <div class="deck-count" style="text-align:right">build 51</div>
 </div>
 
 <!-- Cosmic Panel -->
@@ -935,7 +935,6 @@
   <button class="btn-ai" id="btnCopy" onclick="copyCards()" title="Copy cards">
     <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
   </button>
-  <button class="btn-cosmic" id="btnCosmic" onclick="toggleCosmic()" title="Cosmic context">🌙</button>
   <button class="btn-settings" id="btnSettings" onclick="toggleSettings()">
     <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
   </button>
@@ -1931,9 +1930,6 @@ function toggleSettings() {
     renderHistory();
     // keep advanced settings collapsed each time settings opens
     collapseAdvanced();
-    // close cosmic if open
-    document.getElementById('cosmicPanel').classList.remove('open');
-    document.getElementById('btnCosmic').classList.remove('active');
   }
 }
 function collapseAdvanced() {
@@ -2131,6 +2127,7 @@ function renderCosmic() {
 function toggleCosmic() {
   const panel = document.getElementById('cosmicPanel');
   const btn   = document.getElementById('btnCosmic');
+  if (!panel || !btn) return;
   const isOpen = panel.classList.toggle('open');
   btn.classList.toggle('active', isOpen);
   if (isOpen) {
@@ -2158,6 +2155,7 @@ if (savedCount === 1) setCardCount(1);
 document.addEventListener('click', e => {
   const panel = document.getElementById('cosmicPanel');
   const btn   = document.getElementById('btnCosmic');
+  if (!panel || !btn) return;
   if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
     panel.classList.remove('open');
     btn.classList.remove('active');
