@@ -449,6 +449,9 @@
       text-align: center;
     }
     .reshuffle-btn:hover { color: #ffcccc; border-color: #ee3030; background: #991010; }
+    /* Save reading — light green */
+    .save-btn { background: #1e4a1e; border-color: #4caf50; color: #a8e6a8; }
+    .save-btn:hover { background: #2a6a2a; border-color: #6ad06a; color: #d4ffd4; }
     .deck-count {
       color: #444;
       font-family: 'Palatino Linotype', Palatino, serif;
@@ -880,9 +883,9 @@
       <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
       <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Атласные</button>
       <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
-      <button class="deck-btn" id="btnGolden" onclick="switchDeck('golden')">Golden</button>
       <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')">Bicycle</button>
       <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Bicycle JUMBO</button>
+      <button class="deck-btn" id="btnGolden" onclick="switchDeck('golden')">Golden</button>
     </div>
   </div>
   <!-- Card count -->
@@ -916,7 +919,7 @@
   </div>
   <!-- Save reading -->
   <div class="reshuffle-row">
-    <button class="reshuffle-btn" onclick="saveCurrentReading()">Save This Reading</button>
+    <button class="reshuffle-btn save-btn" onclick="saveCurrentReading()">Save This Reading</button>
   </div>
   <!-- Saved readings -->
   <div class="reshuffle-row">
@@ -960,7 +963,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 61</div>
+  <div class="deck-count" style="text-align:right">build 62</div>
 </div>
 
 <!-- Cosmic Panel -->
