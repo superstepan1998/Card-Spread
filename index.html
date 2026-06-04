@@ -832,7 +832,7 @@
     </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 66</div>
+  <div class="deck-count" style="text-align:right">build 67</div>
 </div>
 
 
@@ -1541,7 +1541,8 @@ function drawLenormand() {
 // ── Flip ───────────────────────────────────────────────────────────────────
 // Decks that map to the 36 playing cards and offer the Lenormand/Гадание toggle.
 function usesMeaningToggle() {
-  return currentDeck === 'russian' || currentDeck === 'golden';
+  return currentDeck === 'russian' || currentDeck === 'golden' ||
+         currentDeck === 'lenormand' || currentDeck === 'bicycle' || currentDeck === 'red';
 }
 
 function flip(i) {
@@ -1554,16 +1555,10 @@ function flip(i) {
       const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
       const d = RUSDATA[rs];
       document.getElementById(`lbl${i}`).textContent = d ? d[0] : rs;
-    } else if (currentDeck === 'lenormand' || currentDeck === 'russian' || currentDeck === 'golden') {
+    } else if (usesMeaningToggle()) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
-    } else if (currentDeck === 'bicycle' || currentDeck === 'red') {
-      const r = front.dataset.rank;
-      const s = front.dataset.suit;
-      const rn = BIKE_RANK_NAME[r] || r;
-      const sn = BIKE_SUIT_NAME[s] || s;
-      document.getElementById(`lbl${i}`).textContent = `${rn} of ${sn}`;
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
@@ -1650,8 +1645,8 @@ function toggleAllMeanings() {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
       const text = (usesMeaningToggle() && meaningSystem === 'russian') ? rusMeaning(i)
-                 : (currentDeck === 'lenormand' || currentDeck === 'russian' || currentDeck === 'golden') ? lenMeaning(i)
-                 : (currentDeck === 'bicycle' || currentDeck === 'red') ? '' : getMeaning(i);
+                 : usesMeaningToggle() ? lenMeaning(i)
+                 : getMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
@@ -2041,11 +2036,11 @@ function switchDeck(deck) {
   syncMeaningRow();
 }
 
-// Show the Lenormand/Гадание toggle only on the 36-card heirloom / golden decks.
+// Show the Lenormand/Гадание toggle on all 36-card playing-card decks.
 function syncMeaningRow() {
   const row = document.getElementById('meaningRow');
   if (!row) return;
-  row.style.display = (currentDeck === 'russian' || currentDeck === 'golden') ? '' : 'none';
+  row.style.display = usesMeaningToggle() ? '' : 'none';
   const len = document.getElementById('msLen');
   const rus = document.getElementById('msRus');
   if (len) len.classList.toggle('active', meaningSystem === 'lenormand');
