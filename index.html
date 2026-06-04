@@ -799,7 +799,6 @@
   <div class="reshuffle-row">
     <div class="history-header">
       <span class="setting-label">Saved</span>
-      <button class="history-clear-btn" onclick="clearSaved()">Clear</button>
     </div>
     <div class="history-list" id="savedList">
       <div class="history-empty">No saved readings</div>
@@ -830,9 +829,13 @@
       <span class="ai-key-label">Anthropic API Key</span>
       <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
     </div>
+    <!-- Clear saved readings -->
+    <div class="reshuffle-row">
+      <button class="reshuffle-btn" onclick="clearSaved()">Clear Saved Readings</button>
+    </div>
   </div>
   <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 67</div>
+  <div class="deck-count" style="text-align:right">build 68</div>
 </div>
 
 
