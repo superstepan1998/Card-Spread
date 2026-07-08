@@ -67,15 +67,21 @@
 
     /* First-use hint (fades away after the first draw) */
     .first-hint {
-      color: #55503f;
+      position: fixed;
+      bottom: calc(74px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 88vw;
+      color: #6b6450;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
       font-size: 0.72rem;
       letter-spacing: 2px;
       text-transform: uppercase;
       text-align: center;
-      margin-top: 18px;
       transition: opacity 0.8s;
       pointer-events: none;
+      z-index: 50;
     }
     .first-hint.gone { opacity: 0; }
 
@@ -587,6 +593,16 @@
     .ai-loading.visible { display: block; }
     @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
 
+    /* ── Short screens (phones): keep all three cards on screen ────── */
+    @media (max-height: 900px) and (max-width: 759px) {
+      body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+      .card-wrap { width: 140px; height: 240px; }
+      .card-info { height: 240px; }
+      .marseille-mode .card-wrap { width: 128px; }
+      .bicycle-mode .card-wrap { width: 152px; }
+      .red-mode .card-wrap { width: 140px; }
+    }
+
     /* ── Wide screens: cards side by side, text underneath ────────── */
     @media (min-width: 760px) {
       body { justify-content: center; }
@@ -806,7 +822,7 @@
   </div>
 </div>
 
-<div class="first-hint" id="firstHint">Tap a card to reveal &nbsp;·&nbsp; double-tap for a new spread</div>
+<div class="first-hint" id="firstHint">Tap to reveal &nbsp;·&nbsp; double-tap to redraw</div>
 
 <div class="toast" id="toast"></div>
 
