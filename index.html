@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0a0a0a">
@@ -19,7 +19,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 6px 16px 80px;
+      padding: calc(6px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
     }
 
     /* ── Spread ────────────────────────────────────────────────── */
@@ -61,7 +61,23 @@
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
+      transition: filter 0.15s;
     }
+    .card-wrap:active { filter: brightness(1.18); }   /* tactile press feedback */
+
+    /* First-use hint (fades away after the first draw) */
+    .first-hint {
+      color: #55503f;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 18px;
+      transition: opacity 0.8s;
+      pointer-events: none;
+    }
+    .first-hint.gone { opacity: 0; }
 
     /* Lenormand cards are narrower in ratio; adjust height */
     .lenormand-mode .card-wrap {
@@ -139,21 +155,23 @@
 
     /* ── Card label (Lenormand name) ────────────────────────────── */
     .card-label {
-      color: #eee;
+      color: #e8ddc8;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
       font-size: 1.05rem;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       text-align: left;
       min-height: 0;
+      word-spacing: 4px;   /* breathing room after the emoji */
     }
 
     /* ── Card meaning (tap to reveal) ──────────────────────────── */
     .meaning-text {
-      color: #ddd;
+      color: #c6c0b4;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 1rem;
-      line-height: 1.6;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 46ch;
       text-align: left;
       white-space: pre-line;
       display: none;
@@ -163,8 +181,8 @@
     /* ── Controls ───────────────────────────────────────────────── */
     .controls {
       position: fixed;
-      bottom: 24px;
-      right: 20px;
+      bottom: calc(24px + env(safe-area-inset-bottom));
+      right: calc(20px + env(safe-area-inset-right));
       display: flex;
       align-items: center;
       gap: 10px;
@@ -178,15 +196,15 @@
       padding: 13px;
       line-height: 0;
     }
-    .btn-settings svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
+    .btn-settings svg { width: 22px; height: 22px; fill: #8a8578; transition: fill 0.2s; }
     .btn-settings:hover svg { fill: #888; }
     .btn-settings.active svg { fill: #ddd; }
 
     /* Settings panel */
     .settings-panel {
       position: fixed;
-      bottom: 80px;
-      right: 20px;
+      bottom: calc(80px + env(safe-area-inset-bottom));
+      right: calc(20px + env(safe-area-inset-right));
       display: none;
       flex-direction: column;
       gap: 20px;
@@ -196,9 +214,15 @@
       border-radius: 6px;
       min-width: 260px;
       max-width: calc(100vw - 40px);
-      max-height: 80vh;
+      max-height: 78vh;
       overflow-y: auto;
       z-index: 100;
+    }
+    /* Quiet divider between settings sections */
+    .set-div {
+      border: none;
+      border-top: 1px solid #222;
+      margin: 2px 0;
     }
     .settings-panel.open { display: flex; }
 
@@ -206,6 +230,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 14px;
     }
     .setting-label {
       color: #ccc;
@@ -240,10 +265,16 @@
       font-size: 0.72rem;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      padding: 5px 9px;
+      padding: 7px 9px;
       cursor: pointer;
       transition: all 0.2s;
+      opacity: 0.62;               /* inactive decks recede… */
     }
+    .deck-btn.active {
+      opacity: 1;                  /* …the active deck pops */
+      box-shadow: 0 0 12px -3px currentColor;
+    }
+    .deck-btn:hover { opacity: 0.85; }
     .deck-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
     .deck-btn:hover:not(.active) { color: #aaa; border-color: #444; }
     /* Lenormand white */
@@ -346,12 +377,13 @@
     .history-clear-btn {
       background: none;
       border: none;
-      color: #444;
+      color: #55503f;
       font-size: 0.65rem;
       letter-spacing: 1px;
       text-transform: uppercase;
       cursor: pointer;
-      padding: 2px 0;
+      padding: 8px 6px;
+      margin: -6px -6px -6px 0;
       font-family: 'Palatino Linotype', Palatino, serif;
       transition: color 0.2s;
     }
@@ -451,7 +483,7 @@
       padding: 13px;
       line-height: 0;
     }
-    .btn-ai svg { width: 20px; height: 20px; fill: #555; transition: fill 0.2s; }
+    .btn-ai svg { width: 22px; height: 22px; fill: #8a8578; transition: fill 0.2s; }
     .btn-ai:hover svg { fill: #888; }
     .btn-ai.active svg { fill: #c8a96e; }
 
@@ -554,6 +586,33 @@
     }
     .ai-loading.visible { display: block; }
     @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    /* ── Wide screens: cards side by side, text underneath ────────── */
+    @media (min-width: 760px) {
+      body { justify-content: center; }
+      .spread {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 36px;
+        max-width: 1100px;
+      }
+      .slot {
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        flex: 0 1 240px;
+      }
+      .card-info, .lenormand-mode .card-info {
+        height: auto;
+        max-height: 44vh;
+        overflow-y: auto;
+        align-items: center;
+        text-align: center;
+      }
+      .card-label, .meaning-text { text-align: center; }
+      .one-card .spread { justify-content: center; }
+    }
 
     /* ── Toast ─────────────────────────────────────────────────── */
     .toast {
@@ -747,6 +806,8 @@
   </div>
 </div>
 
+<div class="first-hint" id="firstHint">Tap a card to reveal &nbsp;·&nbsp; double-tap for a new spread</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="settings-panel" id="settingsPanel">
@@ -786,6 +847,7 @@
       <button class="count-btn" id="msRus" onclick="setMeaningSystem('russian')">Гадание</button>
     </div>
   </div>
+  <hr class="set-div">
   <!-- Reshuffle -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
@@ -814,6 +876,7 @@
       <div class="history-empty">No readings yet</div>
     </div>
   </div>
+  <hr class="set-div">
   <!-- Ask Claude -->
   <div class="reshuffle-row">
     <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
@@ -833,9 +896,9 @@
     <div class="reshuffle-row">
       <button class="reshuffle-btn" onclick="clearSaved()">Clear Saved Readings</button>
     </div>
+    <!-- Version -->
+    <div class="deck-count" style="text-align:right">build 69</div>
   </div>
-  <!-- Version -->
-  <div class="deck-count" style="text-align:right">build 68</div>
 </div>
 
 
@@ -1325,6 +1388,7 @@ function draw() {
   hasDrawn = true;
   meaningsVisible = false;
   closeSettings();
+  dismissHint();
   for (let i = 0; i < 3; i++) {
     document.getElementById(`ci${i}`).classList.remove('flipped');
     document.getElementById(`lbl${i}`).textContent = '';
@@ -1577,7 +1641,7 @@ function lenMeaning(i) {
   const d = LENDATA[name];
   if (!d) return name;
   let text = d[0];
-  const sep = '\n\n───────────\n';
+  const sep = '\n\n·  ·  ·\n';
   if (i === 0 && drawnLenormand[1]) {
     const nb = drawnLenormand[1].name;
     const db = LENDATA[nb];
@@ -2086,6 +2150,19 @@ document.addEventListener('click', (e) => {
 // Restore saved card count (1 or 3)
 const savedCount = parseInt(localStorage.getItem('cardCount'), 10);
 if (savedCount === 1) setCardCount(1);
+
+// First-use hint: shown until the first draw ever, then gone for good.
+function dismissHint() {
+  const h = document.getElementById('firstHint');
+  if (!h) return;
+  localStorage.setItem('hintSeen', '1');
+  h.classList.add('gone');
+  setTimeout(() => h.remove(), 900);
+}
+if (localStorage.getItem('hintSeen')) {
+  const h = document.getElementById('firstHint');
+  if (h) h.remove();
+}
 
 // ── Image fallback ───────────────────────────────────────────────────────
 // If a remote card image fails (CDN down / offline), show rank+suit or name
