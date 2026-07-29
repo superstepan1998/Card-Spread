@@ -630,6 +630,51 @@
       .one-card .spread { justify-content: center; }
     }
 
+    /* ── Backdrop scrim (phone bottom sheet) ─────────────────────── */
+    #scrim {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 99;
+      display: none;
+    }
+
+    /* Armed (tap-again-to-confirm) state for destructive buttons */
+    .armed, .saved-del.armed, .history-clear-btn.armed {
+      color: #ff8070 !important;
+      font-weight: bold;
+    }
+
+    /* ── Phones: settings as a bottom sheet, bigger touch targets ──── */
+    @media (max-width: 759px) {
+      #scrim.open { display: block; }
+      .settings-panel {
+        bottom: 0; left: 0; right: 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        border: none;
+        border-top: 1px solid #2a2a2a;
+        border-radius: 18px 18px 0 0;
+        padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
+        max-height: 84vh;
+      }
+      .settings-panel.open { animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0.33, 1); }
+      .settings-panel::before {           /* grab handle */
+        content: '';
+        align-self: center;
+        width: 42px; height: 4px;
+        border-radius: 2px;
+        background: #333;
+        flex-shrink: 0;
+      }
+      .deck-btn { padding: 10px 10px; font-size: 0.76rem; }
+      .count-btn { padding: 8px 14px; font-size: 0.8rem; }
+      .history-entry { padding: 12px 13px; }
+      /* sheet covers the floating controls while open */
+      .settings-panel.open ~ .controls { opacity: 0; pointer-events: none; }
+    }
+    @keyframes sheetUp { from { transform: translateY(42px); opacity: 0.4; } }
+
     /* ── Toast ─────────────────────────────────────────────────── */
     .toast {
       position: fixed;
@@ -826,6 +871,8 @@
 
 <div class="toast" id="toast"></div>
 
+<div id="scrim" onclick="closeSettings()"></div>
+
 <div class="settings-panel" id="settingsPanel">
   <!-- Deck picker -->
   <div class="setting-row">
@@ -886,7 +933,7 @@
   <div class="reshuffle-row">
     <div class="history-header">
       <span class="setting-label">History</span>
-      <button class="history-clear-btn" onclick="clearHistory()">Clear</button>
+      <button class="history-clear-btn" onclick="confirmTap(this, event, clearHistory)">Clear</button>
     </div>
     <div class="history-list" id="historyList">
       <div class="history-empty">No readings yet</div>
@@ -910,15 +957,18 @@
     </div>
     <!-- Clear saved readings -->
     <div class="reshuffle-row">
-      <button class="reshuffle-btn" onclick="clearSaved()">Clear Saved Readings</button>
+      <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 69</div>
+    <div class="deck-count" style="text-align:right">build 70</div>
   </div>
 </div>
 
 
 <div class="controls" id="controls">
+  <button class="btn-ai" id="btnDraw" onclick="draw()" title="New spread">
+    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8c0-2.21-.9-4.21-2.35-5.65z"/></svg>
+  </button>
   <button class="btn-ai" id="btnCopy" onclick="copyCards()" title="Copy cards">
     <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
   </button>
@@ -1739,6 +1789,29 @@ function toggleAllMeanings() {
 }
 
 
+// Two-tap confirmation for destructive buttons: first tap arms ("Sure?"),
+// second tap within 2.6s executes; otherwise it reverts.
+function confirmTap(btn, ev, fn) {
+  if (ev) ev.stopPropagation();
+  if (btn.dataset.armed) {
+    clearTimeout(btn._confirmT);
+    delete btn.dataset.armed;
+    btn.classList.remove('armed');
+    btn.textContent = btn.dataset.orig;
+    fn();
+    return;
+  }
+  btn.dataset.armed = '1';
+  btn.dataset.orig = btn.textContent;
+  btn.textContent = 'Sure?';
+  btn.classList.add('armed');
+  btn._confirmT = setTimeout(() => {
+    delete btn.dataset.armed;
+    btn.classList.remove('armed');
+    btn.textContent = btn.dataset.orig;
+  }, 2600);
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -2051,7 +2124,7 @@ function renderSaved() {
     return `<div class="history-entry" onclick="openSavedEntry(${idx})" title="Show this reading">
       <div class="history-entry-meta">
         <span class="saved-name">${nm}</span>
-        <button class="saved-del" onclick="deleteSaved(${idx}, event)">Delete</button>
+        <button class="saved-del" onclick="confirmTap(this, event, () => deleteSaved(${idx}, null))">Delete</button>
       </div>
       <div class="history-entry-meta">
         <span class="history-date">${dateStr}</span>
@@ -2066,11 +2139,13 @@ function renderSaved() {
 function closeSettings() {
   document.getElementById('settingsPanel').classList.remove('open');
   document.getElementById('btnSettings').classList.remove('active');
+  document.getElementById('scrim').classList.remove('open');
 }
 function toggleSettings() {
   const panel = document.getElementById('settingsPanel');
   panel.classList.toggle('open');
   document.getElementById('btnSettings').classList.toggle('active');
+  document.getElementById('scrim').classList.toggle('open', panel.classList.contains('open'));
   if (panel.classList.contains('open')) {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
