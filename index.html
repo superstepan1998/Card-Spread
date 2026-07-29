@@ -242,7 +242,9 @@
     .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
 
     /* Deck picker */
-    .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    /* odd last deck button spans the full row, centered */
+    .deck-picker .deck-btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
     .deck-btn {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -648,6 +650,9 @@
         background: #333;
         flex-shrink: 0;
       }
+      /* The Атласные deck draws from an SVG sprite calibrated for a 160px
+         box — keep that exact width so cards don't shift sideways. */
+      body.lenormand-mode:not(.russian-mode):not(.golden-mode):not(.bicycle-mode):not(.red-mode) .card-wrap { width: 160px; }
       .deck-btn { padding: 13px 10px; font-size: 0.82rem; }
       .count-btn { padding: 10px 18px; font-size: 0.9rem; }
       .history-entry { padding: 14px 15px; }
@@ -863,13 +868,13 @@
   <!-- Deck picker -->
   <div class="setting-row">
     <div class="deck-picker">
-      <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
+      <button class="deck-btn" id="btnGolden" onclick="switchDeck('golden')">Golden</button>
       <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
       <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Атласные</button>
       <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
       <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')">Bicycle</button>
       <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Bicycle JUMBO</button>
-      <button class="deck-btn" id="btnGolden" onclick="switchDeck('golden')">Golden</button>
+      <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
     </div>
   </div>
   <!-- Card count -->
@@ -946,7 +951,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 71</div>
+    <div class="deck-count" style="text-align:right">build 72</div>
   </div>
 </div>
 
