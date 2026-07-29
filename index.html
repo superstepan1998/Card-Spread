@@ -65,25 +65,6 @@
     }
     .card-wrap:active { filter: brightness(1.18); }   /* tactile press feedback */
 
-    /* First-use hint (fades away after the first draw) */
-    .first-hint {
-      position: fixed;
-      bottom: calc(74px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      width: max-content;
-      max-width: 88vw;
-      color: #6b6450;
-      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 0.72rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-align: center;
-      transition: opacity 0.8s;
-      pointer-events: none;
-      z-index: 50;
-    }
-    .first-hint.gone { opacity: 0; }
 
     /* Lenormand cards are narrower in ratio; adjust height */
     .lenormand-mode .card-wrap {
@@ -163,7 +144,7 @@
     .card-label {
       color: #e8ddc8;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 1.05rem;
+      font-size: 1.22rem;
       letter-spacing: 2px;
       text-transform: uppercase;
       text-align: left;
@@ -175,8 +156,8 @@
     .meaning-text {
       color: #c6c0b4;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 0.95rem;
-      line-height: 1.7;
+      font-size: 0.84rem;
+      line-height: 1.55;
       max-width: 46ch;
       text-align: left;
       white-space: pre-line;
@@ -667,9 +648,16 @@
         background: #333;
         flex-shrink: 0;
       }
-      .deck-btn { padding: 10px 10px; font-size: 0.76rem; }
-      .count-btn { padding: 8px 14px; font-size: 0.8rem; }
-      .history-entry { padding: 12px 13px; }
+      .deck-btn { padding: 13px 10px; font-size: 0.82rem; }
+      .count-btn { padding: 10px 18px; font-size: 0.9rem; }
+      .history-entry { padding: 14px 15px; }
+      .saved-name { font-size: 0.95rem; }
+      .history-cards { font-size: 0.88rem; }
+      .history-date, .history-deck { font-size: 0.72rem; }
+      .saved-del, .history-clear-btn { font-size: 0.78rem; }
+      .reshuffle-btn { padding: 11px 9px; font-size: 0.8rem; }
+      .setting-label { font-size: 1.05rem; }
+      .advanced-toggle { font-size: 0.72rem; padding: 10px 0; }
       /* sheet covers the floating controls while open */
       .settings-panel.open ~ .controls { opacity: 0; pointer-events: none; }
     }
@@ -867,8 +855,6 @@
   </div>
 </div>
 
-<div class="first-hint" id="firstHint">Tap to reveal &nbsp;·&nbsp; double-tap to redraw</div>
-
 <div class="toast" id="toast"></div>
 
 <div id="scrim" onclick="closeSettings()"></div>
@@ -960,7 +946,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 70</div>
+    <div class="deck-count" style="text-align:right">build 71</div>
   </div>
 </div>
 
@@ -1454,7 +1440,6 @@ function draw() {
   hasDrawn = true;
   meaningsVisible = false;
   closeSettings();
-  dismissHint();
   for (let i = 0; i < 3; i++) {
     document.getElementById(`ci${i}`).classList.remove('flipped');
     document.getElementById(`lbl${i}`).textContent = '';
@@ -2241,19 +2226,6 @@ document.addEventListener('click', (e) => {
 // Restore saved card count (1 or 3)
 const savedCount = parseInt(localStorage.getItem('cardCount'), 10);
 if (savedCount === 1) setCardCount(1);
-
-// First-use hint: shown until the first draw ever, then gone for good.
-function dismissHint() {
-  const h = document.getElementById('firstHint');
-  if (!h) return;
-  localStorage.setItem('hintSeen', '1');
-  h.classList.add('gone');
-  setTimeout(() => h.remove(), 900);
-}
-if (localStorage.getItem('hintSeen')) {
-  const h = document.getElementById('firstHint');
-  if (h) h.remove();
-}
 
 // ── Image fallback ───────────────────────────────────────────────────────
 // If a remote card image fails (CDN down / offline), show rank+suit or name
