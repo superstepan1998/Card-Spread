@@ -189,6 +189,7 @@
 
     /* Settings panel */
     .settings-panel {
+      transform: translateZ(0); /* own compositing layer above 3D card layers */
       position: fixed;
       bottom: calc(80px + env(safe-area-inset-bottom));
       right: calc(20px + env(safe-area-inset-right));
@@ -668,6 +669,8 @@
       .advanced-toggle { font-size: 0.72rem; padding: 10px 0; }
       /* sheet covers the floating controls while open */
       .settings-panel.open ~ .controls { opacity: 0; pointer-events: none; }
+      /* no 3D card layers behind the sheet/gallery (kills compositor bleed) */
+      body.sheet-open .spread { visibility: hidden; }
     }
     @keyframes sheetUp { from { transform: translateY(42px); opacity: 0.4; } }
 
@@ -676,7 +679,7 @@
     .view-btn:hover { background: #1c3350; border-color: #4a80b8; color: #b0d0f0; }
     .deck-gallery {
       position: fixed; inset: 0;
-      background: rgba(8,8,12,0.97);
+      background: rgb(10,10,14);
       z-index: 300;
       display: none;
       flex-direction: column;
@@ -941,6 +944,38 @@
 <div id="scrim" onclick="closeSettings()"></div>
 
 <div class="settings-panel" id="settingsPanel">
+  <!-- Save reading -->
+  <div class="reshuffle-row">
+    <button class="reshuffle-btn save-btn" onclick="saveCurrentReading()">Save This Reading</button>
+  </div>
+    <!-- Saved readings -->
+  <div class="reshuffle-row">
+    <div class="history-header">
+      <span class="setting-label">Saved</span>
+    </div>
+    <div class="history-list" id="savedList">
+      <div class="history-empty">No saved readings</div>
+    </div>
+  </div>
+    <!-- History -->
+  <div class="reshuffle-row">
+    <div class="history-header">
+      <span class="setting-label">History</span>
+      <button class="history-clear-btn" onclick="confirmTap(this, event, clearHistory)">Clear</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No readings yet</div>
+    </div>
+  </div>
+    <hr class="set-div">
+  <!-- Ask Claude -->
+  <div class="reshuffle-row">
+    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
+    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
+    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
+    <div class="ai-response" id="aiResponse"></div>
+  </div>
+    <hr class="set-div">
   <!-- Deck picker -->
   <div class="setting-row">
     <div class="deck-picker">
@@ -954,7 +989,7 @@
       <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
     </div>
   </div>
-  <!-- Card count -->
+    <!-- Card count -->
   <div class="setting-row">
     <span class="setting-label">Cards</span>
     <div class="count-picker">
@@ -962,7 +997,7 @@
       <button class="count-btn active" id="cnt3" onclick="setCardCount(3)">3</button>
     </div>
   </div>
-  <!-- Reversed toggle (Tarot only) -->
+    <!-- Reversed toggle (Tarot only) -->
   <div class="setting-row rev-toggle">
     <span class="setting-label">Reversed</span>
     <label class="toggle-wrap">
@@ -970,7 +1005,7 @@
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
     </label>
   </div>
-  <!-- Meaning system (36-card heirloom deck only) -->
+    <!-- Meaning system (36-card heirloom deck only) -->
   <div class="setting-row" id="meaningRow" style="display:none">
     <span class="setting-label">Meanings</span>
     <div class="count-picker">
@@ -978,48 +1013,16 @@
       <button class="count-btn" id="msRus" onclick="setMeaningSystem('russian')">Гадание</button>
     </div>
   </div>
-  <!-- View all cards -->
+    <!-- View all cards -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn view-btn" onclick="viewDeck()">View All Cards</button>
   </div>
-  <hr class="set-div">
-  <!-- Reshuffle -->
+    <!-- Reshuffle -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
-  <!-- Save reading -->
-  <div class="reshuffle-row">
-    <button class="reshuffle-btn save-btn" onclick="saveCurrentReading()">Save This Reading</button>
-  </div>
-  <!-- Saved readings -->
-  <div class="reshuffle-row">
-    <div class="history-header">
-      <span class="setting-label">Saved</span>
-    </div>
-    <div class="history-list" id="savedList">
-      <div class="history-empty">No saved readings</div>
-    </div>
-  </div>
-  <!-- History -->
-  <div class="reshuffle-row">
-    <div class="history-header">
-      <span class="setting-label">History</span>
-      <button class="history-clear-btn" onclick="confirmTap(this, event, clearHistory)">Clear</button>
-    </div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">No readings yet</div>
-    </div>
-  </div>
-  <hr class="set-div">
-  <!-- Ask Claude -->
-  <div class="reshuffle-row">
-    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
-    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
-    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
-    <div class="ai-response" id="aiResponse"></div>
-  </div>
-  <!-- Advanced (hidden: API key) -->
+    <!-- Advanced (hidden: API key) -->
   <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
   <div class="advanced-section" id="advancedSection">
     <!-- API Key -->
@@ -1032,7 +1035,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 74</div>
+    <div class="deck-count" style="text-align:right">build 75</div>
   </div>
 </div>
 
@@ -2293,15 +2296,18 @@ function viewDeck() {
   }).join('');
   const g = document.getElementById('deckGallery');
   g.classList.add('open');
+  document.body.classList.add('sheet-open');
   document.getElementById('galleryGrid').scrollTop = 0;
 }
 
 function closeGallery() {
   document.getElementById('deckGallery').classList.remove('open');
+  document.body.classList.remove('sheet-open');
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
 function closeSettings() {
+  document.body.classList.remove('sheet-open');
   document.getElementById('settingsPanel').classList.remove('open');
   document.getElementById('btnSettings').classList.remove('active');
   document.getElementById('scrim').classList.remove('open');
@@ -2311,6 +2317,7 @@ function toggleSettings() {
   panel.classList.toggle('open');
   document.getElementById('btnSettings').classList.toggle('active');
   document.getElementById('scrim').classList.toggle('open', panel.classList.contains('open'));
+  document.body.classList.toggle('sheet-open', panel.classList.contains('open'));
   if (panel.classList.contains('open')) {
     const saved = localStorage.getItem(AI_KEY_LS) || '';
     document.getElementById('aiKeyInput').value = saved;
