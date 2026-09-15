@@ -244,7 +244,7 @@
     /* Deck picker */
     .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
     /* odd last deck button spans the full row, centered */
-    .deck-picker .deck-btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    #btnCopag, #btnTarot { grid-column: 1 / -1; }
     .deck-btn {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -291,6 +291,10 @@
     #btnGolden { background: #3a0808; border-color: #7a1414; color: #c86060; }
     #btnGolden.active { background: #5a0c0c; border-color: #a01c1c; color: #e89090; }
     #btnGolden:hover:not(.active) { background: #4a0a0a; border-color: #8a1818; color: #d87878; }
+    /* Copag 4 Colour — teal */
+    #btnCopag { background: #0a3a34; border-color: #2a9a86; color: #7fd6c2; }
+    #btnCopag.active { background: #0f5248; border-color: #3fc0a8; color: #b2f0de; }
+    #btnCopag:hover:not(.active) { background: #0c463e; border-color: #34ad96; color: #98e2d0; }
     /* Russian beige */
     #btnRussian { background: #4a3f2c; border-color: #c8b088; color: #ecd9b4; }
     #btnRussian.active { background: #5e503a; border-color: #e6caa0; color: #f8ecd0; }
@@ -652,7 +656,7 @@
       }
       /* The Атласные deck draws from an SVG sprite calibrated for a 160px
          box — keep that exact width so cards don't shift sideways. */
-      body.lenormand-mode:not(.russian-mode):not(.golden-mode):not(.bicycle-mode):not(.red-mode) .card-wrap { width: 160px; }
+      body.lenormand-mode:not(.russian-mode):not(.golden-mode):not(.bicycle-mode):not(.red-mode):not(.copag-mode) .card-wrap { width: 160px; }
       .deck-btn { padding: 13px 10px; font-size: 0.82rem; }
       .count-btn { padding: 10px 18px; font-size: 0.9rem; }
       .history-entry { padding: 14px 15px; }
@@ -765,6 +769,19 @@
       object-fit: contain;
       border-radius: 4px;
     }
+    /* Copag 4 Colour — rounded-corner cards (transparent corners) */
+    .copag-mode .card-back {
+      background: url('cp_back.png') center / contain no-repeat;
+      box-shadow: none;
+    }
+    .copag-mode .card-front {
+      background: transparent;
+      box-shadow: none;
+    }
+    .copag-mode .card-front img {
+      object-fit: contain;
+    }
+
     /* Golden Lenormand — rounded-corner cards (transparent corners) */
     .golden-mode .card-back {
       background: url('golden-back.png?v=5') center / contain no-repeat;
@@ -874,6 +891,7 @@
       <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
       <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')">Bicycle</button>
       <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Bicycle JUMBO</button>
+      <button class="deck-btn" id="btnCopag" onclick="switchDeck('copag')">Copag 4 Colour</button>
       <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
     </div>
   </div>
@@ -951,7 +969,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 72</div>
+    <div class="deck-count" style="text-align:right">build 73</div>
   </div>
 </div>
 
@@ -1400,10 +1418,21 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null };
+const deckRemaining = { tarot: null, marseille: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null };
+
+// Full 52-card pool for the Copag 4 Colour deck
+const COPAG52 = [];
+for (const suit of ['♣','♦','♥','♠']) {
+  for (const rank of ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']) {
+    COPAG52.push({ rank, suit });
+  }
+}
+const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
 
 function deckSource(name) {
-  return (name === 'tarot' || name === 'marseille') ? TAROT : LENORMAND; // bicycle/red reuse LENORMAND (same 36-card pool)
+  if (name === 'tarot' || name === 'marseille') return TAROT;
+  if (name === 'copag') return COPAG52;
+  return LENORMAND; // bicycle/red reuse LENORMAND (same 36-card pool)
 }
 
 // Fisher–Yates: uniform, unbiased shuffle (sort(()=>random-0.5) is not)
@@ -1456,6 +1485,7 @@ function draw() {
   if (currentDeck === 'lenormand') drawLenormand();
   else if (currentDeck === 'russian') drawRussian();
   else if (currentDeck === 'golden') drawGolden();
+  else if (currentDeck === 'copag') drawCopag();
   else if (currentDeck === 'bicycle') drawBicycle();
   else if (currentDeck === 'red') drawRed();
   else if (currentDeck === 'marseille') drawMarseille();
@@ -1608,6 +1638,24 @@ function redUrl(rank, suit) {
   return `${RED_BASE}${sn}${rn}.svg`;
 }
 
+function drawCopag() {
+  const shuffled = pickCards('copag', cardCount);
+  shuffled.forEach((card, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    delete front.dataset.name; delete front.dataset.key;
+    front.dataset.suit = card.suit;
+    front.dataset.rank = String(card.rank);
+    front.innerHTML = '';
+    const el = document.createElement('img');
+    el.id = `img${i}`; el.alt = '';
+    el.src = `cp_${card.rank}${COPAG_SUIT_FILE[card.suit]}.png`;
+    front.appendChild(el);
+  });
+  scheduleFlips(shuffled.length);
+}
+
 function drawBicycle() {
   const shuffled = pickCards('bicycle', cardCount);
   drawnLenormand = shuffled;
@@ -1682,6 +1730,11 @@ function flip(i) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
+    } else if (currentDeck === 'copag') {
+      const r = front.dataset.rank, su = front.dataset.suit;
+      const rn = BIKE_RANK_NAME[r] || r;
+      const sn = BIKE_SUIT_NAME[su] || su;
+      document.getElementById(`lbl${i}`).textContent = `${rn} of ${sn}`;
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
@@ -1936,7 +1989,8 @@ const HISTORY_MAX = 30;
 
 const DECK_LABEL = {
   tarot:'Tarot', marseille:'Marseille', lenormand:'Lenormand',
-  russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo'
+  russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
+  golden:'Golden', copag:'Copag 4 Colour'
 };
 
 // Capture the full render state of the current spread so it can be replayed.
@@ -2164,10 +2218,11 @@ function switchDeck(deck) {
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('russian-mode', deck === 'russian');
   document.body.classList.toggle('golden-mode', deck === 'golden');
+  document.body.classList.toggle('copag-mode', deck === 'copag');
   document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
   document.body.classList.toggle('red-mode', deck === 'red');
 
-  ['tarot', 'marseille', 'lenormand', 'russian', 'golden', 'bicycle', 'red'].forEach(d => {
+  ['tarot', 'marseille', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
