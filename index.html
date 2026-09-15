@@ -244,7 +244,6 @@
     /* Deck picker */
     .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
     /* odd last deck button spans the full row, centered */
-    #btnCopag, #btnTarot { grid-column: 1 / -1; }
     .deck-btn {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
@@ -672,6 +671,57 @@
     }
     @keyframes sheetUp { from { transform: translateY(42px); opacity: 0.4; } }
 
+    /* ── Deck gallery (view all cards) ───────────────────────────── */
+    .view-btn { background: #16283a; border-color: #3a6a9a; color: #8fb8e0; }
+    .view-btn:hover { background: #1c3350; border-color: #4a80b8; color: #b0d0f0; }
+    .deck-gallery {
+      position: fixed; inset: 0;
+      background: rgba(8,8,12,0.97);
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+    }
+    .deck-gallery.open { display: flex; }
+    .gallery-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: calc(10px + env(safe-area-inset-top)) 18px 10px;
+      flex-shrink: 0;
+    }
+    .gallery-title {
+      color: #c9a84c;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 1rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .gallery-close {
+      background: none; border: none; color: #888;
+      font-size: 1.6rem; line-height: 1;
+      padding: 10px 12px; margin: -6px -8px;
+      cursor: pointer;
+    }
+    .gallery-close:hover { color: #ddd; }
+    .gallery-grid {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(106px, 1fr));
+      gap: 14px 10px;
+      padding: 6px 16px calc(28px + env(safe-area-inset-bottom));
+    }
+    .g-cell { text-align: center; }
+    .g-cell img { width: 100%; height: auto; display: block; border-radius: 6px; }
+    .g-spritewrap { width: 106px; height: 159px; overflow: hidden; margin: 0 auto; border-radius: 6px; }
+    .g-sprite { width: 160px; height: 240px; transform: scale(0.6625); transform-origin: top left; }
+    .g-lbl {
+      color: #b0a890;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     /* ── Toast ─────────────────────────────────────────────────── */
     .toast {
       position: fixed;
@@ -877,6 +927,15 @@
   </div>
 </div>
 
+<!-- Deck gallery -->
+<div class="deck-gallery" id="deckGallery">
+  <div class="gallery-head">
+    <span class="gallery-title" id="galleryTitle"></span>
+    <button class="gallery-close" onclick="closeGallery()">✕</button>
+  </div>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div id="scrim" onclick="closeSettings()"></div>
@@ -918,6 +977,10 @@
       <button class="count-btn" id="msLen" onclick="setMeaningSystem('lenormand')">Lenormand</button>
       <button class="count-btn" id="msRus" onclick="setMeaningSystem('russian')">Гадание</button>
     </div>
+  </div>
+  <!-- View all cards -->
+  <div class="reshuffle-row">
+    <button class="reshuffle-btn view-btn" onclick="viewDeck()">View All Cards</button>
   </div>
   <hr class="set-div">
   <!-- Reshuffle -->
@@ -969,7 +1032,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 73</div>
+    <div class="deck-count" style="text-align:right">build 74</div>
   </div>
 </div>
 
@@ -1988,7 +2051,7 @@ const HISTORY_KEY = 'readingHistory';
 const HISTORY_MAX = 30;
 
 const DECK_LABEL = {
-  tarot:'Tarot', marseille:'Marseille', lenormand:'Lenormand',
+  tarot:'Tarot', marseille:'Marseille', lenormand:'Атласные',
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
   golden:'Golden', copag:'Copag 4 Colour'
 };
@@ -2177,6 +2240,64 @@ function renderSaved() {
       <div class="history-cards">${cardLines}</div>
     </div>`;
   }).join('');
+}
+
+// ── Deck gallery (view all cards) ───────────────────────────────────────────
+function gallerySuitColor(suit) {
+  if (currentDeck === 'copag')
+    return {'♣':'#4caf50','♦':'#42a5f5','♥':'#ef5350','♠':'#e8e8e8'}[suit];
+  return (suit === '♥' || suit === '♦') ? '#ef5350' : '#e8e8e8';
+}
+
+function galleryItems() {
+  const items = [];
+  if (currentDeck === 'tarot' || currentDeck === 'marseille') {
+    for (const img of TAROT) {
+      const key = img.replace('.jpg', '');
+      const src = WIKI + (currentDeck === 'marseille' ? (MARSEILLE_MAP[key] || img) : img);
+      items.push({ src, label: (MEANINGS[key] || key).split('\n')[0] });
+    }
+  } else if (currentDeck === 'russian' || currentDeck === 'golden' || currentDeck === 'lenormand') {
+    for (const c of LENORMAND) {
+      const rs = String(c.rank) + c.suit;
+      const label = (meaningSystem === 'russian' && RUSDATA[rs])
+        ? RUSDATA[rs][0]
+        : `${LEN_ICON[c.name] || ''} ${c.name}`;
+      if (currentDeck === 'russian') items.push({ src: RUSSIAN_LOCAL[rs], label });
+      else if (currentDeck === 'golden') items.push({ src: `golden_${c.name}.png`, label });
+      else items.push({ sprite: spriteStyle(c.suit, c.rank), label });
+    }
+  } else {
+    // full 52-card view for bicycle / red / copag
+    for (const c of COPAG52) {
+      const label = `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>`;
+      let src;
+      if (currentDeck === 'bicycle') src = bikeUrl(c.rank, c.suit);
+      else if (currentDeck === 'red') src = redUrl(c.rank, c.suit);
+      else src = `cp_${c.rank}${COPAG_SUIT_FILE[c.suit]}.png`;
+      items.push({ src, label });
+    }
+  }
+  return items;
+}
+
+function viewDeck() {
+  closeSettings();
+  const items = galleryItems();
+  document.getElementById('galleryTitle').textContent =
+    `${DECK_LABEL[currentDeck] || currentDeck} · ${items.length} cards`;
+  document.getElementById('galleryGrid').innerHTML = items.map(it => {
+    if (it.sprite)
+      return `<div class="g-cell"><div class="g-spritewrap"><div class="g-sprite" style="${it.sprite}"></div></div><div class="g-lbl">${it.label}</div></div>`;
+    return `<div class="g-cell"><img loading="lazy" src="${it.src}" alt=""><div class="g-lbl">${it.label}</div></div>`;
+  }).join('');
+  const g = document.getElementById('deckGallery');
+  g.classList.add('open');
+  document.getElementById('galleryGrid').scrollTop = 0;
+}
+
+function closeGallery() {
+  document.getElementById('deckGallery').classList.remove('open');
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
