@@ -1035,7 +1035,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 76</div>
+    <div class="deck-count" style="text-align:right">build 77</div>
   </div>
 </div>
 
@@ -1494,14 +1494,10 @@ for (const suit of ['♣','♦','♥','♠']) {
   }
 }
 const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
-// rank+suit -> Lenormand card name (only the 36 mapped cards; 2-5 have none)
-const LEN_BY_RS = {};
-for (const c of LENORMAND) LEN_BY_RS[String(c.rank) + c.suit] = c.name;
 
 function deckSource(name) {
   if (name === 'tarot' || name === 'marseille') return TAROT;
-  if (name === 'copag') return COPAG52;
-  return LENORMAND; // bicycle/red reuse LENORMAND (same 36-card pool)
+  return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
 }
 
 // Fisher–Yates: uniform, unbiased shuffle (sort(()=>random-0.5) is not)
@@ -1709,16 +1705,15 @@ function redUrl(rank, suit) {
 
 function drawCopag() {
   const shuffled = pickCards('copag', cardCount);
-  drawnLenormand = shuffled.map(c => ({ name: LEN_BY_RS[String(c.rank) + c.suit] || null, suit: c.suit, rank: c.rank }));
+  drawnLenormand = shuffled;
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
     front.className = 'card-front';
     front.style.cssText = '';
-    delete front.dataset.name; delete front.dataset.key;
+    delete front.dataset.key;
+    front.dataset.name = card.name;
     front.dataset.suit = card.suit;
     front.dataset.rank = String(card.rank);
-    const lenName = LEN_BY_RS[String(card.rank) + card.suit];
-    if (lenName) front.dataset.name = lenName;
     front.innerHTML = '';
     const el = document.createElement('img');
     el.id = `img${i}`; el.alt = '';
