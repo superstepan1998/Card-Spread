@@ -359,7 +359,7 @@
     }
 
     /* Hide reversed row in Lenormand mode */
-    .lenormand-mode .rev-toggle { display: none; }
+    .lenormand-mode .rev-toggle, .copag-mode .rev-toggle { display: none; }
 
     /* ── History ──────────────────────────────────────────────────── */
     .history-header {
@@ -968,14 +968,6 @@
     </div>
   </div>
     <hr class="set-div">
-  <!-- Ask Claude -->
-  <div class="reshuffle-row">
-    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
-    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
-    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
-    <div class="ai-response" id="aiResponse"></div>
-  </div>
-    <hr class="set-div">
   <!-- Deck picker -->
   <div class="setting-row">
     <div class="deck-picker">
@@ -1022,6 +1014,14 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
+    <hr class="set-div">
+  <!-- Ask Claude -->
+  <div class="reshuffle-row">
+    <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
+    <button class="ai-send-btn" id="aiSendBtn" onclick="askClaude()">Ask Claude</button>
+    <div class="ai-loading" id="aiLoading">Reading the cards…</div>
+    <div class="ai-response" id="aiResponse"></div>
+  </div>
     <!-- Advanced (hidden: API key) -->
   <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
   <div class="advanced-section" id="advancedSection">
@@ -1035,7 +1035,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 75</div>
+    <div class="deck-count" style="text-align:right">build 76</div>
   </div>
 </div>
 
@@ -1494,6 +1494,9 @@ for (const suit of ['♣','♦','♥','♠']) {
   }
 }
 const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
+// rank+suit -> Lenormand card name (only the 36 mapped cards; 2-5 have none)
+const LEN_BY_RS = {};
+for (const c of LENORMAND) LEN_BY_RS[String(c.rank) + c.suit] = c.name;
 
 function deckSource(name) {
   if (name === 'tarot' || name === 'marseille') return TAROT;
@@ -1706,6 +1709,7 @@ function redUrl(rank, suit) {
 
 function drawCopag() {
   const shuffled = pickCards('copag', cardCount);
+  drawnLenormand = shuffled.map(c => ({ name: LEN_BY_RS[String(c.rank) + c.suit] || null, suit: c.suit, rank: c.rank }));
   shuffled.forEach((card, i) => {
     const front = document.getElementById(`cf${i}`);
     front.className = 'card-front';
@@ -1713,6 +1717,8 @@ function drawCopag() {
     delete front.dataset.name; delete front.dataset.key;
     front.dataset.suit = card.suit;
     front.dataset.rank = String(card.rank);
+    const lenName = LEN_BY_RS[String(card.rank) + card.suit];
+    if (lenName) front.dataset.name = lenName;
     front.innerHTML = '';
     const el = document.createElement('img');
     el.id = `img${i}`; el.alt = '';
@@ -1779,7 +1785,8 @@ function drawLenormand() {
 // Decks that map to the 36 playing cards and offer the Lenormand/Гадание toggle.
 function usesMeaningToggle() {
   return currentDeck === 'russian' || currentDeck === 'golden' ||
-         currentDeck === 'lenormand' || currentDeck === 'bicycle' || currentDeck === 'red';
+         currentDeck === 'lenormand' || currentDeck === 'bicycle' ||
+         currentDeck === 'red' || currentDeck === 'copag';
 }
 
 function flip(i) {
@@ -1788,19 +1795,18 @@ function flip(i) {
   if (navigator.vibrate) navigator.vibrate(8); // subtle tactile tick on reveal
   setTimeout(() => {
     const front = document.getElementById(`cf${i}`);
+    const rankSuitLbl = () => {
+      const r = front.dataset.rank, su = front.dataset.suit;
+      return `${BIKE_RANK_NAME[r] || r} of ${BIKE_SUIT_NAME[su] || su}`;
+    };
     if (usesMeaningToggle() && meaningSystem === 'russian') {
       const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
       const d = RUSDATA[rs];
-      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rs;
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rankSuitLbl();
     } else if (usesMeaningToggle()) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
-      document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
-    } else if (currentDeck === 'copag') {
-      const r = front.dataset.rank, su = front.dataset.suit;
-      const rn = BIKE_RANK_NAME[r] || r;
-      const sn = BIKE_SUIT_NAME[su] || su;
-      document.getElementById(`lbl${i}`).textContent = `${rn} of ${sn}`;
+      document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
@@ -1842,9 +1848,8 @@ function rusMeaning(i) {
   if (!front) return '';
   const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
   const d = RUSDATA[rs];
-  if (!d) return rs;
   // Title is already shown as the card label above — return only the meaning text.
-  return d[1];
+  return d ? d[1] : '';
 }
 
 function tap(i) {
@@ -2387,14 +2392,18 @@ function setMeaningSystem(sys) {
     if (!flipped[i]) continue;
     const front = document.getElementById(`cf${i}`);
     if (!front) continue;
+    const rankSuitLbl = () => {
+      const r = front.dataset.rank, su = front.dataset.suit;
+      return `${BIKE_RANK_NAME[r] || r} of ${BIKE_SUIT_NAME[su] || su}`;
+    };
     if (usesMeaningToggle() && meaningSystem === 'russian') {
       const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
       const d = RUSDATA[rs];
-      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rs;
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rankSuitLbl();
     } else {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
-      document.getElementById(`lbl${i}`).textContent = icon ? `${icon} ${name}` : name;
+      document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
     }
   }
   // if meanings are currently shown, re-render them
