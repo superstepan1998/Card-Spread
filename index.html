@@ -1049,12 +1049,17 @@
       <span class="ai-key-label">Anthropic API Key</span>
       <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
     </div>
+    <!-- Backup: sync between devices via export/import code -->
+    <div class="reshuffle-row">
+      <button class="reshuffle-btn view-btn" onclick="exportData()">Export Data</button>
+      <button class="reshuffle-btn view-btn" onclick="importData()">Import Data</button>
+    </div>
     <!-- Clear saved readings -->
     <div class="reshuffle-row">
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 81</div>
+    <div class="deck-count" style="text-align:right">build 82</div>
   </div>
 </div>
 
@@ -2344,6 +2349,61 @@ function viewDeck() {
 function closeGallery() {
   document.getElementById('deckGallery').classList.remove('open');
   document.body.classList.remove('sheet-open');
+}
+
+// ── Backup: export/import all data as a portable code ────────────────────────
+const BACKUP_LIST_KEYS = { savedReadings: 50, readingHistory: 30 };
+const BACKUP_VALUE_KEYS = ['cardCount', 'meaningSystem', AI_KEY_LS];
+
+function exportData() {
+  const data = { v: 1, t: Date.now() };
+  for (const k of [...Object.keys(BACKUP_LIST_KEYS), ...BACKUP_VALUE_KEYS]) {
+    const v = localStorage.getItem(k);
+    if (v !== null) data[k] = v;
+  }
+  const code = 'TAROT1.' + btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const fallback = () => prompt('Copy your backup code:', code);
+  if (navigator.share) {
+    navigator.share({ text: code }).then(() => showToast('Backup shared'))
+      .catch(() => {
+        if (navigator.clipboard) navigator.clipboard.writeText(code).then(() => showToast('Backup copied')).catch(fallback);
+        else fallback();
+      });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => showToast('Backup copied')).catch(fallback);
+  } else fallback();
+}
+
+function importData() {
+  const code = (prompt('Paste backup code:') || '').trim();
+  if (!code) return;
+  try {
+    const raw = code.startsWith('TAROT1.') ? code.slice(7) : code;
+    const data = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    // merge reading lists by timestamp (no data lost on either device)
+    for (const [key, cap] of Object.entries(BACKUP_LIST_KEYS)) {
+      if (data[key] === undefined) continue;
+      let incoming = []; let cur = [];
+      try { incoming = JSON.parse(data[key]) || []; } catch {}
+      try { cur = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
+      const seen = new Set(cur.map(e => e && e.ts));
+      for (const e of incoming) if (e && !seen.has(e.ts)) cur.push(e);
+      cur.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      if (cur.length > cap) cur.length = cap;
+      localStorage.setItem(key, JSON.stringify(cur));
+    }
+    for (const k of BACKUP_VALUE_KEYS)
+      if (data[k] !== undefined) localStorage.setItem(k, data[k]);
+    // apply imported settings live
+    const cc = parseInt(localStorage.getItem('cardCount'), 10);
+    if (cc === 1 || cc === 3) setCardCount(cc);
+    meaningSystem = localStorage.getItem('meaningSystem') || meaningSystem;
+    syncMeaningRow();
+    renderSaved(); renderHistory();
+    showToast('Backup imported');
+  } catch (e) {
+    showToast('Invalid backup code');
+  }
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
