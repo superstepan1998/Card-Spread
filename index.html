@@ -1059,7 +1059,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 82</div>
+    <div class="deck-count" style="text-align:right">build 83</div>
   </div>
 </div>
 
@@ -2041,10 +2041,10 @@ async function askClaude() {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 600,
+        model: 'claude-sonnet-5',
+        max_tokens: 700,
         stream: true,
-        system: 'You are an insightful tarot reader. Interpret the spread in relation to the question. Be direct, poetic, and grounded. Weave the cards together into a unified reading — do not list them separately. Keep it under 180 words.',
+        system: 'You are an insightful card reader. Interpret the spread in relation to the question, following the tradition of the deck in use (Tarot, Lenormand, or Russian playing-card fortune-telling). Be direct, poetic, and grounded. Weave the cards together into a unified reading — do not list them separately. Reply in the same language as the question (default to Russian if there is no question). Keep it under 180 words.',
         messages: [{ role: 'user', content: userMsg }],
       }),
     });
