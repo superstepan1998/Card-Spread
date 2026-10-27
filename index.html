@@ -409,6 +409,30 @@
       transition: color 0.2s;
     }
     .history-clear-btn:hover { color: #888; }
+    /* Swipe-to-delete rows (iOS style) */
+    .swipe-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    .swipe-del {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 88px;
+      border: none;
+      background: rgba(215,60,55,0.9);
+      color: #fff;
+      font-family: 'Palatino Linotype', Palatino, serif;
+      font-size: 0.78rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .swipe-wrap .history-entry {
+      position: relative;
+      z-index: 1;
+      touch-action: pan-y;
+      will-change: transform;
+    }
     /* Saved / History tab switcher */
     .list-tabs-row {
       display: flex;
@@ -1035,7 +1059,6 @@
         <button class="list-tab active" id="tabSaved" onclick="setListTab('saved')">Saved</button>
         <button class="list-tab" id="tabHistory" onclick="setListTab('history')">History</button>
       </div>
-      <button class="history-clear-btn" id="histClearBtn" style="display:none" onclick="confirmTap(this, event, clearHistory)">Clear</button>
     </div>
     <div class="history-list" id="savedList">
       <div class="history-empty">No saved readings</div>
@@ -1121,7 +1144,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 88</div>
+    <div class="deck-count" style="text-align:right">build 89</div>
   </div>
 </div>
 
@@ -2202,6 +2225,67 @@ function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
 
+function deleteHistory(idx) {
+  const list = loadHistory();
+  list.splice(idx, 1);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  renderHistory();
+}
+
+// iOS-style swipe-to-delete: drag left reveals Delete; a long swipe deletes.
+function attachSwipe(listId, delFn) {
+  document.querySelectorAll('#' + listId + ' .swipe-wrap').forEach(wrap => {
+    const entry = wrap.querySelector('.history-entry');
+    if (!entry) return;
+    const idx = parseInt(entry.dataset.idx, 10);
+    const OPEN_X = -88;
+    let startX = 0, startY = 0, dx = 0, dragging = false, horiz = null, open = false, swiped = false;
+
+    entry.addEventListener('pointerdown', e => {
+      startX = e.clientX; startY = e.clientY;
+      dragging = true; horiz = null; swiped = false;
+      entry.style.transition = 'none';
+    });
+    entry.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const mx = e.clientX - startX, my = e.clientY - startY;
+      if (horiz === null && (Math.abs(mx) > 8 || Math.abs(my) > 8)) horiz = Math.abs(mx) > Math.abs(my);
+      if (!horiz) return;
+      try { entry.setPointerCapture(e.pointerId); } catch {}
+      dx = Math.min(0, Math.max(-150, (open ? OPEN_X : 0) + mx));
+      entry.style.transform = `translateX(${dx}px)`;
+      e.preventDefault();
+    });
+    const finish = () => {
+      if (!dragging) return;
+      dragging = false;
+      entry.style.transition = 'transform 0.22s';
+      if (horiz) {
+        swiped = true;                  // eat the ghost click right after the drag…
+        setTimeout(() => { swiped = false; }, 150);   // …but only that one
+        if (dx < -130) {               // long swipe: delete straight away
+          entry.style.transform = 'translateX(-110%)';
+          setTimeout(() => delFn(idx), 170);
+          return;
+        }
+        open = dx < -48;
+      }
+      entry.style.transform = open ? `translateX(${OPEN_X}px)` : 'translateX(0)';
+    };
+    entry.addEventListener('pointerup', finish);
+    entry.addEventListener('pointercancel', finish);
+    // a swipe (or an open row) must not trigger the replay click
+    entry.addEventListener('click', e => {
+      if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; return; }
+      if (open) {                       // tap on an open row closes it
+        e.stopPropagation(); e.preventDefault();
+        open = false;
+        entry.style.transform = 'translateX(0)';
+      }
+    }, true);
+  });
+}
+
 function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
@@ -2221,14 +2305,15 @@ function renderHistory() {
     const deck = DECK_LABEL[e.deck] || e.deck;
     const cardLines = e.cards.map(c => `<span>${c}</span>`).join('');
     const replayable = Array.isArray(e.slots) && e.slots.length;
-    return `<div class="history-entry" ${replayable ? `onclick="openHistoryEntry(${idx})" title="Show this spread"` : ''}>
+    return `<div class="swipe-wrap"><button class="swipe-del" onclick="deleteHistory(${idx})">Delete</button><div class="history-entry" data-idx="${idx}" ${replayable ? `onclick="openHistoryEntry(${idx})" title="Show this spread"` : ''}>
       <div class="history-entry-meta">
         <span class="history-date">${dateStr}</span>
         <span class="history-deck">${deck}</span>
       </div>
       <div class="history-cards">${cardLines}</div>
-    </div>`;
+    </div></div>`;
   }).join('');
+  attachSwipe('historyList', deleteHistory);
 }
 
 // Apply a captured spread (from history or saved) onto the table and flip it.
@@ -2338,7 +2423,7 @@ function renderSaved() {
     const deck = DECK_LABEL[e.deck] || e.deck;
     const cardLines = (e.cards || []).map(c => `<span>${c}</span>`).join('');
     const nm = (e.name || 'Untitled').replace(/</g, '&lt;');
-    return `<div class="history-entry" onclick="openSavedEntry(${idx})" title="Show this reading">
+    return `<div class="swipe-wrap"><button class="swipe-del" onclick="deleteSaved(${idx}, event)">Delete</button><div class="history-entry" data-idx="${idx}" onclick="openSavedEntry(${idx})" title="Show this reading">
       <div class="history-entry-meta">
         <span class="saved-name">${nm}</span>
         <button class="saved-del" onclick="confirmTap(this, event, () => deleteSaved(${idx}, null))">Delete</button>
@@ -2348,8 +2433,9 @@ function renderSaved() {
         <span class="history-deck">${deck}</span>
       </div>
       <div class="history-cards">${cardLines}</div>
-    </div>`;
+    </div></div>`;
   }).join('');
+  attachSwipe('savedList', i => deleteSaved(i, null));
 }
 
 // ── Deck gallery (view all cards) ───────────────────────────────────────────
@@ -2475,7 +2561,6 @@ function setListTab(t) {
   document.getElementById('tabHistory').classList.toggle('active', t === 'history');
   document.getElementById('savedList').style.display = t === 'saved' ? '' : 'none';
   document.getElementById('historyList').style.display = t === 'history' ? '' : 'none';
-  document.getElementById('histClearBtn').style.display = t === 'history' ? '' : 'none';
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
