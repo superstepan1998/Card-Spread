@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0b0a10">
   <title>Tarot</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     /* liquid-glass ambience: two soft color glows behind everything */
     body::before, body::after {
       content: '';
@@ -211,8 +211,9 @@
       right: calc(20px + env(safe-area-inset-right));
       display: none;
       flex-direction: column;
-      gap: 20px;
+      gap: 10px;
       padding: 20px 24px;
+      overflow: hidden;
       background: rgba(255,255,255,0.07);
       -webkit-backdrop-filter: blur(26px) saturate(150%);
       backdrop-filter: blur(26px) saturate(150%);
@@ -222,12 +223,35 @@
       min-width: 260px;
       max-width: calc(100vw - 40px);
       max-height: 78vh;
-      overflow-y: auto;
       z-index: 100;
     }
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
       .settings-panel { background: rgba(24,26,34,0.97); }
       .deck-gallery { background: rgb(12,13,20); }
+    }
+    .sheet-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .sheet-handle {
+      display: none;           /* visible on phones only */
+      justify-content: center;
+      padding: 4px 0 10px;
+      flex-shrink: 0;
+      touch-action: none;
+      cursor: grab;
+    }
+    .sheet-handle::after {
+      content: '';
+      width: 46px; height: 5px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.3);
     }
     /* Quiet divider between settings sections */
     .set-div {
@@ -287,6 +311,8 @@
       box-shadow: 0 0 12px -3px currentColor;
     }
     .deck-btn:hover { opacity: 0.85; }
+    .deck-btn:active, .count-btn:active, .reshuffle-btn:active { transform: scale(0.965); }
+    .list-tab:active { opacity: 0.65; }
     .deck-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
     .deck-btn:hover:not(.active) { color: #aaa; border-color: #444; }
     /* Lenormand white */
@@ -732,18 +758,11 @@
         border: none;
         border-top: 1px solid rgba(255,255,255,0.16);
         border-radius: 28px 28px 0 0;
-        padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
+        padding: 10px 22px calc(24px + env(safe-area-inset-bottom));
         max-height: 84vh;
       }
       .settings-panel.open { animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0.33, 1); }
-      .settings-panel::before {           /* grab handle */
-        content: '';
-        align-self: center;
-        width: 42px; height: 4px;
-        border-radius: 2px;
-        background: rgba(255,255,255,0.3);
-        flex-shrink: 0;
-      }
+      .sheet-handle { display: flex; }
       /* The Атласные deck draws from an SVG sprite calibrated for a 160px
          box — keep that exact width so cards don't shift sideways. */
       body.lenormand-mode:not(.russian-mode):not(.golden-mode):not(.bicycle-mode):not(.red-mode):not(.copag-mode) .card-wrap { width: 160px; }
@@ -1052,6 +1071,8 @@
 <div id="scrim" onclick="closeSettings()"></div>
 
 <div class="settings-panel" id="settingsPanel">
+  <div class="sheet-handle" id="sheetHandle"></div>
+  <div class="sheet-scroll" id="sheetScroll">
   <!-- Save reading -->
   <div class="reshuffle-row">
     <button class="reshuffle-btn save-btn" onclick="saveCurrentReading()">Save This Reading</button>
@@ -1148,7 +1169,8 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 91</div>
+    <div class="deck-count" style="text-align:right">build 92</div>
+  </div>
   </div>
 </div>
 
@@ -2236,12 +2258,30 @@ function deleteHistory(idx) {
   renderHistory();
 }
 
+// Row removal animation: slide out, then collapse the row's height.
+function animateRemove(wrap, entry, done) {
+  entry.style.transition = 'transform 0.2s ease-in';
+  entry.style.transform = 'translateX(-110%)';
+  wrap.style.height = wrap.offsetHeight + 'px';
+  wrap.style.transition = 'height 0.24s ease 0.08s, opacity 0.24s ease 0.08s';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    wrap.style.height = '0px';
+    wrap.style.opacity = '0';
+  }));
+  setTimeout(done, 360);
+}
+
 // iOS-style swipe-to-delete: drag left reveals Delete; a long swipe deletes.
 function attachSwipe(listId, delFn) {
   document.querySelectorAll('#' + listId + ' .swipe-wrap').forEach(wrap => {
     const entry = wrap.querySelector('.history-entry');
     if (!entry) return;
     const idx = parseInt(entry.dataset.idx, 10);
+    const delBtn = wrap.querySelector('.swipe-del');
+    if (delBtn) delBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      animateRemove(wrap, entry, () => delFn(idx));
+    });
     const OPEN_X = -88;
     let startX = 0, startY = 0, dx = 0, dragging = false, horiz = null, open = false, swiped = false;
 
@@ -2269,8 +2309,7 @@ function attachSwipe(listId, delFn) {
         swiped = true;                  // eat the ghost click right after the drag…
         setTimeout(() => { swiped = false; }, 150);   // …but only that one
         if (dx < -130) {               // long swipe: delete straight away
-          entry.style.transform = 'translateX(-110%)';
-          setTimeout(() => delFn(idx), 170);
+          animateRemove(wrap, entry, () => delFn(idx));
           return;
         }
         open = dx < -48;
@@ -2312,7 +2351,7 @@ function renderHistory() {
     const deck = DECK_LABEL[e.deck] || e.deck;
     const cardLines = e.cards.map(c => `<span>${c}</span>`).join('');
     const replayable = Array.isArray(e.slots) && e.slots.length;
-    return `<div class="swipe-wrap"><button class="swipe-del" onclick="deleteHistory(${idx})">Delete</button><div class="history-entry" data-idx="${idx}" ${replayable ? `onclick="openHistoryEntry(${idx})" title="Show this spread"` : ''}>
+    return `<div class="swipe-wrap"><button class="swipe-del">Delete</button><div class="history-entry" data-idx="${idx}" ${replayable ? `onclick="openHistoryEntry(${idx})" title="Show this spread"` : ''}>
       <div class="history-entry-meta">
         <span class="history-date">${dateStr}</span>
         <span class="history-deck">${deck}</span>
@@ -2430,7 +2469,7 @@ function renderSaved() {
     const deck = DECK_LABEL[e.deck] || e.deck;
     const cardLines = (e.cards || []).map(c => `<span>${c}</span>`).join('');
     const nm = (e.name || 'Untitled').replace(/</g, '&lt;');
-    return `<div class="swipe-wrap"><button class="swipe-del" onclick="deleteSaved(${idx}, event)">Delete</button><div class="history-entry" data-idx="${idx}" onclick="openSavedEntry(${idx})" title="Show this reading">
+    return `<div class="swipe-wrap"><button class="swipe-del">Delete</button><div class="history-entry" data-idx="${idx}" onclick="openSavedEntry(${idx})" title="Show this reading">
       <div class="history-entry-meta">
         <span class="saved-name">${nm}</span>
         <button class="saved-del" onclick="confirmTap(this, event, () => deleteSaved(${idx}, null))">Delete</button>
@@ -2571,6 +2610,41 @@ function setListTab(t) {
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
+// Pull the sheet down by its handle to dismiss (iOS sheet gesture)
+(function initSheetDrag() {
+  const handle = document.getElementById('sheetHandle');
+  const panel = document.getElementById('settingsPanel');
+  if (!handle || !panel) return;
+  let startY = 0, dy = 0, dragging = false;
+  handle.addEventListener('pointerdown', e => {
+    dragging = true; startY = e.clientY; dy = 0;
+    panel.style.transition = 'none';
+    try { handle.setPointerCapture(e.pointerId); } catch {}
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dy = Math.max(0, e.clientY - startY);
+    panel.style.transform = `translate3d(0, ${dy}px, 0)`;
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    panel.style.transition = 'transform 0.22s ease';
+    if (dy > 90) {
+      panel.style.transform = 'translate3d(0, 105%, 0)';
+      setTimeout(() => {
+        closeSettings();
+        panel.style.transition = ''; panel.style.transform = '';
+      }, 230);
+    } else {
+      panel.style.transform = 'translate3d(0, 0, 0)';
+      setTimeout(() => { panel.style.transition = ''; panel.style.transform = ''; }, 240);
+    }
+  };
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+})();
+
 function closeSettings() {
   document.body.classList.remove('sheet-open');
   document.getElementById('settingsPanel').classList.remove('open');
