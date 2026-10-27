@@ -5,13 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#0a0c12">
   <title>Tarot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* liquid-glass ambience: two soft color glows behind everything */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      z-index: -1;
+      pointer-events: none;
+    }
+    body::before {
+      width: 440px; height: 440px; left: -130px; top: 6%;
+      background: radial-gradient(circle, rgba(96,80,220,0.30), transparent 65%);
+    }
+    body::after {
+      width: 380px; height: 380px; right: -110px; top: 44%;
+      background: radial-gradient(circle, rgba(190,120,60,0.24), transparent 65%);
+    }
 
     body {
-      background: #0a0a0a;
+      background: #0a0c12;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -197,19 +213,26 @@
       flex-direction: column;
       gap: 20px;
       padding: 20px 24px;
-      background: #111;
-      border: 1px solid #2a2a2a;
-      border-radius: 6px;
+      background: rgba(255,255,255,0.07);
+      -webkit-backdrop-filter: blur(26px) saturate(150%);
+      backdrop-filter: blur(26px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 18px 50px rgba(0,0,0,0.5);
       min-width: 260px;
       max-width: calc(100vw - 40px);
       max-height: 78vh;
       overflow-y: auto;
       z-index: 100;
     }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .settings-panel { background: rgba(24,26,34,0.97); }
+      .deck-gallery { background: rgb(12,13,20); }
+    }
     /* Quiet divider between settings sections */
     .set-div {
       border: none;
-      border-top: 1px solid #222;
+      border-top: 1px solid rgba(255,255,255,0.08);
       margin: 2px 0;
     }
     .settings-panel.open { display: flex; }
@@ -248,7 +271,7 @@
     .deck-btn {
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
-      border-radius: 4px;
+      border-radius: 12px;
       color: #666;
       font-family: 'Palatino Linotype', Palatino, serif;
       font-size: 0.72rem;
@@ -308,12 +331,12 @@
     /* Card count picker */
     .count-picker { display: flex; gap: 4px; }
     .count-btn {
-      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px;
-      color: #666; font-family: 'Palatino Linotype', Palatino, serif;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+      color: #8b8778; font-family: 'Palatino Linotype', Palatino, serif;
       font-size: 0.78rem; letter-spacing: 1px; padding: 4px 16px;
       cursor: pointer; transition: all 0.2s;
     }
-    .count-btn.active { background: #2a2a2a; color: #ddd; border-color: #555; }
+    .count-btn.active { background: rgba(255,255,255,0.16); color: #f0ead8; border-color: rgba(255,255,255,0.28); }
     .count-btn:hover:not(.active) { color: #aaa; border-color: #444; }
     /* One-card mode: hide other slots and center the single card on screen */
     .one-card #slot1, .one-card #slot2 { display: none; }
@@ -337,10 +360,10 @@
       gap: 6px;
     }
     .reshuffle-btn {
-      background: #7a0a0a;
-      border: 1px solid #cc2020;
-      border-radius: 4px;
-      color: #ff8080;
+      background: rgba(220,70,70,0.14);
+      border: 1px solid rgba(255,110,110,0.40);
+      border-radius: 14px;
+      color: #ffb0b0;
       font-family: 'Palatino Linotype', Palatino, serif;
       font-size: 0.72rem;
       letter-spacing: 1.5px;
@@ -351,10 +374,10 @@
       width: 100%;
       text-align: center;
     }
-    .reshuffle-btn:hover { color: #ffcccc; border-color: #ee3030; background: #991010; }
+    .reshuffle-btn:hover { color: #ffd0d0; border-color: rgba(255,140,140,0.6); background: rgba(220,70,70,0.22); }
     /* Save reading — light green */
-    .save-btn { background: #1e4a1e; border-color: #4caf50; color: #a8e6a8; }
-    .save-btn:hover { background: #2a6a2a; border-color: #6ad06a; color: #d4ffd4; }
+    .save-btn { background: rgba(110,190,110,0.16); border-color: rgba(150,220,150,0.42); color: #cfeec4; }
+    .save-btn:hover { background: rgba(110,190,110,0.24); border-color: rgba(170,235,170,0.6); color: #e4ffd9; }
     .deck-count {
       color: #444;
       font-family: 'Palatino Linotype', Palatino, serif;
@@ -387,25 +410,36 @@
     }
     .history-clear-btn:hover { color: #888; }
     /* Saved / History tab switcher */
-    .list-tabs {
+    .list-tabs-row {
       display: flex;
-      align-items: baseline;
-      gap: 18px;
-      margin-bottom: 4px;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .list-tabs {
+      flex: 1;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
     }
     .list-tab {
+      flex: 1;
       background: none; border: none;
-      color: #6a6354;
+      color: #8b8778;
       font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-      font-size: 1.05rem;
-      padding: 4px 2px 6px;
+      font-size: 0.95rem;
+      padding: 8px 0;
+      border-radius: 10px;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
     .list-tab.active {
-      color: #e8ddc8;
-      border-bottom-color: #c9a84c;
+      color: #f0ead8;
+      background: rgba(255,255,255,0.14);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     /* ── Saved readings ─────────────────────────────────────────────── */
     .saved-name {
@@ -451,18 +485,18 @@
       overflow-y: auto;
     }
     .history-entry {
-      background: #111;
-      border: 1px solid #1e1e1e;
-      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
       padding: 9px 11px;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
     .history-entry:hover {
-      background: #181818;
-      border-color: #333;
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
     }
-    .history-entry:active { background: #0c0c0c; }
+    .history-entry:active { background: rgba(255,255,255,0.03); }
     .history-entry-meta {
       display: flex;
       align-items: center;
@@ -668,8 +702,8 @@
         max-width: 100%;
         min-width: 0;
         border: none;
-        border-top: 1px solid #2a2a2a;
-        border-radius: 18px 18px 0 0;
+        border-top: 1px solid rgba(255,255,255,0.16);
+        border-radius: 28px 28px 0 0;
         padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
         max-height: 84vh;
       }
@@ -679,7 +713,7 @@
         align-self: center;
         width: 42px; height: 4px;
         border-radius: 2px;
-        background: #333;
+        background: rgba(255,255,255,0.3);
         flex-shrink: 0;
       }
       /* The Атласные deck draws from an SVG sprite calibrated for a 160px
@@ -704,11 +738,13 @@
     @keyframes sheetUp { from { transform: translateY(42px); opacity: 0.4; } }
 
     /* ── Deck gallery (view all cards) ───────────────────────────── */
-    .view-btn { background: #16283a; border-color: #3a6a9a; color: #8fb8e0; }
-    .view-btn:hover { background: #1c3350; border-color: #4a80b8; color: #b0d0f0; }
+    .view-btn { background: rgba(120,170,255,0.12); border-color: rgba(150,190,255,0.38); color: #b9d4ff; }
+    .view-btn:hover { background: rgba(120,170,255,0.2); border-color: rgba(170,205,255,0.55); color: #d4e5ff; }
     .deck-gallery {
       position: fixed; inset: 0;
-      background: rgb(10,10,14);
+      background: rgba(10,12,18,0.82);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      backdrop-filter: blur(22px) saturate(140%);
       z-index: 300;
       display: none;
       flex-direction: column;
@@ -760,9 +796,11 @@
       bottom: 100px;
       left: 50%;
       transform: translateX(-50%) translateY(10px);
-      background: #222;
-      border: 1px solid #333;
-      color: #bbb;
+      background: rgba(255,255,255,0.10);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #e4ded0;
       font-family: 'Palatino Linotype', Palatino, serif;
       font-size: 0.8rem;
       letter-spacing: 0.5px;
@@ -992,10 +1030,12 @@
   </div>
   <!-- Saved / History tabs -->
   <div class="reshuffle-row">
-    <div class="list-tabs">
-      <button class="list-tab active" id="tabSaved" onclick="setListTab('saved')">Saved</button>
-      <button class="list-tab" id="tabHistory" onclick="setListTab('history')">History</button>
-      <button class="history-clear-btn" id="histClearBtn" style="display:none; margin-left:auto" onclick="confirmTap(this, event, clearHistory)">Clear</button>
+    <div class="list-tabs-row">
+      <div class="list-tabs">
+        <button class="list-tab active" id="tabSaved" onclick="setListTab('saved')">Saved</button>
+        <button class="list-tab" id="tabHistory" onclick="setListTab('history')">History</button>
+      </div>
+      <button class="history-clear-btn" id="histClearBtn" style="display:none" onclick="confirmTap(this, event, clearHistory)">Clear</button>
     </div>
     <div class="history-list" id="savedList">
       <div class="history-empty">No saved readings</div>
@@ -1081,7 +1121,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 86</div>
+    <div class="deck-count" style="text-align:right">build 87</div>
   </div>
 </div>
 
