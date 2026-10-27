@@ -9,6 +9,20 @@
   <title>Tarot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    /* per-deck ambience: the deck's own card back, blurred, under the glass */
+    #deckBackdrop {
+      position: fixed;
+      left: 50%; top: 50%;
+      width: 160px; height: 240px;
+      transform: translate(-50%, -50%) scale(3.6);
+      filter: blur(3px) brightness(0.85) saturate(1.15);
+      opacity: 0.36;
+      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, #000 35%, transparent 82%);
+      mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, #000 35%, transparent 82%);
+      z-index: -2;
+      pointer-events: none;
+      transition: opacity 0.6s;
+    }
     /* liquid-glass ambience: two soft color glows behind everything */
     body::before, body::after {
       content: '';
@@ -199,7 +213,7 @@
       padding: 13px;
       line-height: 0;
     }
-    .btn-settings svg { width: 22px; height: 22px; fill: #8a8578; transition: fill 0.2s; }
+    .btn-settings svg { width: 27px; height: 27px; fill: #8a8578; transition: fill 0.2s; }
     .btn-settings:hover svg { fill: #888; }
     .btn-settings.active svg { fill: #ddd; }
 
@@ -1018,6 +1032,7 @@
   </style>
 </head>
 <body>
+  <div id="deckBackdrop"></div>
 
 <div class="spread" id="spread">
   <div class="slot" id="slot0">
@@ -1166,7 +1181,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count">build 94</div>
+    <div class="deck-count">build 95</div>
   </div>
   </div>
 </div>
@@ -2738,6 +2753,15 @@ function switchDeck(deck) {
   resetCards();
   syncMeaningRow();
   syncDeckLabel();
+  updateBackdrop();
+}
+
+// Paint the current deck's card back (as resolved by the mode CSS) behind the glass
+function updateBackdrop() {
+  const bd = document.getElementById('deckBackdrop');
+  const back = document.querySelector('.card-back');
+  if (!bd || !back) return;
+  bd.style.background = getComputedStyle(back).background;
 }
 
 // Show the Lenormand/Гадание toggle on all 36-card playing-card decks.
@@ -2826,6 +2850,7 @@ document.getElementById('spread').addEventListener('error', (e) => {
 }, true);
 
 resetCards();
+updateBackdrop();
 </script>
 </body>
 </html>
