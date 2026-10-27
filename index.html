@@ -278,16 +278,16 @@
     .toggle-wrap { display: flex; align-items: center; cursor: pointer; }
     .toggle-wrap input { display: none; }
     .toggle-track {
-      width: 36px; height: 20px; background: #333;
-      border-radius: 10px; position: relative; transition: background 0.2s; flex-shrink: 0;
+      width: 50px; height: 30px; background: #333;
+      border-radius: 15px; position: relative; transition: background 0.2s; flex-shrink: 0;
     }
     .toggle-thumb {
       position: absolute; top: 4px; left: 4px;
-      width: 12px; height: 12px; background: #fff;
+      width: 22px; height: 22px; background: #fff;
       border-radius: 50%; transition: transform 0.2s;
     }
     .toggle-wrap input:checked + .toggle-track { background: #4a7fc1; }
-    .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
+    .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(20px); }
 
     /* Deck picker */
     .deck-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
@@ -531,6 +531,7 @@
     .deck-toggle:hover { color: #c8bfa8; }
     .advanced-section { display: none; }
     .advanced-section.open { display: block; }
+    #deckSection.open { display: flex; flex-direction: column; gap: 16px; }
     .history-list {
       display: flex;
       flex-direction: column;
@@ -1138,11 +1139,7 @@
   <div class="reshuffle-row">
     <button class="reshuffle-btn view-btn" onclick="viewDeck()">View All Cards</button>
   </div>
-    <!-- Reshuffle -->
-  <div class="reshuffle-row">
-    <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
-    <div class="deck-count" id="deckCount"></div>
-  </div>
+  <div class="deck-count" id="deckCount"></div>
   </div>
   <!-- Advanced (hidden: API key) -->
   <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
@@ -1169,7 +1166,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 93</div>
+    <div class="deck-count">build 94</div>
   </div>
   </div>
 </div>
