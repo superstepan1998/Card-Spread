@@ -386,6 +386,27 @@
       transition: color 0.2s;
     }
     .history-clear-btn:hover { color: #888; }
+    /* Saved / History tab switcher */
+    .list-tabs {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      margin-bottom: 4px;
+    }
+    .list-tab {
+      background: none; border: none;
+      color: #6a6354;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      font-size: 1.05rem;
+      padding: 4px 2px 6px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .list-tab.active {
+      color: #e8ddc8;
+      border-bottom-color: #c9a84c;
+    }
     /* ── Saved readings ─────────────────────────────────────────────── */
     .saved-name {
       color: #c9a84c;
@@ -966,22 +987,17 @@
   <div class="reshuffle-row">
     <button class="reshuffle-btn save-btn" onclick="saveCurrentReading()">Save This Reading</button>
   </div>
-    <!-- Saved readings -->
+  <!-- Saved / History tabs -->
   <div class="reshuffle-row">
-    <div class="history-header">
-      <span class="setting-label">Saved</span>
+    <div class="list-tabs">
+      <button class="list-tab active" id="tabSaved" onclick="setListTab('saved')">Saved</button>
+      <button class="list-tab" id="tabHistory" onclick="setListTab('history')">History</button>
+      <button class="history-clear-btn" id="histClearBtn" style="display:none; margin-left:auto" onclick="confirmTap(this, event, clearHistory)">Clear</button>
     </div>
     <div class="history-list" id="savedList">
       <div class="history-empty">No saved readings</div>
     </div>
-  </div>
-    <!-- History -->
-  <div class="reshuffle-row">
-    <div class="history-header">
-      <span class="setting-label">History</span>
-      <button class="history-clear-btn" onclick="confirmTap(this, event, clearHistory)">Clear</button>
-    </div>
-    <div class="history-list" id="historyList">
+    <div class="history-list" id="historyList" style="display:none">
       <div class="history-empty">No readings yet</div>
     </div>
   </div>
@@ -1059,7 +1075,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 83</div>
+    <div class="deck-count" style="text-align:right">build 84</div>
   </div>
 </div>
 
@@ -2406,6 +2422,16 @@ function importData() {
   }
 }
 
+// ── Saved / History tab switcher ─────────────────────────────────────────────
+function setListTab(t) {
+  localStorage.setItem('listTab', t);
+  document.getElementById('tabSaved').classList.toggle('active', t === 'saved');
+  document.getElementById('tabHistory').classList.toggle('active', t === 'history');
+  document.getElementById('savedList').style.display = t === 'saved' ? '' : 'none';
+  document.getElementById('historyList').style.display = t === 'history' ? '' : 'none';
+  document.getElementById('histClearBtn').style.display = t === 'history' ? '' : 'none';
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 function closeSettings() {
   document.body.classList.remove('sheet-open');
@@ -2516,6 +2542,9 @@ document.addEventListener('click', (e) => {
     closeSettings();
   }
 });
+
+// Restore last-used Saved/History tab
+setListTab(localStorage.getItem('listTab') || 'saved');
 
 // Restore saved card count (1 or 3)
 const savedCount = parseInt(localStorage.getItem('cardCount'), 10);
