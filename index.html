@@ -1056,7 +1056,9 @@
     <div class="deck-count" id="deckCount"></div>
   </div>
   </div>
-    <hr class="set-div">
+  <!-- Advanced (hidden: API key) -->
+  <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
+  <div class="advanced-section" id="advancedSection">
   <!-- Ask Claude -->
   <div class="reshuffle-row">
     <textarea class="ai-question" id="aiQuestion" placeholder="Ask about your reading…" rows="2"></textarea>
@@ -1064,10 +1066,7 @@
     <div class="ai-loading" id="aiLoading">Reading the cards…</div>
     <div class="ai-response" id="aiResponse"></div>
   </div>
-    <!-- Advanced (hidden: API key) -->
-  <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">Advanced ▾</button>
-  <div class="advanced-section" id="advancedSection">
-    <!-- API Key -->
+      <!-- API Key -->
     <div class="ai-key-row">
       <span class="ai-key-label">Anthropic API Key</span>
       <input type="password" class="ai-key-input" id="aiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -1082,7 +1081,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 85</div>
+    <div class="deck-count" style="text-align:right">build 86</div>
   </div>
 </div>
 
