@@ -414,8 +414,11 @@
       position: relative;
       overflow: hidden;
       border-radius: 14px;
+      flex-shrink: 0;   /* overflow:hidden zeroes the flex min-size — don't let rows collapse */
     }
     .swipe-del {
+      opacity: 0;
+      transition: opacity 0.15s;
       position: absolute; top: 0; right: 0; bottom: 0;
       width: 88px;
       border: none;
@@ -427,6 +430,7 @@
       text-transform: uppercase;
       cursor: pointer;
     }
+    .swipe-wrap.reveal .swipe-del { opacity: 1; }
     .swipe-wrap .history-entry {
       position: relative;
       z-index: 1;
@@ -1144,7 +1148,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 89</div>
+    <div class="deck-count" style="text-align:right">build 90</div>
   </div>
 </div>
 
@@ -2251,6 +2255,7 @@ function attachSwipe(listId, delFn) {
       const mx = e.clientX - startX, my = e.clientY - startY;
       if (horiz === null && (Math.abs(mx) > 8 || Math.abs(my) > 8)) horiz = Math.abs(mx) > Math.abs(my);
       if (!horiz) return;
+      wrap.classList.add('reveal');
       try { entry.setPointerCapture(e.pointerId); } catch {}
       dx = Math.min(0, Math.max(-150, (open ? OPEN_X : 0) + mx));
       entry.style.transform = `translateX(${dx}px)`;
@@ -2271,6 +2276,7 @@ function attachSwipe(listId, delFn) {
         open = dx < -48;
       }
       entry.style.transform = open ? `translateX(${OPEN_X}px)` : 'translateX(0)';
+      if (!open) setTimeout(() => { if (!open) wrap.classList.remove('reveal'); }, 240);
     };
     entry.addEventListener('pointerup', finish);
     entry.addEventListener('pointercancel', finish);
@@ -2281,6 +2287,7 @@ function attachSwipe(listId, delFn) {
         e.stopPropagation(); e.preventDefault();
         open = false;
         entry.style.transform = 'translateX(0)';
+        setTimeout(() => { if (!open) wrap.classList.remove('reveal'); }, 240);
       }
     }, true);
   });
