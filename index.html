@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0c12">
+  <meta name="theme-color" content="#0b0a10">
   <title>Tarot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,16 +18,16 @@
       pointer-events: none;
     }
     body::before {
-      width: 440px; height: 440px; left: -130px; top: 6%;
-      background: radial-gradient(circle, rgba(96,80,220,0.30), transparent 65%);
+      width: 420px; height: 420px; left: -120px; top: 4%;
+      background: radial-gradient(circle, rgba(118,88,210,0.20), transparent 62%);
     }
     body::after {
-      width: 380px; height: 380px; right: -110px; top: 44%;
-      background: radial-gradient(circle, rgba(190,120,60,0.24), transparent 65%);
+      width: 360px; height: 360px; right: -100px; top: 46%;
+      background: radial-gradient(circle, rgba(205,145,75,0.16), transparent 62%);
     }
 
     body {
-      background: #0a0c12;
+      background: radial-gradient(ellipse 120% 80% at 50% 18%, #141020 0%, #0b0a10 55%, #070609 100%) fixed #0b0a10;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -443,7 +443,7 @@
     }
     /* ── Saved readings ─────────────────────────────────────────────── */
     .saved-name {
-      color: #c9a84c;
+      color: #eccf86;
       font-size: 0.8rem;
       letter-spacing: 0.5px;
       font-family: 'Palatino Linotype', Palatino, serif;
@@ -485,18 +485,18 @@
       overflow-y: auto;
     }
     .history-entry {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(12,14,22,0.42);
+      border: 1px solid rgba(255,255,255,0.13);
       border-radius: 14px;
       padding: 9px 11px;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
     .history-entry:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.18);
+      background: rgba(22,26,38,0.55);
+      border-color: rgba(255,255,255,0.2);
     }
-    .history-entry:active { background: rgba(255,255,255,0.03); }
+    .history-entry:active { background: rgba(8,10,16,0.5); }
     .history-entry-meta {
       display: flex;
       align-items: center;
@@ -504,18 +504,18 @@
       margin-bottom: 5px;
     }
     .history-date {
-      color: #555;
+      color: #9b9482;
       font-size: 0.65rem;
       letter-spacing: 0.8px;
     }
     .history-deck {
-      color: #444;
+      color: #8d8674;
       font-size: 0.62rem;
       letter-spacing: 1px;
       text-transform: uppercase;
     }
     .history-cards {
-      color: #999;
+      color: #ded7c6;
       font-size: 0.78rem;
       line-height: 1.5;
     }
@@ -723,9 +723,9 @@
       .deck-btn { padding: 13px 10px; font-size: 0.82rem; }
       .count-btn { padding: 10px 18px; font-size: 0.9rem; }
       .history-entry { padding: 14px 15px; }
-      .saved-name { font-size: 0.95rem; }
-      .history-cards { font-size: 0.88rem; }
-      .history-date, .history-deck { font-size: 0.72rem; }
+      .saved-name { font-size: 1.02rem; }
+      .history-cards { font-size: 0.95rem; }
+      .history-date, .history-deck { font-size: 0.74rem; }
       .saved-del, .history-clear-btn { font-size: 0.78rem; }
       .reshuffle-btn { padding: 11px 9px; font-size: 0.8rem; }
       .setting-label { font-size: 1.05rem; }
@@ -1121,7 +1121,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 87</div>
+    <div class="deck-count" style="text-align:right">build 88</div>
   </div>
 </div>
 
