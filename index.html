@@ -1148,7 +1148,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 90</div>
+    <div class="deck-count" style="text-align:right">build 91</div>
   </div>
 </div>
 
@@ -2706,6 +2706,11 @@ setListTab(localStorage.getItem('listTab') || 'saved');
 // Restore saved card count (1 or 3)
 const savedCount = parseInt(localStorage.getItem('cardCount'), 10);
 if (savedCount === 1) setCardCount(1);
+
+// ── Service worker: instant updates + offline ───────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 
 // ── Image fallback ───────────────────────────────────────────────────────
 // If a remote card image fails (CDN down / offline), show rank+suit or name
