@@ -439,6 +439,8 @@
       transition: color 0.2s;
     }
     .advanced-toggle:hover { color: #777; }
+    .deck-toggle { color: #9a9280; font-size: 0.8rem; }
+    .deck-toggle:hover { color: #c8bfa8; }
     .advanced-section { display: none; }
     .advanced-section.open { display: block; }
     .history-list {
@@ -683,6 +685,7 @@
       /* The Атласные deck draws from an SVG sprite calibrated for a 160px
          box — keep that exact width so cards don't shift sideways. */
       body.lenormand-mode:not(.russian-mode):not(.golden-mode):not(.bicycle-mode):not(.red-mode):not(.copag-mode) .card-wrap { width: 160px; }
+      .history-list { max-height: 42vh; }
       .deck-btn { padding: 13px 10px; font-size: 0.82rem; }
       .count-btn { padding: 10px 18px; font-size: 0.9rem; }
       .history-entry { padding: 14px 15px; }
@@ -1002,6 +1005,9 @@
     </div>
   </div>
     <hr class="set-div">
+  <!-- Deck & draw settings (collapsed by default) -->
+  <button class="advanced-toggle deck-toggle" id="deckToggle" onclick="toggleDeckSection()">Deck ▾</button>
+  <div class="advanced-section" id="deckSection">
   <!-- Deck picker -->
   <div class="setting-row">
     <div class="deck-picker">
@@ -1049,6 +1055,7 @@
     <button class="reshuffle-btn" onclick="reshuffleAll()">Reshuffle Deck</button>
     <div class="deck-count" id="deckCount"></div>
   </div>
+  </div>
     <hr class="set-div">
   <!-- Ask Claude -->
   <div class="reshuffle-row">
@@ -1075,7 +1082,7 @@
       <button class="reshuffle-btn" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
     <!-- Version -->
-    <div class="deck-count" style="text-align:right">build 84</div>
+    <div class="deck-count" style="text-align:right">build 85</div>
   </div>
 </div>
 
@@ -2451,10 +2458,26 @@ function toggleSettings() {
     renderHistory();
     renderSaved();
     syncMeaningRow();
-    // keep advanced settings collapsed each time settings opens
+    // keep deck & advanced sections collapsed each time settings opens
+    collapseDeckSection();
     collapseAdvanced();
   }
 }
+function syncDeckLabel() {
+  const btn = document.getElementById('deckToggle');
+  if (!btn) return;
+  const open = document.getElementById('deckSection').classList.contains('open');
+  btn.textContent = `Deck · ${DECK_LABEL[currentDeck] || currentDeck} ${open ? '▴' : '▾'}`;
+}
+function collapseDeckSection() {
+  document.getElementById('deckSection').classList.remove('open');
+  syncDeckLabel();
+}
+function toggleDeckSection() {
+  document.getElementById('deckSection').classList.toggle('open');
+  syncDeckLabel();
+}
+
 function collapseAdvanced() {
   document.getElementById('advancedSection').classList.remove('open');
   document.getElementById('advancedToggle').textContent = 'Advanced ▾';
@@ -2493,6 +2516,7 @@ function switchDeck(deck) {
   }
   resetCards();
   syncMeaningRow();
+  syncDeckLabel();
 }
 
 // Show the Lenormand/Гадание toggle on all 36-card playing-card decks.
@@ -2542,6 +2566,8 @@ document.addEventListener('click', (e) => {
     closeSettings();
   }
 });
+
+syncDeckLabel();
 
 // Restore last-used Saved/History tab
 setListTab(localStorage.getItem('listTab') || 'saved');
