@@ -1401,7 +1401,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 117</div>
+  <div class="ios-footer center">build 118</div>
   </div>
   </div>
 </div>
@@ -1796,8 +1796,8 @@ const solaSrc = key => WIKI + encodeURIComponent(`Sola Busca tarot card ${String
 // ── Grand Etteilla, "tarot égyptien" (c.1890; BnF scan, public domain) ──
 // 146 images, front/back alternating: card k = image 2k−1. Etteilla's own system:
 // each card prints its upright keyword at the top and its reversed keyword at the
-// bottom. 73 of 78 survive: no 16 Jugement, 17 Mortalité, 49 Ace of Cups,
-// 63 Ace of Swords, 78 La Folie.
+// bottom. The scan lacks 16, 17, 49, 63 and 78; 16, 17 and 78 are filled from the
+// Pussey / Grimaud editions below, so only the Aces of Cups (49) and Swords (63) are missing.
 // [scan k, Etteilla no., card, FR up, FR rev, EN up, EN rev, RU up, RU rev]
 const ETTEILLA = [
   [1, 1, "", "Etteilla (le Questionnant)", "Questionnant", "The querent (a man)", "The querent", "Спрашивающий (мужчина)", "Спрашивающий"],
@@ -1874,8 +1874,13 @@ const ETTEILLA = [
   [72, 76, "♦ 2 of Pentacles", "Embarras", "Lettre", "Difficulty", "A letter", "Затруднение", "Письмо"],
   [73, 77, "♦ Ace of Pentacles", "Parfait contentement", "Bourse d'argent", "Perfect contentment", "A purse of money", "Полное довольство", "Кошелёк с деньгами"]
 ];
+// Filled from other editions of the same Etteilla design (Commons, public domain)
+ETTEILLA.splice(ETTEILLA.findIndex(e => e[1] === 18), 0,
+  ['16 Le Judement Dernier - H. Pussey Grand Etteilla Tarot Deck.jpg', 16, '', 'Jugement', 'Jugement', 'Judgement', 'Judgement', 'Суд', 'Суд'],
+  ['17 La Mort- H. Pussey Grand Etteilla Tarot Deck.jpg', 17, '', 'Mortalité', 'Néant', 'Mortality', 'Nothingness', 'Смертность', 'Небытие']);
+ETTEILLA.push(['00 La Folie - Grimaud Grand Etteilla Tarot Deck.jpg', 78, '', 'Folie', 'Folie', 'Folly', 'Folly', 'Безумие', 'Безумие']);
 const ETT_BY_KEY = Object.fromEntries(ETTEILLA.map(e => ['E' + e[1], e]));
-const ettSrc = k => WIKI + encodeURIComponent(`Jeu de tarot divinatoire dit "Grand Etteilla" ou "tarot égyptien" - jeu de cartes, estampe - btv1b105111415 (${String(2 * k - 1).padStart(3, '0')} of 166).jpg`) + '?width=480';
+const ettSrc = k => typeof k === 'string' ? WIKI + encodeURIComponent(k) + '?width=480' : WIKI + encodeURIComponent(`Jeu de tarot divinatoire dit "Grand Etteilla" ou "tarot égyptien" - jeu de cartes, estampe - btv1b105111415 (${String(2 * k - 1).padStart(3, '0')} of 166).jpg`) + '?width=480';
 
 // ── Dondorf Lenormand (Frankfurt, 19th c.; BnF scan, public domain) ──
 // 70 images, front/back alternating; card 32 (Moon) is missing from the scan.
@@ -1889,10 +1894,72 @@ function dondorfSrc(card) {
 // ── Grand Jeu de Mlle Lenormand (c.1845; BnF scan, public domain) ──
 // 108 images, front/back alternating; fronts ordered ♦ ♣ ♥ ♠, each K Q J A 2–10,
 // then Le Consultant (105) and La Consultante (107). Readings use the 36 cards
-// 6–A with Lenormand/Гадание meanings via their playing card, like Copag.
+// The deck uses its own 1845 meanings (GJ_MEANINGS) for all 54 cards.
 const GJ_SUITS = ['♦', '♣', '♥', '♠'];
 const GJ_RANKS = ['K', 'Q', 'J', 'A', 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const gjFile = img => WIKI + encodeURIComponent(`Grand jeu de société de Melle Lenormand - jeu de cartomancie - jeu de cartes, estampe - btv1b10543195n (${String(img).padStart(3, '0')} of 108).jpg`) + '?width=480';
+// Meanings from "Grand jeu de société. Pratiques secrètes de Mlle Lenormand" (Paris, 1845;
+// public domain, Internet Archive b29295336): each card's headline + its main scene.
+// [EN meaning, EN scene, RU meaning, RU scene]
+const GJ_MEANINGS = {
+  "K♣": ["A learned, very shrewd man who gives wise, sound advice.", "Phineus, the blind king of Thrace, advising the Argonauts", "Учёный, очень проницательный человек, дающий мудрые и здравые советы.", "Слепой фракийский царь Финей даёт советы аргонавтам"],
+  "Q♣": ["A kind, generous, obliging woman, pleasure-loving and carefree.", "The three Hesperides guarding the tree of golden apples", "Милая, щедрая, услужливая женщина, любящая удовольствия и беззаботная.", "Три Геспериды стерегут дерево с золотыми яблоками"],
+  "J♣": ["A gallant, clever, persistent young man who will use any means to reach his goal.", "Hippomenes drops golden apples to win his race against Atalanta", "Галантный, ловкий, настойчивый юноша, идущий к цели любыми средствами.", "Гиппомен бросает золотые яблоки, чтобы обогнать Аталанту"],
+  "10♣": ["Success in a risky venture.", "Odysseus and Diomedes lead away the horses of Rhesus through the enemy camp", "Успех в рискованном предприятии.", "Одиссей и Диомед уводят коней Реса через вражеский лагерь"],
+  "9♣": ["Success in trade; for the married, early widowhood; a shrewd but poor man will profit by serving the powerful.", "The crab sent by Juno to sting Hercules as he fights the Hydra", "Успех в торговле; женатому — раннее вдовство; ловкий бедняк разбогатеет, служа сильным мира сего.", "Рак, посланный Юноной ужалить Геракла в битве с Гидрой"],
+  "8♣": ["Marriage.", "The alchemist between two philosophical lamps — the alchemical marriage", "Брак.", "Алхимик между двумя философскими светильниками — алхимический брак"],
+  "7♣": ["An artist, poet or musician who charms with talent, voice and wit — beware a seducer.", "Pan turns into Capricorn to escape the giant", "Художник, поэт или музыкант, очаровывающий талантом, голосом и умом; остерегайтесь соблазнителя.", "Пан превращается в Козерога, спасаясь от великана"],
+  "6♣": ["A false reconciliation between two enemies.", "Paris and Menelaus about to fight in single combat", "Ложное примирение двух врагов.", "Парис и Менелай готовятся к поединку"],
+  "5♣": ["A man will betray a friend's trust and take what is dearest to him.", "Paris elopes with Helen, wife of Menelaus", "Человек злоупотребит доверием друга и отнимет самое дорогое.", "Бегство Париса с Еленой, женой Менелая"],
+  "4♣": ["A vain, loud, hot-tempered woman, no longer young but still beautiful, with property.", "The alchemist listening by the philosophical lamp — a man ruled by a woman's whims", "Тщеславная, шумная, вспыльчивая женщина, уже не юная, но ещё красивая, с имуществом.", "Алхимик у философского светильника — мужчина во власти женских капризов"],
+  "3♣": ["A happy surprise in a time of trouble.", "The alchemist, kneeling, watches the matter dissolve in the philosophical egg", "Радостная неожиданность в трудную минуту.", "Алхимик на коленях наблюдает, как растворяется вещество в философском яйце"],
+  "2♣": ["Gold will come to you by inheritance or gift.", "Goddesses drawing gold from the river Pactolus", "К вам придёт золото — по наследству или в дар.", "Богини черпают золото из реки Пактол"],
+  "A♣": ["Fortune and fame won in an unusual business venture.", "Jason fighting armed men to seize the Golden Fleece", "Богатство и слава от необычного торгового дела.", "Ясон сражается с воинами за золотое руно"],
+  "K♥": ["A rich, wise man will help you if you follow his example and advice.", "An old man meditating beside an hourglass", "Богатый и мудрый человек поможет, если следовать его примеру и советам.", "Старик в раздумье рядом с песочными часами"],
+  "Q♥": ["An extremely gentle, kind-hearted woman who will do you great services.", "Jupiter shows Astraea her place in the heavens", "Очень кроткая, добросердечная женщина, которая окажет вам большие услуги.", "Юпитер указывает Астрее её место на небе"],
+  "J♥": ["You will meet a young man who will become a friend and help you.", "Ram-headed Jupiter shows Bacchus a spring to quench his thirst", "Знакомство с юношей, который станет другом и поможет.", "Юпитер с головой барана указывает Вакху источник"],
+  "10♥": ["An innocent, guileless girl without a will of her own.", "The alchemist contemplates the matter beginning to turn white", "Простодушная, безвольная девушка.", "Алхимик созерцает вещество, начинающее белеть"],
+  "9♥": ["Whatever your position, you will have everyone's respect and friendship.", "Hercules strangling the Nemean lion", "При любом положении — уважение и дружба окружающих.", "Геракл душит Немейского льва"],
+  "8♥": ["Secret joy; success in something long desired.", "An eagle carrying off a toad above a pond", "Тайная радость, исполнение давнего желания.", "Орёл уносит жабу над прудом"],
+  "7♥": ["Friendship of a secretly devoted woman — though you will learn she is marrying a friend of yours.", "The alchemist adds the solvent to the philosophical egg", "Дружба тайно преданной женщины — но вы узнаете, что она выходит за вашего друга.", "Алхимик добавляет растворитель в философское яйцо"],
+  "6♥": ["Nobility, honour, high office.", "The alchemist gazes at the stone turned to gold", "Знатность, честь, высокие должности.", "Алхимик смотрит на камень, ставший золотом"],
+  "5♥": ["A statesman will receive proposals through special envoys.", "Two noblemen of different nations received by the king", "Государственный муж получит предложения через особых посланников.", "Двое знатных чужестранцев на приёме у короля"],
+  "4♥": ["Harmful advice.", "Venus and Cupid crossing the Euphrates on two dolphins — leaving the parental home", "Пагубные советы.", "Венера и Амур переплывают Евфрат на дельфинах — бегство из отчего дома"],
+  "3♥": ["A man of genius.", "A dog-headed sage writing signs on the ground in a forest", "Гениальный человек.", "Кинокефал в лесу чертит знаки на земле"],
+  "2♥": ["An honest, selfless man.", "A covey of partridges held by a pointing dog", "Честный, бескорыстный человек.", "Собака делает стойку на выводок куропаток"],
+  "A♥": ["Family, kinship.", "Danaus and his fifty daughters", "Родня, семья.", "Данай и его пятьдесят дочерей"],
+  "K♦": ["An obliging, unpretentious, brave and frank man — treat him with care.", "Cadmus offering Minerva a vase with a prophecy", "Услужливый, простой, храбрый и прямой человек — с ним нужно бережно.", "Кадм подносит Минерве вазу с пророчеством"],
+  "Q♦": ["A spiteful, malicious woman who enjoys only doing harm.", "Discord throws the golden apple at the wedding of Peleus and Thetis", "Злоречивая, злая женщина, которой в радость только вредить.", "Эрида бросает яблоко раздора на свадьбе Пелея и Фетиды"],
+  "J♦": ["A cunning, skilful young man carrying an important message.", "Odysseus, disguised as a merchant, uncovers Achilles at Lycomedes' court", "Хитрый и ловкий юноша с важным поручением.", "Одиссей под видом купца находит Ахилла при дворе Ликомеда"],
+  "10♦": ["Treacherous advice; plans for a journey.", "Pelias advising Jason in a vast palace", "Коварные советы, планы поездки.", "Пелий даёт советы Ясону во дворце"],
+  "9♦": ["Errands, worries, preparing to leave on a long journey.", "The Argonauts board the Argo for Colchis", "Хлопоты, тревоги, сборы в дальнюю дорогу.", "Аргонавты отплывают в Колхиду на «Арго»"],
+  "8♦": ["A kind, helpful person working to find you a position.", "Ganymede serving ambrosia to the gods", "Добрый, услужливый человек хлопочет о месте для вас.", "Ганимед подносит богам амброзию"],
+  "7♦": ["Ups and downs, hardships.", "Pandora's box being opened", "Превратности судьбы.", "Открытие ящика Пандоры"],
+  "6♦": ["A card of great darkness — it can even unmask a criminal; a perverse, scheming person.", "An ichneumon creeping into a sleeping crocodile's throat", "Очень мрачная карта — может разоблачить даже преступника; коварный, порочный человек.", "Ихневмон пробирается в пасть спящего крокодила"],
+  "5♦": ["Stubborn, proud, slanderous — heedless of advice.", "Phaethon loses the reins of the sun's chariot", "Упрямый, гордый, злоречивый, глухой к советам.", "Фаэтон теряет поводья солнечной колесницы"],
+  "4♦": ["Through love you will gain wealth and glory.", "Medea gives Jason a vial and magic powders — powerful protection", "Через любовь обретёте богатство и славу.", "Медея вручает Ясону флакон и волшебные порошки — могучая защита"],
+  "3♦": ["Affection; a union met with obstacles.", "Castor and Pollux", "Привязанность; союзу мешают препятствия.", "Кастор и Поллукс"],
+  "2♦": ["Dubious conduct.", "A child riding a goat — fertility, childbirth", "Сомнительное поведение.", "Ребёнок верхом на козле — плодовитость, роды"],
+  "A♦": ["A letter or news.", "Harpocrates, finger to his lips, hands a letter to Mercury", "Письмо или известие.", "Гарпократ с пальцем у губ передаёт письмо Меркурию"],
+  "K♠": ["A man of law you will have business to settle with.", "A judge presiding over a trial — a lawsuit", "Законник, с которым придётся улаживать дела.", "Судья ведёт тяжбу — судебный процесс"],
+  "Q♠": ["Abandonment or widowhood.", "Weeping Isis searching for her dead husband", "Одиночество или вдовство.", "Плачущая Исида ищет погибшего мужа"],
+  "J♠": ["A learned man versed in law and legal affairs.", "A philosopher weighing matter on scales — justice, fairness", "Учёный человек, знаток законов и судебных дел.", "Философ взвешивает вещества на весах — справедливость"],
+  "10♠": ["Theft, loss.", "Laverna, goddess of thieves, with wolves", "Кража, потеря.", "Лаверна, богиня воров, с волками"],
+  "9♠": ["Sorrow, heartache, a slow return to peace of mind.", "Helen hiding her despair among her women", "Огорчение, душевные муки, нескорое успокоение.", "Елена скрывает отчаяние среди своих служанок"],
+  "8♠": ["Tears over the loss of someone beloved.", "Achilles dragging Hector's body around the walls of Troy", "Слёзы по утраченному любимому.", "Ахилл волочит тело Гектора вокруг стен Трои"],
+  "7♠": ["Hope placed in an idea you have conceived.", "The alchemist placing raw matter into the philosophical egg", "Надежда на задуманное.", "Алхимик помещает сырьё в философское яйцо"],
+  "6♠": ["A deception noticed only when it is too late.", "The wooden horse entering Troy", "Обман, который заметят слишком поздно.", "Деревянный конь входит в Трою"],
+  "5♠": ["A careless young man who tries everything and sticks to nothing.", "The centaur Chiron, dead, transformed into Sagittarius", "Беспечный юноша: берётся за всё, ни на чём не останавливается.", "Кентавр Хирон после смерти превращён в Стрельца"],
+  "4♠": ["A trick prompted by jealousy.", "Juno, disguised as an old woman, deceives Semele", "Уловка, подсказанная ревностью.", "Юнона под видом старухи обманывает Семелу"],
+  "3♠": ["Serious illness, danger to life.", "The three Fates: Clotho, Lachesis and Atropos", "Тяжёлая болезнь, опасность для жизни.", "Три Парки: Клото, Лахесис и Атропос"],
+  "2♠": ["Confidences; secrets that will be used.", "The Greek princes consult the seer Calchas", "Откровения, тайны, которыми воспользуются.", "Греческие вожди советуются с прорицателем Калхантом"],
+  "A♠": ["Dubious conduct, a night-time rendezvous.", "Jupiter as a bull carrying off Europa", "Сомнительное поведение, ночное свидание.", "Юпитер в образе быка похищает Европу"],
+  "consultant": ["The querent — the man asking the question.", "", "Спрашивающий — мужчина, задающий вопрос.", ""],
+  "consultante": ["The querent — the woman asking the question.", "", "Спрашивающая — женщина, задающая вопрос.", ""]
+};
+const gjPool = () => [...COPAG52.map(c => ({ rank: c.rank, suit: c.suit })), { special: 'consultant' }, { special: 'consultante' }];
+const gjKey = c => c.special ? 'GJ' + c.special : 'GJ' + c.rank + c.suit;
+const gjCardSrc = c => c.special === 'consultant' ? gjFile(105) : c.special === 'consultante' ? gjFile(107) : grandJeuSrc(c.rank, c.suit);
 const grandJeuSrc = (rank, suit) => gjFile(1 + 2 * (GJ_SUITS.indexOf(suit) * 13 + GJ_RANKS.findIndex(r => String(r) === String(rank))));
 
 // ── Marseille filename map (Wikimedia Commons "X_Tarot.png" collection) ────
@@ -2038,6 +2105,7 @@ function deckSource(name) {
   if (name === 'tarot' || name === 'marseille' || name === 'solabusca') return TAROT;
   if (name === 'dondorf') return dondorfPool();
   if (name === 'etteilla') return ETTEILLA;
+  if (name === 'grandjeu') return gjPool();
   if (name === 'visconti') return VISCONTI_POOL;
   return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
 }
@@ -2101,7 +2169,7 @@ function draw() {
   else if (currentDeck === 'solabusca') drawRemoteTarot('solabusca', solaSrc);
   else if (currentDeck === 'etteilla') drawEtteilla();
   else if (currentDeck === 'dondorf') drawRemoteLen('dondorf', dondorfSrc);
-  else if (currentDeck === 'grandjeu') drawRemoteLen('grandjeu', c => grandJeuSrc(c.rank, c.suit));
+  else if (currentDeck === 'grandjeu') drawGrandJeu();
   else drawTarot();
   setTimeout(saveToHistory, 1500);
 }
@@ -2149,6 +2217,25 @@ function drawTarot() {
     front.dataset.key = img.replace('.jpg', '');
     const rev = !allowRev && Math.random() < 0.3;
     if (rev) front.classList.add('rev');
+  });
+  scheduleFlips(shuffled.length);
+}
+
+function drawGrandJeu() {
+  const shuffled = pickCards('grandjeu', cardCount);
+  shuffled.forEach((c, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    front.innerHTML = '';
+    const el = document.createElement('img');
+    el.id = `img${i}`; el.alt = '';
+    el.src = gjCardSrc(c);
+    front.appendChild(el);
+    front.dataset.key = gjKey(c);
+    delete front.dataset.name;
+    if (c.special) { delete front.dataset.rank; delete front.dataset.suit; }
+    else { front.dataset.rank = String(c.rank); front.dataset.suit = c.suit; }
   });
   scheduleFlips(shuffled.length);
 }
@@ -2412,7 +2499,7 @@ function usesMeaningToggle() {
   return currentDeck === 'russian' || currentDeck === 'golden' ||
          currentDeck === 'lenormand' || currentDeck === 'bicycle' ||
          currentDeck === 'red' || currentDeck === 'copag' || currentDeck === 'madyana' ||
-         currentDeck === 'dondorf' || currentDeck === 'grandjeu';
+         currentDeck === 'dondorf';
 }
 
 function flip(i) {
@@ -2432,6 +2519,12 @@ function flip(i) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
+    } else if (currentDeck === 'grandjeu') {
+      const key = front.dataset.key || (front.dataset.rank ? 'GJ' + front.dataset.rank + front.dataset.suit : '');
+      front.dataset.key = key;
+      const r = front.dataset.rank, su = front.dataset.suit;
+      document.getElementById(`lbl${i}`).textContent = key === 'GJconsultant' ? 'Le Consultant'
+        : key === 'GJconsultante' ? 'La Consultante' : `${su} ${BIKE_RANK_NAME[r] || r} of ${BIKE_SUIT_NAME[su]}`;
     } else if (ETT_BY_KEY[front.dataset.key]) {
       const e = ETT_BY_KEY[front.dataset.key];
       const isRev = front.classList.contains('rev');
@@ -2453,7 +2546,7 @@ function lenMeaning(i) {
   if (!d) return name;
   const n = LENORMAND.findIndex(c => c.name === name);
   const card = LENORMAND[n];
-  const showPip = ['golden', 'lenormand', 'bicycle', 'red', 'dondorf', 'grandjeu'].includes(currentDeck);
+  const showPip = ['golden', 'lenormand', 'bicycle', 'red', 'dondorf'].includes(currentDeck);
   const [timing, feel] = LEN_EXTRA[name] || ['', ''];
   const yesNo = { '+': '✅ Yes', '-': '❌ No', '0': '⚖️ Neutral' }[feel] || '';
   const meta = [timing && `⏱ ${timing}`, yesNo].filter(Boolean).join(' · ');
@@ -2639,6 +2732,8 @@ function enParagraph(t) {
 function getMeaning(i) {
   const front = document.getElementById(`cf${i}`);
   const key = front.dataset.key;
+  const gj = key && key.startsWith('GJ') && GJ_MEANINGS[key.slice(2)];
+  if (gj) return { en: gj[0] + (gj[1] ? `\nScene: ${gj[1]}` : ''), ru: gj[2] + (gj[3] ? `\nСцена: ${gj[3]}` : '') };
   const ett = ETT_BY_KEY[key];
   if (ett) {
     const rev = front.classList.contains('rev');
