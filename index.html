@@ -1401,7 +1401,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 118</div>
+  <div class="ios-footer center">build 119</div>
   </div>
   </div>
 </div>
@@ -2102,12 +2102,7 @@ for (const suit of ['♣','♦','♥','♠']) {
 const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
 
 function deckSource(name) {
-  if (name === 'tarot' || name === 'marseille' || name === 'solabusca') return TAROT;
-  if (name === 'dondorf') return dondorfPool();
-  if (name === 'etteilla') return ETTEILLA;
-  if (name === 'grandjeu') return gjPool();
-  if (name === 'visconti') return VISCONTI_POOL;
-  return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
+  return deckDef(name).pool();
 }
 
 // Fisher–Yates: uniform, unbiased shuffle (sort(()=>random-0.5) is not)
@@ -2157,20 +2152,7 @@ function draw() {
     mn.classList.remove('visible');
     flipped[i] = false;
   }
-  if (currentDeck === 'lenormand') drawLenormand();
-  else if (currentDeck === 'russian') drawRussian();
-  else if (currentDeck === 'golden') drawGolden();
-  else if (currentDeck === 'copag') drawCopag();
-  else if (currentDeck === 'madyana') drawMadyana();
-  else if (currentDeck === 'bicycle') drawBicycle();
-  else if (currentDeck === 'red') drawRed();
-  else if (currentDeck === 'marseille') drawMarseille();
-  else if (currentDeck === 'visconti') drawRemoteTarot('visconti', viscontiSrc);
-  else if (currentDeck === 'solabusca') drawRemoteTarot('solabusca', solaSrc);
-  else if (currentDeck === 'etteilla') drawEtteilla();
-  else if (currentDeck === 'dondorf') drawRemoteLen('dondorf', dondorfSrc);
-  else if (currentDeck === 'grandjeu') drawGrandJeu();
-  else drawTarot();
+  deckDef(currentDeck).draw();
   setTimeout(saveToHistory, 1500);
 }
 
@@ -2496,10 +2478,7 @@ function drawLenormand() {
 // ── Flip ───────────────────────────────────────────────────────────────────
 // Decks that map to the 36 playing cards and offer the Lenormand/Гадание toggle.
 function usesMeaningToggle() {
-  return currentDeck === 'russian' || currentDeck === 'golden' ||
-         currentDeck === 'lenormand' || currentDeck === 'bicycle' ||
-         currentDeck === 'red' || currentDeck === 'copag' || currentDeck === 'madyana' ||
-         currentDeck === 'dondorf';
+  return !!deckDef(currentDeck).lenormand;
 }
 
 function flip(i) {
@@ -2546,7 +2525,7 @@ function lenMeaning(i) {
   if (!d) return name;
   const n = LENORMAND.findIndex(c => c.name === name);
   const card = LENORMAND[n];
-  const showPip = ['golden', 'lenormand', 'bicycle', 'red', 'dondorf'].includes(currentDeck);
+  const showPip = !!deckDef(currentDeck).pip;
   const [timing, feel] = LEN_EXTRA[name] || ['', ''];
   const yesNo = { '+': '✅ Yes', '-': '❌ No', '0': '⚖️ Neutral' }[feel] || '';
   const meta = [timing && `⏱ ${timing}`, yesNo].filter(Boolean).join(' · ');
@@ -2945,11 +2924,55 @@ async function askClaude() {
 const HISTORY_KEY = 'readingHistory';
 const HISTORY_MAX = 30;
 
-const DECK_LABEL = {
-  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', etteilla:'Grand Etteilla · Egyptian Tarot', dondorf:'Dondorf', grandjeu:'Grand Jeu', lenormand:'Атласные',
-  russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
-  golden:'Golden', copag:'Copag 4 Colour', madyana:'Modiano'
+// ── Deck registry: everything deck-specific in one place ────────────────────
+// label     — name shown in the Deck row, gallery title and history
+// modes     — body classes that switch on the deck's CSS
+// pool()    — cards a reading draws from;  draw() — deals cardCount of them
+// gallery() — every card for "View All Cards"
+// lenormand — uses the Lenormand / Гадание meanings switch
+// pip       — Lenormand meaning starts with "№3 · 10♠" (playing card shown)
+const tarotGallery = (pool, srcFor) => pool.map(img => {
+  const key = img.replace('.jpg', '');
+  return { src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0] };
+});
+const lenLabel = c => {
+  const rs = String(c.rank) + c.suit;
+  return (meaningSystem === 'russian' && RUSDATA[rs]) ? RUSDATA[rs][0] : `${LEN_ICON[c.name] || ''} ${c.name}`;
 };
+const pipGallery = srcFor => COPAG52.map(c => ({ src: srcFor(c), label: `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>` }));
+const DECKS = {
+  tarot:     { label: 'Tarot', modes: [], pool: () => TAROT, draw: () => drawTarot(),
+               gallery: () => tarotGallery(TAROT, key => tarotSrc(key + '.jpg')) },
+  marseille: { label: 'Marseille', modes: ['marseille-mode'], pool: () => TAROT, draw: () => drawMarseille(),
+               gallery: () => tarotGallery(TAROT, key => WIKI + (MARSEILLE_MAP[key] || key + '.jpg')) },
+  visconti:  { label: 'Visconti', modes: ['visconti-mode'], pool: () => VISCONTI_POOL,
+               draw: () => drawRemoteTarot('visconti', viscontiSrc), gallery: () => tarotGallery(VISCONTI_POOL, viscontiSrc) },
+  solabusca: { label: 'Sola Busca', modes: ['solabusca-mode'], pool: () => TAROT,
+               draw: () => drawRemoteTarot('solabusca', solaSrc), gallery: () => tarotGallery(TAROT, solaSrc) },
+  etteilla:  { label: 'Grand Etteilla · Egyptian Tarot', modes: ['etteilla-mode'], pool: () => ETTEILLA, draw: () => drawEtteilla(),
+               gallery: () => ETTEILLA.map(e => ({ src: ettSrc(e[0]), label: `${e[1]} · ${e[3]}` })) },
+  grandjeu:  { label: 'Grand Jeu', modes: ['grandjeu-mode'], pool: () => gjPool(), draw: () => drawGrandJeu(),
+               gallery: () => [...pipGallery(c => grandJeuSrc(c.rank, c.suit)),
+                               { src: gjFile(105), label: 'Le Consultant' }, { src: gjFile(107), label: 'La Consultante' }] },
+  dondorf:   { label: 'Dondorf', modes: ['dondorf-mode'], pool: () => dondorfPool(), lenormand: true, pip: true,
+               draw: () => drawRemoteLen('dondorf', dondorfSrc), gallery: () => dondorfPool().map(c => ({ src: dondorfSrc(c), label: lenLabel(c) })) },
+  lenormand: { label: 'Атласные', modes: ['lenormand-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
+               draw: () => drawLenormand(), gallery: () => LENORMAND.map(c => ({ sprite: spriteStyle(c.suit, c.rank), label: lenLabel(c) })) },
+  russian:   { label: 'Russian', modes: ['lenormand-mode', 'russian-mode'], pool: () => LENORMAND, lenormand: true,
+               draw: () => drawRussian(), gallery: () => LENORMAND.map(c => ({ src: RUSSIAN_LOCAL[String(c.rank) + c.suit], label: lenLabel(c) })) },
+  golden:    { label: 'Golden', modes: ['lenormand-mode', 'golden-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
+               draw: () => drawGolden(), gallery: () => LENORMAND.map(c => ({ src: `golden_${c.name}.webp`, label: lenLabel(c) })) },
+  bicycle:   { label: 'Bicycle', modes: ['lenormand-mode', 'bicycle-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
+               draw: () => drawBicycle(), gallery: () => pipGallery(c => bikeUrl(c.rank, c.suit)) },
+  red:       { label: 'Bicycle Jumbo', modes: ['lenormand-mode', 'red-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
+               draw: () => drawRed(), gallery: () => pipGallery(c => redUrl(c.rank, c.suit)) },
+  copag:     { label: 'Copag 4 Colour', modes: ['copag-mode'], pool: () => LENORMAND, lenormand: true,
+               draw: () => drawCopag(), gallery: () => pipGallery(c => `cp_${c.rank}${COPAG_SUIT_FILE[c.suit]}.png`) },
+  madyana:   { label: 'Modiano', modes: ['madyana-mode'], pool: () => LENORMAND, lenormand: true,
+               draw: () => drawMadyana(), gallery: () => pipGallery(c => `md_${c.rank}${COPAG_SUIT_FILE[c.suit]}.png`) },
+};
+const deckDef = name => DECKS[name] || DECKS.tarot;
+const DECK_LABEL = Object.fromEntries(Object.entries(DECKS).map(([k, d]) => [k, d.label]));
 
 // Capture the full render state of the current spread so it can be replayed.
 function captureSpread() {
@@ -3258,56 +3281,7 @@ function gallerySuitColor(suit) {
 }
 
 function galleryItems() {
-  const items = [];
-  const lenLabel = c => {
-    const rs = String(c.rank) + c.suit;
-    return (meaningSystem === 'russian' && RUSDATA[rs]) ? RUSDATA[rs][0] : `${LEN_ICON[c.name] || ''} ${c.name}`;
-  };
-  if (currentDeck === 'etteilla') {
-    for (const e of ETTEILLA) items.push({ src: ettSrc(e[0]), label: `${e[1]} · ${e[3]}` });
-  } else if (currentDeck === 'dondorf') {
-    for (const c of dondorfPool()) items.push({ src: dondorfSrc(c), label: lenLabel(c) });
-  } else if (currentDeck === 'grandjeu') {
-    for (const c of COPAG52) {
-      items.push({ src: grandJeuSrc(c.rank, c.suit), label: `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>` });
-    }
-    items.push({ src: gjFile(105), label: 'Le Consultant' }, { src: gjFile(107), label: 'La Consultante' });
-  } else if (currentDeck === 'visconti' || currentDeck === 'solabusca') {
-    const pool = currentDeck === 'visconti' ? VISCONTI_POOL : TAROT;
-    const srcFor = { visconti: viscontiSrc, solabusca: solaSrc }[currentDeck];
-    for (const img of pool) {
-      const key = img.replace('.jpg', '');
-      items.push({ src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0] });
-    }
-  } else if (currentDeck === 'tarot' || currentDeck === 'marseille') {
-    for (const img of TAROT) {
-      const key = img.replace('.jpg', '');
-      const src = currentDeck === 'marseille' ? WIKI + (MARSEILLE_MAP[key] || img) : tarotSrc(img);
-      items.push({ src, label: (MEANINGS[key] || key).split('\n')[0] });
-    }
-  } else if (currentDeck === 'russian' || currentDeck === 'golden' || currentDeck === 'lenormand') {
-    for (const c of LENORMAND) {
-      const rs = String(c.rank) + c.suit;
-      const label = (meaningSystem === 'russian' && RUSDATA[rs])
-        ? RUSDATA[rs][0]
-        : `${LEN_ICON[c.name] || ''} ${c.name}`;
-      if (currentDeck === 'russian') items.push({ src: RUSSIAN_LOCAL[rs], label });
-      else if (currentDeck === 'golden') items.push({ src: `golden_${c.name}.webp`, label });
-      else items.push({ sprite: spriteStyle(c.suit, c.rank), label });
-    }
-  } else {
-    // full 52-card view for bicycle / red / copag
-    for (const c of COPAG52) {
-      const label = `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>`;
-      let src;
-      if (currentDeck === 'bicycle') src = bikeUrl(c.rank, c.suit);
-      else if (currentDeck === 'red') src = redUrl(c.rank, c.suit);
-      else if (currentDeck === 'madyana') src = `md_${c.rank}${COPAG_SUIT_FILE[c.suit]}.png`;
-      else src = `cp_${c.rank}${COPAG_SUIT_FILE[c.suit]}.png`;
-      items.push({ src, label });
-    }
-  }
-  return items;
+  return deckDef(currentDeck).gallery();
 }
 
 function viewDeck() {
@@ -3497,22 +3471,11 @@ function toggleAdvanced() {
 // ── Deck switch ────────────────────────────────────────────────────────────
 function switchDeck(deck) {
   currentDeck = deck;
-  const isLen = deck === 'lenormand' || deck === 'russian' || deck === 'bicycle' || deck === 'red' || deck === 'golden';
-  document.body.classList.toggle('lenormand-mode', isLen);
-  document.body.classList.toggle('marseille-mode', deck === 'marseille');
-  document.body.classList.toggle('visconti-mode', deck === 'visconti');
-  document.body.classList.toggle('solabusca-mode', deck === 'solabusca');
-  document.body.classList.toggle('etteilla-mode', deck === 'etteilla');
-  document.body.classList.toggle('dondorf-mode', deck === 'dondorf');
-  document.body.classList.toggle('grandjeu-mode', deck === 'grandjeu');
-  document.body.classList.toggle('russian-mode', deck === 'russian');
-  document.body.classList.toggle('golden-mode', deck === 'golden');
-  document.body.classList.toggle('copag-mode', deck === 'copag');
-  document.body.classList.toggle('madyana-mode', deck === 'madyana');
-  document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
-  document.body.classList.toggle('red-mode', deck === 'red');
+  const allModes = new Set(Object.values(DECKS).flatMap(d => d.modes));
+  allModes.forEach(m => document.body.classList.remove(m));
+  deckDef(deck).modes.forEach(m => document.body.classList.add(m));
 
-  ['tarot', 'marseille', 'visconti', 'solabusca', 'etteilla', 'dondorf', 'grandjeu', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
+  Object.keys(DECKS).forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
