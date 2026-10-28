@@ -1026,15 +1026,6 @@
     .card-info::-webkit-scrollbar { display: none; }
     .card-info > * { flex-shrink: 0; }
     .ru-meaning { display: block; margin-top: 8px; }
-    .suit {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 1em; height: 1.2em; margin: 0 0.1em 0 0; vertical-align: -0.2em;
-      border-radius: 0.2em; background: #f2f2f4; color: #111;
-      font-size: 1em; line-height: 1; font-family: -apple-system, 'Apple Symbols', sans-serif;
-      box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25);
-    }
-    .suit.red { color: #d81b25; }
-    .history-cards .suit { display: inline-flex; }
     .card-info .card-label { position: sticky; top: 0; z-index: 1; align-self: stretch; background: #000; box-shadow: 0 6px 6px -2px #000; }
     .card-label { color: var(--label); font-size: 1.2rem; font-weight: 600; letter-spacing: -0.2px; word-spacing: 2px; }
     .meaning-text { color: rgba(235,235,245,0.84); font-size: 0.875rem; line-height: 1.38; }
@@ -1343,7 +1334,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 107</div>
+  <div class="ios-footer center">build 106</div>
   </div>
   </div>
 </div>
@@ -2150,47 +2141,18 @@ function flip(i) {
     if (usesMeaningToggle() && meaningSystem === 'russian') {
       const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
       const d = RUSDATA[rs];
-      setLabel(i, d ? d[0] : rankSuitLbl());
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rankSuitLbl();
     } else if (usesMeaningToggle()) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
-      setLabel(i, name ? `${icon} ${name}`.trim() : rankSuitLbl());
+      document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
       const isRev = front.classList.contains('rev');
-      setLabel(i, isRev ? firstLine + ' (Rev.)' : firstLine);
+      document.getElementById(`lbl${i}`).textContent = isRev ? firstLine + ' (Rev.)' : firstLine;
     }
   }, 360);
-}
-
-// Suit symbols as tiny playing cards: ♥♦ red, ♠♣ black, on a light chip
-// (a bare black ♠ would vanish on the black background).
-function paintSuits(root) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  while (walker.nextNode()) {
-    const n = walker.currentNode;
-    if (/[♠♣♥♦]/.test(n.nodeValue) && !n.parentElement.closest('.suit')) nodes.push(n);
-  }
-  nodes.forEach(n => {
-    const frag = document.createDocumentFragment();
-    n.nodeValue.split(/([♠♣♥♦])\uFE0F?/).forEach((part, k) => {
-      if (!part) return;
-      if (k % 2) {
-        const sp = document.createElement('span');
-        sp.className = 'suit' + (part === '♥' || part === '♦' ? ' red' : '');
-        sp.textContent = part;
-        frag.appendChild(sp);
-      } else frag.appendChild(document.createTextNode(part));
-    });
-    n.replaceWith(frag);
-  });
-}
-function setLabel(i, text) {
-  const el = document.getElementById(`lbl${i}`);
-  el.textContent = text;
-  paintSuits(el);
 }
 
 const LEN_COMBO_SEP = '\u0001';
@@ -2408,7 +2370,6 @@ function toggleAllMeanings() {
           r.textContent = ru;
           mn.appendChild(r);
         }
-        paintSuits(mn);
         mn.classList.add('visible');
         continue;
       }
@@ -2422,7 +2383,6 @@ function toggleAllMeanings() {
           c.textContent = combo;
           mn.appendChild(c);
         }
-        paintSuits(mn);
         mn.classList.add('visible');
       }
     } else {
@@ -2738,7 +2698,6 @@ function renderHistory() {
       <div class="history-cards">${cardLines}</div>
     </div></div>`;
   }).join('');
-  paintSuits(el);
   attachSwipe('historyList', deleteHistory);
 }
 
@@ -2861,7 +2820,6 @@ function renderSaved() {
       <div class="history-cards">${cardLines}</div>
     </div></div>`;
   }).join('');
-  paintSuits(el);
   attachSwipe('savedList', i => deleteSaved(i, null));
 }
 
@@ -3133,11 +3091,11 @@ function setMeaningSystem(sys) {
     if (usesMeaningToggle() && meaningSystem === 'russian') {
       const rs = (front.dataset.rank || '') + (front.dataset.suit || '');
       const d = RUSDATA[rs];
-      setLabel(i, d ? d[0] : rankSuitLbl());
+      document.getElementById(`lbl${i}`).textContent = d ? d[0] : rankSuitLbl();
     } else {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
-      setLabel(i, name ? `${icon} ${name}`.trim() : rankSuitLbl());
+      document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
     }
   }
   // if meanings are currently shown, re-render them
