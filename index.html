@@ -1038,16 +1038,12 @@
     }
     #btnVisconti { background: #4a0e18; border-color: #c9a227; color: #f0cf72; }
     #btnVisconti.active { background: #6a1424; border-color: #e6c24a; color: #ffe39a; }
-    .dodal-mode .card-wrap    { width: auto; aspect-ratio: 0.55; }
     .dondorf-mode .card-wrap  { width: auto; aspect-ratio: 0.63; }
     .grandjeu-mode .card-wrap { width: auto; aspect-ratio: 0.70; }
-    .dodal-mode .card-front, .dondorf-mode .card-front, .grandjeu-mode .card-front { background: #e9dfc8; }
-    .dodal-mode .card-front img, .dondorf-mode .card-front img, .grandjeu-mode .card-front img { object-fit: cover; }
-    .dodal-mode .card-back    { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Jean%20Dodal%20Tarot%20reverse.jpg?width=300') center / cover no-repeat #8a2a2a; }
+    .dondorf-mode .card-front, .grandjeu-mode .card-front { background: #e9dfc8; }
+    .dondorf-mode .card-front img, .grandjeu-mode .card-front img { object-fit: cover; }
     .dondorf-mode .card-back  { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Jeu%20de%20cartomancie%20-%20jeu%20de%20cartes%2C%20estampe%20-%20btv1b105431980%20%2802%20of%2070%29.jpg?width=300') center / cover no-repeat #6a2a2a; }
     .grandjeu-mode .card-back { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Grand%20jeu%20de%20société%20de%20Melle%20Lenormand%20-%20jeu%20de%20cartomancie%20-%20jeu%20de%20cartes%2C%20estampe%20-%20btv1b10543195n%20%28002%20of%20108%29.jpg?width=300') center / cover no-repeat #3d4a3a; }
-    #btnDodal { background: #2a3138; border-color: #8a9aa8; color: #d4dde6; }
-    #btnDodal.active { background: #3a444d; border-color: #b0c0ce; color: #f0f5fa; }
     #btnDondorf { background: #4a1a36; border-color: #d0609a; color: #ffb0d6; }
     #btnDondorf.active { background: #66244a; border-color: #ee80b8; color: #ffd4ea; }
     #btnGrandjeu { background: #3d2c12; border-color: #b8862e; color: #f0c777; }
@@ -1331,7 +1327,6 @@
           <button class="deck-btn" id="btnMadyana" onclick="pickDeck('madyana')">Modiano</button>
           <button class="deck-btn" id="btnGrandjeu" onclick="pickDeck('grandjeu')">Grand Jeu</button>
           <button class="deck-btn" id="btnMarseille" onclick="pickDeck('marseille')">Marseille</button>
-          <button class="deck-btn" id="btnDodal" onclick="pickDeck('dodal')">Jean Dodal</button>
           <button class="deck-btn" id="btnVisconti" onclick="pickDeck('visconti')">Visconti</button>
           <button class="deck-btn" id="btnSolabusca" onclick="pickDeck('solabusca')">Sola Busca</button>
           <button class="deck-btn active" id="btnTarot" onclick="pickDeck('tarot')">Tarot</button>
@@ -1383,7 +1378,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 113</div>
+  <div class="ios-footer center">build 114</div>
   </div>
   </div>
 </div>
@@ -1772,19 +1767,6 @@ TAROT.slice(0, 22).forEach((img, n) => { SOLA_NUM[img.replace('.jpg', '')] = n; 
 });
 const solaSrc = key => WIKI + encodeURIComponent(`Sola Busca tarot card ${String(SOLA_NUM[key]).padStart(2, '0')}.jpg`) + '?width=480';
 
-// ── Jean Dodal Tarot de Marseille (Lyon, c.1701; public domain) ──
-// Commons "Jean Dodal B01–B78": Batons 1–14, Cups 15–28, Coins 29–42, Swords 43–56
-// (ace..10, page, knight, queen, king), Fool 57, trumps I–XXI 58–78 (Marseille
-// numbering: Justice VIII = 65, Strength XI = 68 — matched by name).
-const DODAL_NUM = {};
-[['Wands', 1], ['Cups', 15], ['Pents', 29], ['Swords', 43]].forEach(([suit, start]) => {
-  for (let r = 1; r <= 14; r++) DODAL_NUM[suit + String(r).padStart(2, '0')] = start + r - 1;
-});
-TAROT.slice(0, 22).forEach((img, n) => { DODAL_NUM[img.replace('.jpg', '')] = 57 + n; });
-DODAL_NUM['RWS_Tarot_08_Strength'] = 68;
-DODAL_NUM['RWS_Tarot_11_Justice'] = 65;
-const dodalSrc = key => WIKI + encodeURIComponent(`Jean Dodal B${String(DODAL_NUM[key]).padStart(2, '0')}.jpg`) + '?width=480';
-
 // ── Dondorf Lenormand (Frankfurt, 19th c.; BnF scan, public domain) ──
 // 70 images, front/back alternating; card 32 (Moon) is missing from the scan.
 const dondorfPool = () => LENORMAND.filter(c => c.name !== 'Moon');
@@ -1931,7 +1913,7 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, visconti: null, solabusca: null, dodal: null, dondorf: null, grandjeu: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
+const deckRemaining = { tarot: null, marseille: null, visconti: null, solabusca: null, dondorf: null, grandjeu: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
 
 // Full 52-card pool for the Copag 4 Colour deck
 const COPAG52 = [];
@@ -1943,7 +1925,7 @@ for (const suit of ['♣','♦','♥','♠']) {
 const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
 
 function deckSource(name) {
-  if (name === 'tarot' || name === 'marseille' || name === 'solabusca' || name === 'dodal') return TAROT;
+  if (name === 'tarot' || name === 'marseille' || name === 'solabusca') return TAROT;
   if (name === 'dondorf') return dondorfPool();
   if (name === 'visconti') return VISCONTI_POOL;
   return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
@@ -2006,7 +1988,6 @@ function draw() {
   else if (currentDeck === 'marseille') drawMarseille();
   else if (currentDeck === 'visconti') drawRemoteTarot('visconti', viscontiSrc);
   else if (currentDeck === 'solabusca') drawRemoteTarot('solabusca', solaSrc);
-  else if (currentDeck === 'dodal') drawRemoteTarot('dodal', dodalSrc);
   else if (currentDeck === 'dondorf') drawRemoteLen('dondorf', dondorfSrc);
   else if (currentDeck === 'grandjeu') drawRemoteLen('grandjeu', c => grandJeuSrc(c.rank, c.suit));
   else drawTarot();
@@ -2081,7 +2062,7 @@ function drawRemoteLen(deck, srcFor) {
   scheduleFlips(shuffled.length);
 }
 
-// Tarot decks whose images come from Wikimedia by card key (Visconti, Sola Busca, Dodal)
+// Tarot decks whose images come from Wikimedia by card key (Visconti, Sola Busca)
 function drawRemoteTarot(deck, srcFor) {
   const allowRev = !document.getElementById('revToggle').checked;
   const shuffled = pickCards(deck, cardCount);
@@ -2730,7 +2711,7 @@ const HISTORY_KEY = 'readingHistory';
 const HISTORY_MAX = 30;
 
 const DECK_LABEL = {
-  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', dodal:'Jean Dodal', dondorf:'Dondorf', grandjeu:'Grand Jeu', lenormand:'Атласные',
+  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', dondorf:'Dondorf', grandjeu:'Grand Jeu', lenormand:'Атласные',
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
   golden:'Golden', copag:'Copag 4 Colour', madyana:'Modiano'
 };
@@ -2889,7 +2870,7 @@ function applySpread(e) {
   closeSettings();
   // Match the card-count layout the spread was drawn in.
   if (e.count && e.count !== cardCount) setCardCount(e.count);
-  switchDeck(e.deck);          // sets currentDeck + body mode classes, runs resetCards()
+  switchDeck(e.deck === 'dodal' ? 'marseille' : e.deck);   // Jean Dodal was removed; same Marseille pattern
   hasDrawn = true;
   meaningsVisible = false;
   // Rebuild drawnLenormand so per-card meanings work for sprite/Russian decks.
@@ -3024,9 +3005,9 @@ function galleryItems() {
       items.push({ src: grandJeuSrc(c.rank, c.suit), label: `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>` });
     }
     items.push({ src: gjFile(105), label: 'Le Consultant' }, { src: gjFile(107), label: 'La Consultante' });
-  } else if (currentDeck === 'visconti' || currentDeck === 'solabusca' || currentDeck === 'dodal') {
+  } else if (currentDeck === 'visconti' || currentDeck === 'solabusca') {
     const pool = currentDeck === 'visconti' ? VISCONTI_POOL : TAROT;
-    const srcFor = { visconti: viscontiSrc, solabusca: solaSrc, dodal: dodalSrc }[currentDeck];
+    const srcFor = { visconti: viscontiSrc, solabusca: solaSrc }[currentDeck];
     for (const img of pool) {
       const key = img.replace('.jpg', '');
       items.push({ src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0] });
@@ -3254,7 +3235,6 @@ function switchDeck(deck) {
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('visconti-mode', deck === 'visconti');
   document.body.classList.toggle('solabusca-mode', deck === 'solabusca');
-  document.body.classList.toggle('dodal-mode', deck === 'dodal');
   document.body.classList.toggle('dondorf-mode', deck === 'dondorf');
   document.body.classList.toggle('grandjeu-mode', deck === 'grandjeu');
   document.body.classList.toggle('russian-mode', deck === 'russian');
@@ -3264,7 +3244,7 @@ function switchDeck(deck) {
   document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
   document.body.classList.toggle('red-mode', deck === 'red');
 
-  ['tarot', 'marseille', 'visconti', 'solabusca', 'dodal', 'dondorf', 'grandjeu', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
+  ['tarot', 'marseille', 'visconti', 'solabusca', 'dondorf', 'grandjeu', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
