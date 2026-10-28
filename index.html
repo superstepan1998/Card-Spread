@@ -1284,15 +1284,15 @@
     <div class="advanced-section" id="deckSection">
       <div class="ios-cell deck-cell">
         <div class="deck-picker">
-          <button class="deck-btn" id="btnGolden" onclick="switchDeck('golden')">Golden</button>
-          <button class="deck-btn" id="btnMarseille" onclick="switchDeck('marseille')">Marseille</button>
-          <button class="deck-btn" id="btnLenormand" onclick="switchDeck('lenormand')">Атласные</button>
-          <button class="deck-btn" id="btnRussian" onclick="switchDeck('russian')">Russian</button>
-          <button class="deck-btn" id="btnBicycle" onclick="switchDeck('bicycle')">Bicycle</button>
-          <button class="deck-btn" id="btnRed" onclick="switchDeck('red')">Bicycle JUMBO</button>
-          <button class="deck-btn" id="btnCopag" onclick="switchDeck('copag')">Copag 4 Colour</button>
-          <button class="deck-btn" id="btnMadyana" onclick="switchDeck('madyana')">Modiano</button>
-          <button class="deck-btn active" id="btnTarot" onclick="switchDeck('tarot')">Tarot</button>
+          <button class="deck-btn" id="btnGolden" onclick="pickDeck('golden')">Golden</button>
+          <button class="deck-btn" id="btnMarseille" onclick="pickDeck('marseille')">Marseille</button>
+          <button class="deck-btn" id="btnLenormand" onclick="pickDeck('lenormand')">Атласные</button>
+          <button class="deck-btn" id="btnRussian" onclick="pickDeck('russian')">Russian</button>
+          <button class="deck-btn" id="btnBicycle" onclick="pickDeck('bicycle')">Bicycle</button>
+          <button class="deck-btn" id="btnRed" onclick="pickDeck('red')">Bicycle JUMBO</button>
+          <button class="deck-btn" id="btnCopag" onclick="pickDeck('copag')">Copag 4 Colour</button>
+          <button class="deck-btn" id="btnMadyana" onclick="pickDeck('madyana')">Modiano</button>
+          <button class="deck-btn active" id="btnTarot" onclick="pickDeck('tarot')">Tarot</button>
         </div>
       </div>
       <div class="setting-row ios-cell">
@@ -1341,7 +1341,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 108</div>
+  <div class="ios-footer center">build 109</div>
   </div>
   </div>
 </div>
@@ -3035,8 +3035,20 @@ function collapseDeckSection() {
   syncDeckLabel();
 }
 function toggleDeckSection() {
-  document.getElementById('deckSection').classList.toggle('open');
+  const open = document.getElementById('deckSection').classList.toggle('open');
   syncDeckLabel();
+  // bring the whole deck list into view so every deck is tappable without scrolling
+  if (open) requestAnimationFrame(() => {
+    const sc = document.getElementById('sheetScroll');
+    const g = document.getElementById('deckGroup');
+    const delta = g.getBoundingClientRect().top - sc.getBoundingClientRect().top - 4;
+    sc.scrollTo({ top: sc.scrollTop + delta, behavior: 'smooth' });
+  });
+}
+
+function pickDeck(deck) {
+  switchDeck(deck);
+  closeSettings();
 }
 
 function collapseAdvanced() {
