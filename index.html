@@ -1044,6 +1044,12 @@
     .dondorf-mode .card-front img, .grandjeu-mode .card-front img { object-fit: cover; }
     .dondorf-mode .card-back  { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Jeu%20de%20cartomancie%20-%20jeu%20de%20cartes%2C%20estampe%20-%20btv1b105431980%20%2802%20of%2070%29.jpg?width=300') center / cover no-repeat #6a2a2a; }
     .grandjeu-mode .card-back { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Grand%20jeu%20de%20société%20de%20Melle%20Lenormand%20-%20jeu%20de%20cartomancie%20-%20jeu%20de%20cartes%2C%20estampe%20-%20btv1b10543195n%20%28002%20of%20108%29.jpg?width=300') center / cover no-repeat #3d4a3a; }
+    .etteilla-mode .card-wrap { width: auto; aspect-ratio: 0.571; }
+    .etteilla-mode .card-front { background: #e9dfc8; }
+    .etteilla-mode .card-front img { object-fit: cover; }
+    .etteilla-mode .card-back { background: url('https://commons.wikimedia.org/wiki/Special:FilePath/Jeu%20de%20tarot%20divinatoire%20dit%20%22Grand%20Etteilla%22%20ou%20%22tarot%20%C3%A9gyptien%22%20-%20jeu%20de%20cartes%2C%20estampe%20-%20btv1b105111415%20%28002%20of%20166%29.jpg?width=300') center / cover no-repeat #cdbdb0; }
+    #btnEtteilla { background: #2a3138; border-color: #8a9aa8; color: #d4dde6; }
+    #btnEtteilla.active { background: #3a444d; border-color: #b0c0ce; color: #f0f5fa; }
     #btnDondorf { background: #4a1a36; border-color: #d0609a; color: #ffb0d6; }
     #btnDondorf.active { background: #66244a; border-color: #ee80b8; color: #ffd4ea; }
     #btnGrandjeu { background: #3d2c12; border-color: #b8862e; color: #f0c777; }
@@ -1329,6 +1335,7 @@
           <button class="deck-btn" id="btnMarseille" onclick="pickDeck('marseille')">Marseille</button>
           <button class="deck-btn" id="btnVisconti" onclick="pickDeck('visconti')">Visconti</button>
           <button class="deck-btn" id="btnSolabusca" onclick="pickDeck('solabusca')">Sola Busca</button>
+          <button class="deck-btn" id="btnEtteilla" onclick="pickDeck('etteilla')">Etteilla</button>
           <button class="deck-btn active" id="btnTarot" onclick="pickDeck('tarot')">Tarot</button>
         </div>
       </div>
@@ -1378,7 +1385,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 114</div>
+  <div class="ios-footer center">build 115</div>
   </div>
   </div>
 </div>
@@ -1767,6 +1774,90 @@ TAROT.slice(0, 22).forEach((img, n) => { SOLA_NUM[img.replace('.jpg', '')] = n; 
 });
 const solaSrc = key => WIKI + encodeURIComponent(`Sola Busca tarot card ${String(SOLA_NUM[key]).padStart(2, '0')}.jpg`) + '?width=480';
 
+// ── Grand Etteilla, "tarot égyptien" (c.1890; BnF scan, public domain) ──
+// 146 images, front/back alternating: card k = image 2k−1. Etteilla's own system:
+// each card prints its upright keyword at the top and its reversed keyword at the
+// bottom. 73 of 78 survive: no 16 Jugement, 17 Mortalité, 49 Ace of Cups,
+// 63 Ace of Swords, 78 La Folie.
+// [scan k, Etteilla no., card, FR up, FR rev, EN up, EN rev, RU up, RU rev]
+const ETTEILLA = [
+  [1, 1, "", "Etteilla (le Questionnant)", "Questionnant", "The querent (a man)", "The querent", "Спрашивающий (мужчина)", "Спрашивающий"],
+  [2, 2, "", "Éclaircissement", "Feu", "Clarification", "Fire", "Прояснение", "Огонь"],
+  [3, 3, "", "Propos", "Eau", "Talk, discourse", "Water", "Речь, разговор", "Вода"],
+  [4, 4, "", "Dépouillement", "Air", "Stripping away, loss", "Air", "Лишение, утрата", "Воздух"],
+  [5, 5, "", "Voyage", "Terre", "Journey", "Earth", "Путешествие", "Земля"],
+  [6, 6, "", "Nuit", "Jour", "Night", "Day", "Ночь", "День"],
+  [7, 7, "", "Appui", "Protection", "Support", "Protection", "Поддержка", "Защита"],
+  [8, 8, "", "Etteilla (la Questionnante)", "Questionnante", "The querent (a woman)", "The querent", "Спрашивающая (женщина)", "Спрашивающая"],
+  [9, 9, "", "La Justice", "Le Légiste", "Justice", "The lawyer", "Справедливость", "Законник"],
+  [10, 10, "", "La Tempérance", "Le Prêtre", "Temperance", "The priest", "Умеренность", "Священник"],
+  [11, 11, "", "La Force", "Le Souverain", "Strength", "The sovereign", "Сила", "Государь"],
+  [12, 12, "", "La Prudence", "Le Peuple", "Prudence", "The people", "Благоразумие", "Народ"],
+  [13, 13, "", "Mariage", "Union", "Marriage", "Union", "Брак", "Союз"],
+  [14, 14, "", "Force Majeure", "Force Majeure", "Overwhelming force", "Overwhelming force", "Непреодолимая сила", "Непреодолимая сила"],
+  [15, 15, "", "Maladie", "Maladie", "Illness", "Illness", "Болезнь", "Болезнь"],
+  [16, 18, "", "Traître", "Traître", "Traitor", "Traitor", "Предатель", "Предатель"],
+  [17, 19, "", "Misère", "Prison", "Misery", "Prison", "Нищета", "Тюрьма"],
+  [18, 20, "", "Fortune", "Augmentation", "Fortune", "Increase", "Удача", "Приумножение"],
+  [19, 21, "", "Dissension", "Dissension", "Discord", "Discord", "Раздор", "Раздор"],
+  [20, 22, "♣ King of Wands", "Homme de Campagne", "Homme bon et sévère", "Country man", "A good but stern man", "Сельский мужчина", "Добрый, но строгий мужчина"],
+  [21, 23, "♣ Queen of Wands", "Femme de Campagne", "Bonne femme", "Country woman", "A good woman", "Сельская женщина", "Добрая женщина"],
+  [22, 24, "♣ Knight of Wands", "Départ", "Désunion", "Departure", "Disunion", "Отъезд", "Разлад"],
+  [23, 25, "♣ Page of Wands", "Étranger", "Nouvelle", "Stranger", "News", "Чужестранец", "Новость"],
+  [24, 26, "♣ 10 of Wands", "Trahison", "Obstacle", "Betrayal", "Obstacle", "Предательство", "Препятствие"],
+  [25, 27, "♣ 9 of Wands", "Retard", "Traverses", "Delay", "Setbacks", "Задержка", "Помехи"],
+  [26, 28, "♣ 8 of Wands", "Campagne", "Dispute intestine", "The countryside", "Internal dispute", "Деревня", "Внутренний раздор"],
+  [27, 29, "♣ 7 of Wands", "Pour parler", "Indécision", "Negotiation", "Indecision", "Переговоры", "Нерешительность"],
+  [28, 30, "♣ 6 of Wands", "Domestique", "Attente", "Household, servant", "Waiting", "Прислуга, домашние", "Ожидание"],
+  [29, 31, "♣ 5 of Wands", "Or", "Procès", "Gold", "Lawsuit", "Золото", "Тяжба"],
+  [30, 32, "♣ 4 of Wands", "Société", "Prospérité", "Society, company", "Prosperity", "Общество", "Процветание"],
+  [31, 33, "♣ 3 of Wands", "Entreprises", "Peines tendant à leur fin", "Enterprises", "Troubles coming to an end", "Начинания", "Огорчения близятся к концу"],
+  [32, 34, "♣ 2 of Wands", "Chagrin", "Surprise", "Sorrow", "Surprise", "Огорчение", "Неожиданность"],
+  [33, 35, "♣ Ace of Wands", "Naissance", "Chute", "Birth", "Fall", "Рождение", "Падение"],
+  [34, 36, "♥ King of Cups", "Homme blond", "Homme en place", "Fair-haired man", "A man of position", "Светловолосый мужчина", "Человек с положением"],
+  [35, 37, "♥ Queen of Cups", "Femme blonde", "Femme en place", "Fair-haired woman", "A woman of position", "Светловолосая женщина", "Женщина с положением"],
+  [36, 38, "♥ Knight of Cups", "Arrivée", "Friponnerie", "Arrival", "Trickery", "Прибытие", "Плутовство"],
+  [37, 39, "♥ Page of Cups", "Garçon blond", "Penchant", "Fair-haired youth", "Inclination", "Светловолосый юноша", "Склонность"],
+  [38, 40, "♥ 10 of Cups", "La Ville", "Courroux", "The city", "Wrath", "Город", "Гнев"],
+  [39, 41, "♥ 9 of Cups", "Victoire", "Sincérité", "Victory", "Sincerity", "Победа", "Искренность"],
+  [40, 42, "♥ 8 of Cups", "Fille blonde", "Satisfaction", "Fair-haired girl", "Satisfaction", "Светловолосая девушка", "Удовлетворение"],
+  [41, 43, "♥ 7 of Cups", "La Pensée", "Projets", "Thought", "Plans", "Мысль", "Замыслы"],
+  [42, 44, "♥ 6 of Cups", "Le Passé", "Avenir", "The past", "The future", "Прошлое", "Будущее"],
+  [43, 45, "♥ 5 of Cups", "Héritage", "Parent", "Inheritance", "A relative", "Наследство", "Родственник"],
+  [44, 46, "♥ 4 of Cups", "Ennui", "Nouvelles connaissances", "Boredom", "New acquaintances", "Скука", "Новые знакомства"],
+  [45, 47, "♥ 3 of Cups", "Réussite", "Expédition", "Success", "Dispatch, expedition", "Успех", "Отправка, экспедиция"],
+  [46, 48, "♥ 2 of Cups", "Amour", "Désir", "Love", "Desire", "Любовь", "Желание"],
+  [47, 50, "♠ King of Swords", "Homme de robe", "Homme méchant", "Man of the law", "A wicked man", "Человек в мантии (законник)", "Злой человек"],
+  [48, 51, "♠ Queen of Swords", "Veuvage", "Méchante femme", "Widowhood", "A wicked woman", "Вдовство", "Злая женщина"],
+  [49, 52, "♠ Knight of Swords", "Militaire", "Ignorance", "Soldier", "Ignorance", "Военный", "Невежество"],
+  [50, 53, "♠ Page of Swords", "Espion", "Imprévu", "Spy", "The unexpected", "Шпион", "Непредвиденное"],
+  [51, 54, "♠ 10 of Swords", "Pleurs", "Avantage", "Tears", "Advantage", "Слёзы", "Выгода"],
+  [52, 55, "♠ 9 of Swords", "Ecclésiastique", "Juste défiance", "Clergyman", "Justified mistrust", "Священнослужитель", "Оправданное недоверие"],
+  [53, 56, "♠ 8 of Swords", "Critique", "Incident", "Criticism", "Incident", "Критика", "Происшествие"],
+  [54, 57, "♠ 7 of Swords", "Espérance", "Sages avis", "Hope", "Wise counsel", "Надежда", "Мудрый совет"],
+  [55, 58, "♠ 6 of Swords", "Route", "Déclaration", "The road", "Declaration", "Дорога", "Признание"],
+  [56, 59, "♠ 5 of Swords", "Perte", "Deuil", "Loss", "Mourning", "Утрата", "Траур"],
+  [57, 60, "♠ 4 of Swords", "Solitude", "Économie", "Solitude", "Thrift", "Одиночество", "Бережливость"],
+  [58, 61, "♠ 3 of Swords", "Éloignement", "Égarement", "Distance, separation", "Going astray", "Отдаление", "Заблуждение"],
+  [59, 62, "♠ 2 of Swords", "Amitié", "Faux", "Friendship", "Falsehood", "Дружба", "Фальшь"],
+  [60, 64, "♦ King of Pentacles", "Homme brun", "Homme vicieux", "Dark-haired man", "A vicious man", "Темноволосый мужчина", "Порочный человек"],
+  [61, 65, "♦ Queen of Pentacles", "Femme brune", "Mal-sûr", "Dark-haired woman", "Unreliability", "Темноволосая женщина", "Ненадёжность"],
+  [62, 66, "♦ Knight of Pentacles", "Utilité", "Inaction", "Usefulness", "Inaction", "Польза", "Бездействие"],
+  [63, 67, "♦ Page of Pentacles", "Garçon brun", "Prodigalité", "Dark-haired youth", "Extravagance", "Темноволосый юноша", "Расточительство"],
+  [64, 68, "♦ 10 of Pentacles", "La Maison", "Loterie", "The house", "Lottery, gamble", "Дом", "Лотерея"],
+  [65, 69, "♦ 9 of Pentacles", "Effet", "Duperie", "Realisation", "Deception", "Результат", "Обман"],
+  [66, 70, "♦ 8 of Pentacles", "Fille brune", "Plus", "Dark-haired girl", "Gain, more", "Темноволосая девушка", "Прибыль"],
+  [67, 71, "♦ 7 of Pentacles", "Argent", "Inquiétude", "Money", "Worry", "Деньги", "Беспокойство"],
+  [68, 72, "♦ 6 of Pentacles", "Le Présent", "Ambition", "The present", "Ambition", "Настоящее", "Честолюбие"],
+  [69, 73, "♦ 5 of Pentacles", "Amant, Amante", "Manque d'ordre", "Lover", "Disorder", "Возлюбленный", "Беспорядок"],
+  [70, 74, "♦ 4 of Pentacles", "Un présent", "Clôture", "A gift", "Closure, enclosure", "Подарок", "Завершение, ограда"],
+  [71, 75, "♦ 3 of Pentacles", "Noble", "Enfant", "Noble", "A child", "Знатный", "Ребёнок"],
+  [72, 76, "♦ 2 of Pentacles", "Embarras", "Lettre", "Difficulty", "A letter", "Затруднение", "Письмо"],
+  [73, 77, "♦ Ace of Pentacles", "Parfait contentement", "Bourse d'argent", "Perfect contentment", "A purse of money", "Полное довольство", "Кошелёк с деньгами"]
+];
+const ETT_BY_KEY = Object.fromEntries(ETTEILLA.map(e => ['E' + e[1], e]));
+const ettSrc = k => WIKI + encodeURIComponent(`Jeu de tarot divinatoire dit "Grand Etteilla" ou "tarot égyptien" - jeu de cartes, estampe - btv1b105111415 (${String(2 * k - 1).padStart(3, '0')} of 166).jpg`) + '?width=480';
+
 // ── Dondorf Lenormand (Frankfurt, 19th c.; BnF scan, public domain) ──
 // 70 images, front/back alternating; card 32 (Moon) is missing from the scan.
 const dondorfPool = () => LENORMAND.filter(c => c.name !== 'Moon');
@@ -1913,7 +2004,7 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, visconti: null, solabusca: null, dondorf: null, grandjeu: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
+const deckRemaining = { tarot: null, marseille: null, visconti: null, solabusca: null, etteilla: null, dondorf: null, grandjeu: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
 
 // Full 52-card pool for the Copag 4 Colour deck
 const COPAG52 = [];
@@ -1927,6 +2018,7 @@ const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
 function deckSource(name) {
   if (name === 'tarot' || name === 'marseille' || name === 'solabusca') return TAROT;
   if (name === 'dondorf') return dondorfPool();
+  if (name === 'etteilla') return ETTEILLA;
   if (name === 'visconti') return VISCONTI_POOL;
   return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
 }
@@ -1988,6 +2080,7 @@ function draw() {
   else if (currentDeck === 'marseille') drawMarseille();
   else if (currentDeck === 'visconti') drawRemoteTarot('visconti', viscontiSrc);
   else if (currentDeck === 'solabusca') drawRemoteTarot('solabusca', solaSrc);
+  else if (currentDeck === 'etteilla') drawEtteilla();
   else if (currentDeck === 'dondorf') drawRemoteLen('dondorf', dondorfSrc);
   else if (currentDeck === 'grandjeu') drawRemoteLen('grandjeu', c => grandJeuSrc(c.rank, c.suit));
   else drawTarot();
@@ -2037,6 +2130,25 @@ function drawTarot() {
     front.dataset.key = img.replace('.jpg', '');
     const rev = !allowRev && Math.random() < 0.3;
     if (rev) front.classList.add('rev');
+  });
+  scheduleFlips(shuffled.length);
+}
+
+function drawEtteilla() {
+  const allowRev = !document.getElementById('revToggle').checked;
+  const shuffled = pickCards('etteilla', cardCount);
+  shuffled.forEach((e, i) => {
+    const front = document.getElementById(`cf${i}`);
+    front.className = 'card-front';
+    front.style.cssText = '';
+    const el = document.getElementById(`img${i}`) || document.createElement('img');
+    el.id = `img${i}`; el.alt = ''; el.style.display = '';
+    el.src = ettSrc(e[0]);
+    front.innerHTML = '';
+    front.appendChild(el);
+    front.dataset.key = 'E' + e[1];
+    delete front.dataset.name;
+    if (!allowRev && Math.random() < 0.3) front.classList.add('rev');
   });
   scheduleFlips(shuffled.length);
 }
@@ -2165,9 +2277,10 @@ const BIKE_RANK_NAME = { A: 'Ace', K: 'King', Q: 'Queen', J: 'Jack' };
 const BIKE_SUIT_NAME = { '♣': 'Clubs', '♥': 'Hearts', '♦': 'Diamonds', '♠': 'Spades' };
 const BIKE_API_SUIT = { '♣': 'C', '♥': 'H', '♦': 'D', '♠': 'S' };
 
+// Public-domain (CC0) vector card faces from Commons — sharp on retina, standard pattern
 function bikeUrl(rank, suit) {
-  const r = String(rank) === '10' ? '0' : String(rank);
-  return `https://deckofcardsapi.com/static/img/${r}${BIKE_API_SUIT[suit]}.png`;
+  const r = { A: 'Ace', J: 'Jack', Q: 'Queen', K: 'King' }[rank] || String(rank);
+  return WIKI + encodeURIComponent(`${r} of ${BIKE_SUIT_NAME[suit]}.svg`) + '?width=480';
 }
 
 // saulspatz/SVGCards — public-domain Byron Knoll jumbo-index deck
@@ -2301,6 +2414,10 @@ function flip(i) {
       const name = front.dataset.name || '';
       const icon = LEN_ICON[name] || '';
       document.getElementById(`lbl${i}`).textContent = name ? `${icon} ${name}`.trim() : rankSuitLbl();
+    } else if (ETT_BY_KEY[front.dataset.key]) {
+      const e = ETT_BY_KEY[front.dataset.key];
+      const isRev = front.classList.contains('rev');
+      document.getElementById(`lbl${i}`).textContent = isRev ? `${e[4]} (Rev.)` : e[3];
     } else {
       const key = front.dataset.key;
       const firstLine = (MEANINGS[key] || '').split('\n')[0];
@@ -2505,6 +2622,12 @@ function enParagraph(t) {
 function getMeaning(i) {
   const front = document.getElementById(`cf${i}`);
   const key = front.dataset.key;
+  const ett = ETT_BY_KEY[key];
+  if (ett) {
+    const rev = front.classList.contains('rev');
+    const head = `№${ett[1]}${ett[2] ? ' · ' + ett[2] : ''}${rev ? ' · reversed' : ''}`;
+    return { en: `${head}\n${rev ? ett[6] : ett[5]}`, ru: rev ? ett[8] : ett[7] };
+  }
   const upright = MEANINGS[key] || '';
   const body = upright.split('\n').slice(1).join('\n');
   const isRev = front.classList.contains('rev') && REVERSED[key];
@@ -2711,7 +2834,7 @@ const HISTORY_KEY = 'readingHistory';
 const HISTORY_MAX = 30;
 
 const DECK_LABEL = {
-  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', dondorf:'Dondorf', grandjeu:'Grand Jeu', lenormand:'Атласные',
+  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', etteilla:'Etteilla', dondorf:'Dondorf', grandjeu:'Grand Jeu', lenormand:'Атласные',
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
   golden:'Golden', copag:'Copag 4 Colour', madyana:'Modiano'
 };
@@ -2998,7 +3121,9 @@ function galleryItems() {
     const rs = String(c.rank) + c.suit;
     return (meaningSystem === 'russian' && RUSDATA[rs]) ? RUSDATA[rs][0] : `${LEN_ICON[c.name] || ''} ${c.name}`;
   };
-  if (currentDeck === 'dondorf') {
+  if (currentDeck === 'etteilla') {
+    for (const e of ETTEILLA) items.push({ src: ettSrc(e[0]), label: `${e[1]} · ${e[3]}` });
+  } else if (currentDeck === 'dondorf') {
     for (const c of dondorfPool()) items.push({ src: dondorfSrc(c), label: lenLabel(c) });
   } else if (currentDeck === 'grandjeu') {
     for (const c of COPAG52) {
@@ -3235,6 +3360,7 @@ function switchDeck(deck) {
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('visconti-mode', deck === 'visconti');
   document.body.classList.toggle('solabusca-mode', deck === 'solabusca');
+  document.body.classList.toggle('etteilla-mode', deck === 'etteilla');
   document.body.classList.toggle('dondorf-mode', deck === 'dondorf');
   document.body.classList.toggle('grandjeu-mode', deck === 'grandjeu');
   document.body.classList.toggle('russian-mode', deck === 'russian');
@@ -3244,7 +3370,7 @@ function switchDeck(deck) {
   document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
   document.body.classList.toggle('red-mode', deck === 'red');
 
-  ['tarot', 'marseille', 'visconti', 'solabusca', 'dondorf', 'grandjeu', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
+  ['tarot', 'marseille', 'visconti', 'solabusca', 'etteilla', 'dondorf', 'grandjeu', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
