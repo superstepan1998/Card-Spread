@@ -1036,9 +1036,19 @@
       box-shadow: inset 0 0 0 5px #6a1220, inset 0 0 0 6.5px #d4af37,
                   inset 0 0 0 10px #6a1220, inset 0 0 0 11px rgba(212,175,55,0.55);
     }
-    #btnVisconti { grid-column: 1 / -1; justify-self: center; width: calc(50% - 4px);
-                   background: #4a0e18; border-color: #c9a227; color: #f0cf72; }
+    #btnVisconti { background: #4a0e18; border-color: #c9a227; color: #f0cf72; }
     #btnVisconti.active { background: #6a1424; border-color: #e6c24a; color: #ffe39a; }
+    #btnSolabusca { background: #4d1f22; border-color: #c96a5a; color: #f2a99a; }
+    #btnSolabusca.active { background: #6b2a2c; border-color: #e88775; color: #ffc6b8; }
+    .solabusca-mode .card-wrap { width: auto; aspect-ratio: 0.54; }
+    .solabusca-mode .card-front { background: #efe3c4; }
+    .solabusca-mode .card-back {
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 3px, rgba(120,52,30,0.55) 3.5px 4.5px, transparent 5px) 0 0 / 14px 14px,
+        linear-gradient(#e9d9b0, #dcc595);
+      box-shadow: inset 0 0 0 5px #e4d2a6, inset 0 0 0 6.5px #8a3b22,
+                  inset 0 0 0 10px #e4d2a6, inset 0 0 0 11px rgba(138,59,34,0.6);
+    }
     .golden-mode .card-wrap  { --card-ar: 0.687; }
     .copag-mode .card-wrap, .madyana-mode .card-wrap { --card-ar: 0.724; }
     .russian-mode .card-wrap { --card-ar: 0.657; }
@@ -1306,6 +1316,7 @@
           <button class="deck-btn" id="btnCopag" onclick="pickDeck('copag')">Copag 4 Colour</button>
           <button class="deck-btn" id="btnMadyana" onclick="pickDeck('madyana')">Modiano</button>
           <button class="deck-btn" id="btnVisconti" onclick="pickDeck('visconti')">Visconti</button>
+          <button class="deck-btn" id="btnSolabusca" onclick="pickDeck('solabusca')">Sola Busca</button>
           <button class="deck-btn active" id="btnTarot" onclick="pickDeck('tarot')">Tarot</button>
         </div>
       </div>
@@ -1355,7 +1366,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 110</div>
+  <div class="ios-footer center">build 111</div>
   </div>
   </div>
 </div>
@@ -1733,6 +1744,17 @@ const VISCONTI_MAP = {
 const VISCONTI_POOL = TAROT.filter(img => VISCONTI_MAP[img.replace('.jpg', '')]);
 const viscontiSrc = key => WIKI + encodeURIComponent('Bembo-Visconti-tarot-' + VISCONTI_MAP[key] + '.jpg') + '?width=480';
 
+// ── Sola Busca (Ferrara, c.1491; oldest complete 78-card deck, public domain) ──
+// Commons files "Sola Busca tarot card 00–77": trumps 0–21, then Cups 22–35,
+// Coins 36–49, Batons 50–63, Swords 64–77. Trumps are named heroes, so meanings
+// follow the trump number.
+const SOLA_NUM = {};
+TAROT.slice(0, 22).forEach((img, n) => { SOLA_NUM[img.replace('.jpg', '')] = n; });
+[['Cups', 22], ['Pents', 36], ['Wands', 50], ['Swords', 64]].forEach(([suit, start]) => {
+  for (let r = 1; r <= 14; r++) SOLA_NUM[suit + String(r).padStart(2, '0')] = start + r - 1;
+});
+const solaSrc = key => WIKI + encodeURIComponent(`Sola Busca tarot card ${String(SOLA_NUM[key]).padStart(2, '0')}.jpg`) + '?width=480';
+
 // ── Marseille filename map (Wikimedia Commons "X_Tarot.png" collection) ────
 const MARSEILLE_MAP = {
   'RWS_Tarot_00_Fool':'TT_Tarot.png','RWS_Tarot_01_Magician':'T1_Tarot.png',
@@ -1861,7 +1883,7 @@ let tapTimer = null;
 let hasDrawn = false;
 
 // ── Deck state ─────────────────────────────────────────────────────────────
-const deckRemaining = { tarot: null, marseille: null, visconti: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
+const deckRemaining = { tarot: null, marseille: null, visconti: null, solabusca: null, lenormand: null, russian: null, bicycle: null, red: null, golden: null, copag: null, madyana: null };
 
 // Full 52-card pool for the Copag 4 Colour deck
 const COPAG52 = [];
@@ -1873,7 +1895,7 @@ for (const suit of ['♣','♦','♥','♠']) {
 const COPAG_SUIT_FILE = { '♣':'c', '♦':'d', '♥':'h', '♠':'s' };
 
 function deckSource(name) {
-  if (name === 'tarot' || name === 'marseille') return TAROT;
+  if (name === 'tarot' || name === 'marseille' || name === 'solabusca') return TAROT;
   if (name === 'visconti') return VISCONTI_POOL;
   return LENORMAND; // bicycle/red/copag readings use the 36-card pool; COPAG52 is gallery-only
 }
@@ -1933,7 +1955,8 @@ function draw() {
   else if (currentDeck === 'bicycle') drawBicycle();
   else if (currentDeck === 'red') drawRed();
   else if (currentDeck === 'marseille') drawMarseille();
-  else if (currentDeck === 'visconti') drawVisconti();
+  else if (currentDeck === 'visconti') drawRemoteTarot('visconti', viscontiSrc);
+  else if (currentDeck === 'solabusca') drawRemoteTarot('solabusca', solaSrc);
   else drawTarot();
   setTimeout(saveToHistory, 1500);
 }
@@ -1985,9 +2008,10 @@ function drawTarot() {
   scheduleFlips(shuffled.length);
 }
 
-function drawVisconti() {
+// Tarot decks whose images come from Wikimedia by card key (Visconti, Sola Busca)
+function drawRemoteTarot(deck, srcFor) {
   const allowRev = !document.getElementById('revToggle').checked;
-  const shuffled = pickCards('visconti', cardCount);
+  const shuffled = pickCards(deck, cardCount);
   shuffled.forEach((img, i) => {
     const key = img.replace('.jpg', '');
     const front = document.getElementById(`cf${i}`);
@@ -1995,7 +2019,7 @@ function drawVisconti() {
     front.style.cssText = '';
     const el = document.getElementById(`img${i}`);
     el.style.display = '';
-    el.src = viscontiSrc(key);
+    el.src = srcFor(key);
     front.innerHTML = '';
     front.appendChild(el);
     front.dataset.key = key;
@@ -2632,7 +2656,7 @@ const HISTORY_KEY = 'readingHistory';
 const HISTORY_MAX = 30;
 
 const DECK_LABEL = {
-  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', lenormand:'Атласные',
+  tarot:'Tarot', marseille:'Marseille', visconti:'Visconti', solabusca:'Sola Busca', lenormand:'Атласные',
   russian:'Russian', bicycle:'Bicycle', red:'Bicycle Jumbo',
   golden:'Golden', copag:'Copag 4 Colour', madyana:'Modiano'
 };
@@ -2915,10 +2939,12 @@ function gallerySuitColor(suit) {
 
 function galleryItems() {
   const items = [];
-  if (currentDeck === 'visconti') {
-    for (const img of VISCONTI_POOL) {
+  if (currentDeck === 'visconti' || currentDeck === 'solabusca') {
+    const pool = currentDeck === 'visconti' ? VISCONTI_POOL : TAROT;
+    const srcFor = currentDeck === 'visconti' ? viscontiSrc : solaSrc;
+    for (const img of pool) {
       const key = img.replace('.jpg', '');
-      items.push({ src: viscontiSrc(key), label: (MEANINGS[key] || key).split('\n')[0] });
+      items.push({ src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0] });
     }
   } else if (currentDeck === 'tarot' || currentDeck === 'marseille') {
     for (const img of TAROT) {
@@ -3142,6 +3168,7 @@ function switchDeck(deck) {
   document.body.classList.toggle('lenormand-mode', isLen);
   document.body.classList.toggle('marseille-mode', deck === 'marseille');
   document.body.classList.toggle('visconti-mode', deck === 'visconti');
+  document.body.classList.toggle('solabusca-mode', deck === 'solabusca');
   document.body.classList.toggle('russian-mode', deck === 'russian');
   document.body.classList.toggle('golden-mode', deck === 'golden');
   document.body.classList.toggle('copag-mode', deck === 'copag');
@@ -3149,7 +3176,7 @@ function switchDeck(deck) {
   document.body.classList.toggle('bicycle-mode', deck === 'bicycle');
   document.body.classList.toggle('red-mode', deck === 'red');
 
-  ['tarot', 'marseille', 'visconti', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
+  ['tarot', 'marseille', 'visconti', 'solabusca', 'lenormand', 'russian', 'golden', 'bicycle', 'red', 'copag', 'madyana'].forEach(d => {
     const btn = document.getElementById('btn' + d.charAt(0).toUpperCase() + d.slice(1));
     if (btn) btn.classList.toggle('active', d === deck);
   });
