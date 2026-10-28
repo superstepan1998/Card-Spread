@@ -948,7 +948,7 @@
 
     /* Golden Lenormand — rounded-corner cards (transparent corners) */
     .golden-mode .card-back {
-      background: url('golden-back.png?v=5') center / contain no-repeat;
+      background: url('golden-back.webp') center / contain no-repeat;
       box-shadow: none;
     }
     .golden-mode .card-front {
@@ -1026,6 +1026,22 @@
     .card-info::-webkit-scrollbar { display: none; }
     .card-info > * { flex-shrink: 0; }
     .ru-meaning { display: block; margin-top: 8px; }
+    .note-toggle {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: none; border: none; padding: 8px 0 0; margin-top: 2px;
+      color: var(--label2); font-size: 13px; cursor: pointer;
+    }
+    .note-toggle .chev { width: 6px; height: 6px; margin: 0; }
+    .note-toggle.open .chev { transform: rotate(45deg); }
+    .note-box { display: none; margin-top: 8px; }
+    .note-box.open { display: block; }
+    .note-input {
+      width: 100%; min-height: 70px; resize: vertical;
+      background: var(--fill); border: none; border-radius: 10px;
+      color: var(--label); font-size: 16px; line-height: 1.35; padding: 9px 11px;
+    }
+    .note-input:focus { outline: none; box-shadow: 0 0 0 2px var(--blue); }
+    .note-input::placeholder { color: var(--label3); }
     .visconti-mode .card-wrap { width: auto; aspect-ratio: 0.5; }
     .visconti-mode .card-front { background: #2a1a10; }
     .visconti-mode .card-back {
@@ -1385,7 +1401,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 116</div>
+  <div class="ios-footer center">build 117</div>
   </div>
   </div>
 </div>
@@ -1707,6 +1723,9 @@ function spriteStyle(suit, rank) {
 }
 
 // ── Tarot deck ─────────────────────────────────────────────────────────────
+// Rider-Waite faces are stored locally as compact WebP (public domain, from Commons)
+const tarotSrc = img => 'tarot/' + img.replace('.jpg', '.webp');
+
 const TAROT = [
   'RWS_Tarot_00_Fool.jpg','RWS_Tarot_01_Magician.jpg','RWS_Tarot_02_High_Priestess.jpg',
   'RWS_Tarot_03_Empress.jpg','RWS_Tarot_04_Emperor.jpg','RWS_Tarot_05_Hierophant.jpg',
@@ -2124,7 +2143,7 @@ function drawTarot() {
     front.style.cssText = '';
     const el = document.getElementById(`img${i}`);
     el.style.display = '';
-    el.src = WIKI + img;
+    el.src = tarotSrc(img);
     front.innerHTML = '';
     front.appendChild(el);
     front.dataset.key = img.replace('.jpg', '');
@@ -2267,7 +2286,7 @@ function drawGolden() {
     front.innerHTML = '';
     const el = document.createElement('img');
     el.id = `img${i}`; el.alt = '';
-    el.src = `golden_${card.name}.png?v=5`;
+    el.src = `golden_${card.name}.webp`;
     front.appendChild(el);
   });
   scheduleFlips(shuffled.length);
@@ -2399,7 +2418,6 @@ function usesMeaningToggle() {
 function flip(i) {
   document.getElementById(`ci${i}`).classList.add('flipped');
   flipped[i] = true;
-  if (navigator.vibrate) navigator.vibrate(8); // subtle tactile tick on reveal
   setTimeout(() => {
     const front = document.getElementById(`cf${i}`);
     const rankSuitLbl = () => {
@@ -2484,7 +2502,6 @@ let lpFired = false;
       t = setTimeout(() => {
         lpFired = true;
         copyCards();
-        if (navigator.vibrate) navigator.vibrate(12);
       }, 550);
     });
     const cancel = () => clearTimeout(t);
@@ -3103,9 +3120,39 @@ function renderSaved() {
         <span class="history-deck">${deck}</span>
       </div>
       <div class="history-cards">${cardLines}</div>
+      <button class="note-toggle${openNotes.has(e.ts) ? ' open' : ''}" onclick="toggleNote(event, ${e.ts})" onpointerdown="event.stopPropagation()">Note${e.note ? ' •' : ''}<i class="chev"></i></button>
+      <div class="note-box${openNotes.has(e.ts) ? ' open' : ''}" onclick="event.stopPropagation()" onpointerdown="event.stopPropagation()">
+        <textarea class="note-input" rows="3" placeholder="Your thoughts, what actually happened…" oninput="saveNote(${e.ts}, this)">${(e.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</textarea>
+      </div>
     </div></div>`;
   }).join('');
   attachSwipe('savedList', i => deleteSaved(i, null));
+}
+
+// Notes on saved readings — collapsed until the Note toggle is tapped
+const openNotes = new Set();
+function toggleNote(ev, ts) {
+  ev.stopPropagation();
+  const btn = ev.currentTarget;
+  const box = btn.nextElementSibling;
+  const open = !openNotes.has(ts);
+  open ? openNotes.add(ts) : openNotes.delete(ts);
+  btn.classList.toggle('open', open);
+  box.classList.toggle('open', open);
+}
+let noteTimer = null;
+function saveNote(ts, ta) {
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    const list = loadSaved();
+    const e = list.find(x => x.ts === ts);
+    if (!e) return;
+    const text = ta.value.trim();
+    if (text) e.note = text; else delete e.note;
+    localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+    const btn = ta.closest('.history-entry').querySelector('.note-toggle');
+    if (btn) btn.firstChild.nodeValue = text ? 'Note •' : 'Note';
+  }, 400);
 }
 
 // ── Deck gallery (view all cards) ───────────────────────────────────────────
@@ -3140,7 +3187,7 @@ function galleryItems() {
   } else if (currentDeck === 'tarot' || currentDeck === 'marseille') {
     for (const img of TAROT) {
       const key = img.replace('.jpg', '');
-      const src = WIKI + (currentDeck === 'marseille' ? (MARSEILLE_MAP[key] || img) : img);
+      const src = currentDeck === 'marseille' ? WIKI + (MARSEILLE_MAP[key] || img) : tarotSrc(img);
       items.push({ src, label: (MEANINGS[key] || key).split('\n')[0] });
     }
   } else if (currentDeck === 'russian' || currentDeck === 'golden' || currentDeck === 'lenormand') {
@@ -3150,7 +3197,7 @@ function galleryItems() {
         ? RUSDATA[rs][0]
         : `${LEN_ICON[c.name] || ''} ${c.name}`;
       if (currentDeck === 'russian') items.push({ src: RUSSIAN_LOCAL[rs], label });
-      else if (currentDeck === 'golden') items.push({ src: `golden_${c.name}.png`, label });
+      else if (currentDeck === 'golden') items.push({ src: `golden_${c.name}.webp`, label });
       else items.push({ sprite: spriteStyle(c.suit, c.rank), label });
     }
   } else {
@@ -3449,6 +3496,19 @@ if (savedCount === 1) setCardCount(1);
 // ── Service worker: instant updates + offline ───────────────────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+  // Quietly pre-cache Tarot and Golden so they open instantly (and offline) from then on
+  setTimeout(async () => {
+    if (!('caches' in window)) return;
+    try {
+      const cache = await caches.open('cardspread-v1');
+      const urls = [...TAROT.map(tarotSrc), ...LENORMAND.map(c => `golden_${c.name}.webp`), 'golden-back.webp'];
+      for (const u of urls) {
+        if (await cache.match(u)) continue;
+        const r = await fetch(u);
+        if (r.ok) await cache.put(u, r);
+      }
+    } catch (e) {}
+  }, 2500);
 }
 
 // ── Image fallback ───────────────────────────────────────────────────────
