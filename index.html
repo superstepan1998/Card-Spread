@@ -1025,6 +1025,7 @@
     .card-info { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .card-info::-webkit-scrollbar { display: none; }
     .card-info > * { flex-shrink: 0; }
+    .ru-meaning { display: block; margin-top: 8px; }
     .card-info .card-label { position: sticky; top: 0; z-index: 1; align-self: stretch; background: #000; box-shadow: 0 6px 6px -2px #000; }
     .card-label { color: var(--label); font-size: 1.2rem; font-weight: 600; letter-spacing: -0.2px; word-spacing: 2px; }
     .meaning-text { color: rgba(235,235,245,0.84); font-size: 0.875rem; line-height: 1.38; }
@@ -1333,7 +1334,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 102</div>
+  <div class="ios-footer center">build 103</div>
   </div>
   </div>
 </div>
@@ -2299,14 +2300,19 @@ function ruTarot(key) {
   return RU_TAROT[m ? 'M' + Number(m[1]) : key] || '';
 }
 
+// Join the English meaning lines into one plain paragraph
+function enParagraph(t) {
+  return t.split('\n').map(l => l.trim()).filter(Boolean)
+          .map(l => /[.!?;:…]$/.test(l) ? l : l + '.').join(' ');
+}
+
 function getMeaning(i) {
   const front = document.getElementById(`cf${i}`);
   const key = front.dataset.key;
   const upright = MEANINGS[key] || '';
   const body = upright.split('\n').slice(1).join('\n');
   const en = (!front.classList.contains('rev') || !REVERSED[key]) ? body : REVERSED[key];
-  const ru = ruTarot(key);
-  return ru ? `${en}\n\n·  ·  ·\n${ru}` : en;
+  return { en: enParagraph(en), ru: ruTarot(key) };
 }
 
 function toggleAllMeanings() {
@@ -2314,9 +2320,19 @@ function toggleAllMeanings() {
   for (let i = 0; i < 3; i++) {
     const mn = document.getElementById(`mn${i}`);
     if (meaningsVisible && flipped[i]) {
-      const text = (usesMeaningToggle() && meaningSystem === 'russian') ? rusMeaning(i)
-                 : usesMeaningToggle() ? lenMeaning(i)
-                 : getMeaning(i);
+      if (!usesMeaningToggle()) {
+        const { en, ru } = getMeaning(i);
+        mn.textContent = en;
+        if (ru) {
+          const r = document.createElement('span');
+          r.className = 'ru-meaning';
+          r.textContent = ru;
+          mn.appendChild(r);
+        }
+        mn.classList.add('visible');
+        continue;
+      }
+      const text = meaningSystem === 'russian' ? rusMeaning(i) : lenMeaning(i);
       if (text) { mn.textContent = text; mn.classList.add('visible'); }
     } else {
       mn.classList.remove('visible');
