@@ -1334,7 +1334,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 104</div>
+  <div class="ios-footer center">build 105</div>
   </div>
   </div>
 </div>
@@ -1756,14 +1756,28 @@ const LENORMAND = [
   { name:'Cross',      suit:'♣', rank:6  },
 ];
 
+// Timing and general feeling per card (Labyrinthos Lenormand correspondences).
+// Timing is left blank where the source gives none that is usable.
+const LEN_EXTRA = {
+  'Rider':['Soon','+'], 'Clover':['A short window','+'], 'Ship':['A long time','+'], 'House':['Permanent','+'],
+  'Tree':['9–12 months','0'], 'Clouds':['Autumn','-'], 'Snake':['','-'], 'Coffin':['Forever, final','-'],
+  'Flowers':['Spring','+'], 'Scythe':['Suddenly, quickly','-'], 'Whip':['Short','-'], 'Birds':['Temporary','0'],
+  'Child':['Soon, briefly','+'], 'Fox':['','-'], 'Bear':['A long time','+'], 'Stars':['Night, winter','+'],
+  'Stork':['Long-lasting','0'], 'Dog':['Long-lasting','+'], 'Tower':['Delays','0'], 'Garden':['','+'],
+  'Mountain':['Standstill','-'], 'Crossroads':['6–7 weeks','0'], 'Mice':['Running out of time','-'], 'Heart':['Spring','+'],
+  'Ring':['Recurring','0'], 'Book':['In the future','0'], 'Letter':['Fast','0'], 'Man':['Immediately','0'],
+  'Woman':['Immediately','0'], 'Lily':['Winter','+'], 'Sun':['Day, sunrise','+'], 'Moon':['Evening, sunset','0'],
+  'Key':['Long-lasting','+'], 'Fish':['Recurring','+'], 'Anchor':['A long time','+'], 'Cross':['2–3 weeks','-'],
+};
+
 // ── Lenormand icons ───────────────────────────────────────────────────────
 const LEN_ICON = {
   'Rider':'🏇', 'Clover':'🍀', 'Ship':'🚢', 'House':'🏠', 'Tree':'🌳',
-  'Clouds':'☁️', 'Snake':'🐍', 'Coffin':'⚰️', 'Flowers':'🌸', 'Scythe':'⚔️',
-  'Whip':'⚡', 'Birds':'🐦', 'Child':'👶', 'Fox':'🦊', 'Bear':'🐻',
-  'Stars':'⭐', 'Stork':'🦢', 'Dog':'🐕', 'Tower':'🏰', 'Garden':'🌿',
+  'Clouds':'☁️', 'Snake':'🐍', 'Coffin':'⚰️', 'Flowers':'🌸', 'Scythe':'🌾',
+  'Whip':'🪢', 'Birds':'🐦', 'Child':'👶', 'Fox':'🦊', 'Bear':'🐻',
+  'Stars':'⭐', 'Stork':'🦩', 'Dog':'🐕', 'Tower':'🏰', 'Garden':'🌿',
   'Mountain':'⛰️', 'Crossroads':'🔀', 'Mice':'🐭', 'Heart':'❤️', 'Ring':'💍',
-  'Book':'📖', 'Letter':'✉️', 'Man':'👨', 'Woman':'👩', 'Lily':'🌷',
+  'Book':'📖', 'Letter':'✉️', 'Man':'👨', 'Woman':'👩', 'Lily':'⚜️',
   'Sun':'☀️', 'Moon':'🌙', 'Key':'🗝️', 'Fish':'🐟', 'Anchor':'⚓', 'Cross':'✝️',
 };
 
@@ -2126,13 +2140,21 @@ function flip(i) {
   }, 360);
 }
 
+const LEN_COMBO_SEP = '\u0001';
 function lenMeaning(i) {
   if (!drawnLenormand[i]) return '';
   const name = drawnLenormand[i].name;
   const d = LENDATA[name];
   if (!d) return name;
-  let text = d[0];
-  const sep = '\n\n·  ·  ·\n';
+  const n = LENORMAND.findIndex(c => c.name === name);
+  const card = LENORMAND[n];
+  // Golden is the only picture deck; every other deck already shows the playing card
+  const showPip = currentDeck === 'golden';
+  const [timing, feel] = LEN_EXTRA[name] || ['', ''];
+  const yesNo = { '+': '✅ Yes', '-': '❌ No', '0': '⚖️ Neutral' }[feel] || '';
+  const meta = [timing && `⏱ ${timing}`, yesNo].filter(Boolean).join(' · ');
+  let text = `№${n + 1}${showPip ? ` · ${card.rank}${card.suit}` : ''}\n${d[0]}${meta ? '\n' + meta : ''}`;
+  const sep = LEN_COMBO_SEP;
   if (i === 0 && drawnLenormand[1]) {
     const nb = drawnLenormand[1].name;
     const db = LENDATA[nb];
@@ -2335,7 +2357,17 @@ function toggleAllMeanings() {
         continue;
       }
       const text = meaningSystem === 'russian' ? rusMeaning(i) : lenMeaning(i);
-      if (text) { mn.textContent = text; mn.classList.add('visible'); }
+      if (text) {
+        const [main, combo] = text.split(LEN_COMBO_SEP);
+        mn.textContent = main;
+        if (combo) {
+          const c = document.createElement('span');
+          c.className = 'ru-meaning';
+          c.textContent = combo;
+          mn.appendChild(c);
+        }
+        mn.classList.add('visible');
+      }
     } else {
       mn.classList.remove('visible');
       mn.textContent = '';
