@@ -1334,7 +1334,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 103</div>
+  <div class="ios-footer center">build 104</div>
   </div>
   </div>
 </div>
@@ -2311,8 +2311,10 @@ function getMeaning(i) {
   const key = front.dataset.key;
   const upright = MEANINGS[key] || '';
   const body = upright.split('\n').slice(1).join('\n');
-  const en = (!front.classList.contains('rev') || !REVERSED[key]) ? body : REVERSED[key];
-  return { en: enParagraph(en), ru: ruTarot(key) };
+  const isRev = front.classList.contains('rev') && REVERSED[key];
+  // The Russian system has no reversed meanings, so reversed cards show English only
+  return isRev ? { en: enParagraph(REVERSED[key]), ru: '' }
+               : { en: enParagraph(body), ru: ruTarot(key) };
 }
 
 function toggleAllMeanings() {
