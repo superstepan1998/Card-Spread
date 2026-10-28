@@ -1026,6 +1026,11 @@
     .card-info::-webkit-scrollbar { display: none; }
     .card-info > * { flex-shrink: 0; }
     .ru-meaning { display: block; margin-top: 8px; }
+    .golden-mode .card-wrap  { --card-ar: 0.687; }
+    .copag-mode .card-wrap, .madyana-mode .card-wrap { --card-ar: 0.724; }
+    .russian-mode .card-wrap { --card-ar: 0.657; }
+    .golden-mode .card-wrap, .copag-mode .card-wrap,
+    .madyana-mode .card-wrap, .russian-mode .card-wrap { width: auto; aspect-ratio: var(--card-ar); }
     .ru-line { display: block; }
     .ru-role { margin-top: 7px; color: var(--label); font-size: 12px; font-weight: 600; letter-spacing: 0.1px; opacity: 0.6; }
     .card-info .card-label { position: sticky; top: 0; z-index: 1; align-self: stretch; background: #000; box-shadow: 0 6px 6px -2px #000; }
@@ -1336,7 +1341,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 107</div>
+  <div class="ios-footer center">build 108</div>
   </div>
   </div>
 </div>
@@ -3020,7 +3025,9 @@ function syncDeckLabel() {
   const btn = document.getElementById('deckToggle');
   if (!btn) return;
   const open = document.getElementById('deckSection').classList.contains('open');
-  btn.innerHTML = `<span>Deck</span><span class="row-val">${DECK_LABEL[currentDeck] || currentDeck}<i class="chev"></i></span>`;
+  if (!btn.querySelector('.deck-val'))
+    btn.innerHTML = '<span>Deck</span><span class="row-val"><span class="deck-val"></span><i class="chev"></i></span>';
+  btn.querySelector('.deck-val').textContent = DECK_LABEL[currentDeck] || currentDeck;
   btn.classList.toggle('open', open);
 }
 function collapseDeckSection() {
@@ -3115,6 +3122,7 @@ function setMeaningSystem(sys) {
 document.addEventListener('click', (e) => {
   const panel = document.getElementById('settingsPanel');
   const btn   = document.getElementById('btnSettings');
+  if (!e.target.isConnected) return;
   if (panel.classList.contains('open') &&
       !panel.contains(e.target) && !btn.contains(e.target)) {
     closeSettings();
