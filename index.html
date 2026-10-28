@@ -5,70 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b0a10">
+  <meta name="theme-color" content="#000000">
   <title>Tarot</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    /* per-deck ambience: the deck's own card back, blurred, under the glass */
-    #deckBackdrop {
-      position: fixed;
-      left: 50%; top: 50%;
-      width: 160px; height: 240px;
-      transform: translate(-50%, -50%) scale(3.6);
-      filter: blur(6px) brightness(0.85) saturate(1.15);
-      opacity: 0.36;
-      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, #000 35%, transparent 82%);
-      mask-image: radial-gradient(ellipse 85% 75% at 50% 45%, #000 35%, transparent 82%);
-      z-index: -2;
-      pointer-events: none;
-      transition: opacity 0.6s;
-    }
-    /* ── Background variants (body.bg-*) ── */
-    #starfield { display: none; position: fixed; inset: 0; z-index: -2; pointer-events: none; }
-    /* Big pattern: the deck back, large and crisp, dimmed like a tablecloth */
-    body.bg-pattern #deckBackdrop {
-      transform: translate(-50%, -50%) scale(4.4);
-      filter: brightness(0.55) saturate(1.05);
-      opacity: 0.55;
-      -webkit-mask-image: none; mask-image: none;
-    }
-    body.bg-pattern::before, body.bg-pattern::after { display: none; }
-    /* Pure black */
-    body.bg-black { background: #000; }
-    body.bg-black #deckBackdrop, body.bg-black::before, body.bg-black::after { display: none; }
-    /* Starry sky */
-    body.bg-stars { background: radial-gradient(ellipse 120% 80% at 50% 10%, #12142a 0%, #07070f 60%, #030306 100%) fixed #05050a; }
-    body.bg-stars #deckBackdrop { display: none; }
-    body.bg-stars #starfield {
-      display: block; opacity: 0.7;
-      -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 38%, rgba(0,0,0,0.35) 52%, rgba(0,0,0,0.35) 100%);
-      mask-image: linear-gradient(90deg, #000 0%, #000 38%, rgba(0,0,0,0.35) 52%, rgba(0,0,0,0.35) 100%);
-    }
-    @media (min-width: 760px) { body.bg-stars #starfield { -webkit-mask-image: none; mask-image: none; } }
-    body.bg-stars::before { background: radial-gradient(circle, rgba(110,90,220,0.16), transparent 62%); }
-    body.bg-stars::after  { background: radial-gradient(circle, rgba(70,120,210,0.12), transparent 62%); }
-    @keyframes twinkle { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
-    #starfield .tw { position: absolute; inset: 0; animation: twinkle 4.5s ease-in-out infinite; }
-    #starfield .tw:nth-child(2) { animation-duration: 6.5s; animation-delay: -2s; }
-    /* liquid-glass ambience: two soft color glows behind everything */
-    body::before, body::after {
-      content: '';
-      position: fixed;
-      border-radius: 50%;
-      z-index: -1;
-      pointer-events: none;
-    }
-    body::before {
-      width: 420px; height: 420px; left: -120px; top: 4%;
-      background: radial-gradient(circle, rgba(118,88,210,0.20), transparent 62%);
-    }
-    body::after {
-      width: 360px; height: 360px; right: -100px; top: 46%;
-      background: radial-gradient(circle, rgba(205,145,75,0.16), transparent 62%);
-    }
-
     body {
-      background: radial-gradient(ellipse 120% 80% at 50% 18%, #141020 0%, #0b0a10 55%, #070609 100%) fixed #0b0a10;
+      background: #000;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
@@ -1081,8 +1023,7 @@
 
     /* Main screen */
     .card-label { color: var(--label); font-size: 1.2rem; font-weight: 600; letter-spacing: -0.2px; word-spacing: 2px; }
-    .meaning-text { color: rgba(235,235,245,0.84); font-size: 0.875rem; line-height: 1.38; text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6); }
-    .card-label { text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+    .meaning-text { color: rgba(235,235,245,0.84); font-size: 0.875rem; line-height: 1.38; }
 
     /* Floating glass button (iOS 26 style) */
     .btn-settings {
@@ -1150,7 +1091,8 @@
     .saved-name { color: var(--label); font-size: 17px; font-weight: 600; }
     .saved-del { display: none; }
     .history-date, .history-deck { color: var(--label2); font-size: 13px; letter-spacing: 0; }
-    .history-cards { color: rgba(235,235,245,0.86); font-size: 15px; line-height: 1.38; margin-top: 4px; }
+    .history-cards { color: var(--label2); font-size: 14px; line-height: 1.42; margin-top: 8px; padding-left: 10px; border-left: 2px solid rgba(235,235,245,0.18); }
+    #historyList .history-date { color: var(--label); font-size: 15px; font-weight: 600; }
     .history-empty { color: var(--label3); font-size: 15px; padding: 18px 0; }
     .swipe-del { background: var(--red); font-size: 15px; font-weight: 600; }
     .armed, .saved-del.armed, .history-clear-btn.armed { color: var(--red) !important; font-weight: 600; }
@@ -1236,8 +1178,9 @@
       .count-btn { padding: 7px 16px; font-size: 14px; }
       .history-entry { padding: 12px 16px; }
       .saved-name { font-size: 17px; }
-      .history-cards { font-size: 15px; }
+      .history-cards { font-size: 14px; }
       .history-date, .history-deck { font-size: 13px; }
+      #historyList .history-date { font-size: 15px; }
       .reshuffle-btn { padding: 14px 16px; font-size: 17px; }
       .setting-label { font-size: 17px; }
     }
@@ -1245,8 +1188,6 @@
   </style>
 </head>
 <body>
-  <div id="deckBackdrop"></div>
-  <div id="starfield"></div>
 
 <div class="spread" id="spread">
   <div class="slot" id="slot0">
@@ -1388,7 +1329,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 99</div>
+  <div class="ios-footer center">build 100</div>
   </div>
   </div>
 </div>
@@ -2961,15 +2902,6 @@ function switchDeck(deck) {
   resetCards();
   syncMeaningRow();
   syncDeckLabel();
-  updateBackdrop();
-}
-
-// Paint the current deck's card back (as resolved by the mode CSS) behind the glass
-function updateBackdrop() {
-  const bd = document.getElementById('deckBackdrop');
-  const back = document.querySelector('.card-back');
-  if (!bd || !back) return;
-  bd.style.background = getComputedStyle(back).background;
 }
 
 // Show the Lenormand/Гадание toggle on all 36-card playing-card decks.
@@ -3058,42 +2990,7 @@ document.getElementById('spread').addEventListener('error', (e) => {
 }, true);
 
 resetCards();
-updateBackdrop();
 
-// Background: starry sky by default; ?bg=deck|pattern|black previews the alternatives
-function makeStars() {
-  const sf = document.getElementById('starfield');
-  if (!sf || sf.childElementCount) return;
-  const W = Math.max(innerWidth, 430), H = Math.max(innerHeight, 932), dpr = devicePixelRatio || 1;
-  const layer = (n, maxR, cls) => {
-    const c = document.createElement('canvas');
-    c.width = W * dpr; c.height = H * dpr;
-    const g = c.getContext('2d'); g.scale(dpr, dpr);
-    for (let i = 0; i < n; i++) {
-      const x = Math.random() * W, y = Math.random() * H;
-      const r = Math.random() ** 3 * maxR + 0.3;
-      const a = 0.25 + Math.random() * 0.5;
-      const hue = Math.random() < 0.2 ? '200,215,255' : (Math.random() < 0.1 ? '255,225,190' : '255,255,255');
-      g.fillStyle = `rgba(${hue},${a})`;
-      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
-      if (r > 1.2) { g.fillStyle = `rgba(${hue},0.08)`; g.beginPath(); g.arc(x, y, r * 4, 0, Math.PI * 2); g.fill(); }
-    }
-    const d = document.createElement('div');
-    if (cls) d.className = cls;
-    d.style.cssText += `position:absolute;inset:0;background:url(${c.toDataURL()}) 0 0 / ${W}px ${H}px no-repeat`;
-    sf.appendChild(d);
-  };
-  layer(130, 0.9, '');
-  layer(18, 1.4, 'tw');
-  layer(12, 1.2, 'tw');
-}
-(function applyBgVariant() {
-  const v = new URLSearchParams(location.search).get('bg') || 'stars';
-  if (v === 'deck') return;
-  if (!['pattern', 'black', 'stars'].includes(v)) return;
-  document.body.classList.add('bg-' + v);
-  if (v === 'stars') makeStars();
-})();
 </script>
 </body>
 </html>
