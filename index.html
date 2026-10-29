@@ -1054,8 +1054,11 @@
     .viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; user-select: none; -webkit-user-drag: none; }
     .viewer-img.rev { transform: rotate(180deg); }
     .viewer-sprite { width: 160px; height: 240px; border-radius: 14px; }
-    .viewer-hint { flex-shrink: 0; text-align: center; color: var(--label3); font-size: 13px;
-      padding: 0 0 calc(10px + env(safe-area-inset-bottom)); }
+    .viewer-hint { flex-shrink: 0; align-self: center; background: rgba(118,118,128,0.24); border: none; border-radius: 999px;
+      color: var(--label); font-size: 14px; font-weight: 500; padding: 8px 16px; margin: 0 0 calc(10px + env(safe-area-inset-bottom)); cursor: pointer; }
+    .viewer-hint:active { opacity: 0.6; }
+    .viewer-meaning.open ~ .viewer-hint, .card-viewer:has(.viewer-meaning.open) .viewer-hint { margin-bottom: 8px; }
+    .viewer-img { touch-action: pan-y; }
     .viewer-meaning { display: none; flex-shrink: 0; max-height: 46%; overflow-y: auto; -webkit-overflow-scrolling: touch;
       background: #1c1c1e; border-radius: 20px 20px 0 0; padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
       color: rgba(235,235,245,0.84); font-size: 15px; line-height: 1.42; white-space: pre-line; }
@@ -1342,7 +1345,7 @@
     <span class="viewer-count" id="viewerCount"></span>
   </div>
   <div class="viewer-stage" id="viewerStage"></div>
-  <div class="viewer-hint" id="viewerHint">Double-tap for meaning</div>
+  <button class="viewer-hint" id="viewerHint" onclick="toggleViewerMeaning()">Show meaning</button>
   <div class="viewer-meaning" id="viewerMeaning"></div>
 </div>
 
@@ -1451,7 +1454,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 121</div>
+  <div class="ios-footer center">build 122</div>
   </div>
   </div>
 </div>
@@ -3385,7 +3388,9 @@ function renderViewer() {
   if (!it) return;
   const panel = document.getElementById('viewerMeaning');
   panel.classList.toggle('open', viewerMeaningOpen);
-  document.getElementById('viewerHint').style.display = viewerMeaningOpen || !it.m ? 'none' : '';
+  const hint = document.getElementById('viewerHint');
+  hint.style.display = it.m ? '' : 'none';
+  hint.textContent = viewerMeaningOpen ? 'Hide meaning' : 'Show meaning · or double-tap';
   if (viewerMeaningOpen) { renderMeaningInto(panel, it.m, it.rev); panel.scrollTop = 0; }
   document.getElementById('viewerTitle').innerHTML = it.label;
   document.getElementById('viewerCount').textContent = viewerItems.length > 1 ? `${viewerIdx + 1} / ${viewerItems.length}` : '';
@@ -3398,8 +3403,12 @@ function renderViewer() {
     stage.innerHTML = `<img class="viewer-img${it.rev ? ' rev' : ''}" src="${it.src}" alt="">`;
   }
 }
+let lastMeaningToggle = 0;
 function toggleViewerMeaning() {
   if (!viewerItems[viewerIdx] || !viewerItems[viewerIdx].m) return;
+  const now = Date.now();
+  if (now - lastMeaningToggle < 450) return;
+  lastMeaningToggle = now;
   viewerMeaningOpen = !viewerMeaningOpen;
   renderViewer();
 }
@@ -3439,12 +3448,13 @@ function stepViewer(d) {
     const dx = e.clientX - x0, dy = e.clientY - y0;
     x0 = null;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { stepViewer(dx < 0 ? 1 : -1); lastTap = 0; return; }
-    if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+    if (Math.abs(dx) < 24 && Math.abs(dy) < 24) {
       const now = Date.now();
-      if (now - lastTap < 320) { toggleViewerMeaning(); lastTap = 0; } else lastTap = now;
+      if (now - lastTap < 400) { toggleViewerMeaning(); lastTap = 0; } else lastTap = now;
     }
   });
-  stage.addEventListener('dblclick', e => e.preventDefault());
+  stage.addEventListener('pointercancel', () => { x0 = null; });
+  stage.addEventListener('dblclick', e => { e.preventDefault(); toggleViewerMeaning(); });
   document.addEventListener('keydown', e => {
     if (!document.getElementById('cardViewer').classList.contains('open')) return;
     if (e.key === 'Escape') closeViewer();
