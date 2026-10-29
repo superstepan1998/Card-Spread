@@ -1054,6 +1054,17 @@
     .viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; user-select: none; -webkit-user-drag: none; }
     .viewer-img.rev { transform: rotate(180deg); }
     .viewer-sprite { width: 160px; height: 240px; border-radius: 14px; }
+    .viewer-hint { flex-shrink: 0; text-align: center; color: var(--label3); font-size: 13px;
+      padding: 0 0 calc(10px + env(safe-area-inset-bottom)); }
+    .viewer-meaning { display: none; flex-shrink: 0; max-height: 46%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: #1c1c1e; border-radius: 20px 20px 0 0; padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
+      color: rgba(235,235,245,0.84); font-size: 15px; line-height: 1.42; white-space: pre-line; }
+    .viewer-meaning.open { display: block; }
+    .vm-head { color: var(--label2); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin: 14px 0 4px; }
+    .vm-head:first-child { margin-top: 0; }
+    .vm-title { color: var(--label); font-weight: 600; }
+    .vm-gap { height: 10px; }
+    .vm-line.ru-role { margin-top: 8px; }
     .note-toggle {
       display: inline-flex; align-items: center; gap: 7px;
       background: none; border: none; padding: 8px 0 0; margin-top: 2px;
@@ -1331,6 +1342,8 @@
     <span class="viewer-count" id="viewerCount"></span>
   </div>
   <div class="viewer-stage" id="viewerStage"></div>
+  <div class="viewer-hint" id="viewerHint">Double-tap for meaning</div>
+  <div class="viewer-meaning" id="viewerMeaning"></div>
 </div>
 
 <div class="deck-gallery" id="deckGallery">
@@ -1438,7 +1451,7 @@
       <button class="ios-row ios-destructive" onclick="confirmTap(this, event, clearSaved)">Clear Saved Readings</button>
     </div>
   </div>
-  <div class="ios-footer center">build 120</div>
+  <div class="ios-footer center">build 121</div>
   </div>
   </div>
 </div>
@@ -2555,9 +2568,8 @@ function flip(i) {
 }
 
 const LEN_COMBO_SEP = '\u0001';
-function lenMeaning(i) {
-  if (!drawnLenormand[i]) return '';
-  const name = drawnLenormand[i].name;
+// Lenormand meaning of one card on its own: №, keywords, astrology, timing / yes-no
+function lenCore(name) {
   const d = LENDATA[name];
   if (!d) return name;
   const n = LENORMAND.findIndex(c => c.name === name);
@@ -2568,8 +2580,16 @@ function lenMeaning(i) {
   const meta = [timing && `⏱ ${timing}`, yesNo].filter(Boolean).join(' · ');
   const [zod, pl] = LEN_ASTRO[name] || ['', ''];
   const astro = [zod && `${ZODIAC_GLYPH[zod]}\uFE0E ${zod}`, pl && `${PLANET_GLYPH[pl]}\uFE0E ${pl}`].filter(Boolean).join(' · ');
-  let text = `№${n + 1}${showPip ? ` · ${card.rank}${card.suit}` : ''}\n${d[0]}`
-           + (astro ? '\n' + astro : '') + (meta ? '\n' + meta : '');
+  return `№${n + 1}${showPip ? ` · ${card.rank}${card.suit}` : ''}\n${d[0]}`
+       + (astro ? '\n' + astro : '') + (meta ? '\n' + meta : '');
+}
+
+function lenMeaning(i) {
+  if (!drawnLenormand[i]) return '';
+  const name = drawnLenormand[i].name;
+  const d = LENDATA[name];
+  if (!d) return name;
+  let text = lenCore(name);
   const sep = LEN_COMBO_SEP;
   if (i === 0 && drawnLenormand[1]) {
     const nb = drawnLenormand[1].name;
@@ -2747,18 +2767,21 @@ function enParagraph(t) {
 
 function getMeaning(i) {
   const front = document.getElementById(`cf${i}`);
-  const key = front.dataset.key;
+  return keyMeaning(front.dataset.key, front.classList.contains('rev'));
+}
+
+// { en, ru } for a Tarot / Etteilla / Grand Jeu card key, upright or reversed
+function keyMeaning(key, rev) {
   const gj = key && key.startsWith('GJ') && GJ_MEANINGS[key.slice(2)];
   if (gj) return { en: gj[0] + (gj[1] ? `\nScene: ${gj[1]}` : ''), ru: gj[2] + (gj[3] ? `\nСцена: ${gj[3]}` : '') };
   const ett = ETT_BY_KEY[key];
   if (ett) {
-    const rev = front.classList.contains('rev');
     const head = `№${ett[1]}${ett[2] ? ' · ' + ett[2] : ''}${rev ? ' · reversed' : ''}`;
     return { en: `${head}\n${rev ? ett[6] : ett[5]}`, ru: rev ? ett[8] : ett[7] };
   }
   const upright = MEANINGS[key] || '';
   const body = upright.split('\n').slice(1).join('\n');
-  const isRev = front.classList.contains('rev') && REVERSED[key];
+  const isRev = rev && REVERSED[key];
   // The Russian system has no reversed meanings, so reversed cards show English only
   return isRev ? { en: enParagraph(REVERSED[key]), ru: '' }
                : { en: enParagraph(body), ru: ruTarot(key) };
@@ -2970,13 +2993,16 @@ const HISTORY_MAX = 30;
 // pip       — Lenormand meaning starts with "№3 · 10♠" (playing card shown)
 const tarotGallery = (pool, srcFor) => pool.map(img => {
   const key = img.replace('.jpg', '');
-  return { src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0] };
+  return { src: srcFor(key), label: (MEANINGS[key] || key).split('\n')[0], m: { key } };
 });
+// 52-card galleries: cards 6–A carry their Lenormand twin; 2–5 have no meaning
+const lenTwin = c => LENORMAND.find(l => String(l.rank) === String(c.rank) && l.suit === c.suit);
 const lenLabel = c => {
   const rs = String(c.rank) + c.suit;
   return (meaningSystem === 'russian' && RUSDATA[rs]) ? RUSDATA[rs][0] : `${LEN_ICON[c.name] || ''} ${c.name}`;
 };
-const pipGallery = srcFor => COPAG52.map(c => ({ src: srcFor(c), label: `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>` }));
+const pipGallery = (srcFor, meaningFor = c => ({ len: lenTwin(c) || null })) =>
+  COPAG52.map(c => ({ src: srcFor(c), label: `${c.rank}<span style="color:${gallerySuitColor(c.suit)}">${c.suit}</span>`, m: meaningFor(c) }));
 const DECKS = {
   tarot:     { label: 'Tarot', modes: [], pool: () => TAROT, draw: () => drawTarot(),
                gallery: () => tarotGallery(TAROT, key => tarotSrc(key + '.jpg')) },
@@ -2987,18 +3013,19 @@ const DECKS = {
   solabusca: { label: 'Sola Busca', modes: ['solabusca-mode'], pool: () => TAROT,
                draw: () => drawRemoteTarot('solabusca', solaSrc), gallery: () => tarotGallery(TAROT, solaSrc) },
   etteilla:  { label: 'Grand Etteilla · Egyptian Tarot', modes: ['etteilla-mode'], pool: () => ETTEILLA, draw: () => drawEtteilla(),
-               gallery: () => ETTEILLA.map(e => ({ src: ettSrc(e[0]), label: `${e[1]} · ${e[3]}` })) },
+               gallery: () => ETTEILLA.map(e => ({ src: ettSrc(e[0]), label: `${e[1]} · ${e[3]}`, m: { key: 'E' + e[1] } })) },
   grandjeu:  { label: 'Grand Jeu', modes: ['grandjeu-mode'], pool: () => gjPool(), draw: () => drawGrandJeu(),
-               gallery: () => [...pipGallery(c => grandJeuSrc(c.rank, c.suit)),
-                               { src: gjFile(105), label: 'Le Consultant' }, { src: gjFile(107), label: 'La Consultante' }] },
+               gallery: () => [...pipGallery(c => grandJeuSrc(c.rank, c.suit), c => ({ key: 'GJ' + c.rank + c.suit })),
+                               { src: gjFile(105), label: 'Le Consultant', m: { key: 'GJconsultant' } },
+                               { src: gjFile(107), label: 'La Consultante', m: { key: 'GJconsultante' } }] },
   dondorf:   { label: 'Dondorf', modes: ['dondorf-mode'], pool: () => dondorfPool(), lenormand: true, pip: true,
-               draw: () => drawRemoteLen('dondorf', dondorfSrc), gallery: () => dondorfPool().map(c => ({ src: dondorfSrc(c), label: lenLabel(c) })) },
+               draw: () => drawRemoteLen('dondorf', dondorfSrc), gallery: () => dondorfPool().map(c => ({ src: dondorfSrc(c), label: lenLabel(c), m: { len: c } })) },
   lenormand: { label: 'Атласные', modes: ['lenormand-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
-               draw: () => drawLenormand(), gallery: () => LENORMAND.map(c => ({ sprite: spriteStyle(c.suit, c.rank), label: lenLabel(c) })) },
+               draw: () => drawLenormand(), gallery: () => LENORMAND.map(c => ({ sprite: spriteStyle(c.suit, c.rank), label: lenLabel(c), m: { len: c } })) },
   russian:   { label: 'Russian', modes: ['lenormand-mode', 'russian-mode'], pool: () => LENORMAND, lenormand: true,
-               draw: () => drawRussian(), gallery: () => LENORMAND.map(c => ({ src: RUSSIAN_LOCAL[String(c.rank) + c.suit], label: lenLabel(c) })) },
+               draw: () => drawRussian(), gallery: () => LENORMAND.map(c => ({ src: RUSSIAN_LOCAL[String(c.rank) + c.suit], label: lenLabel(c), m: { len: c } })) },
   golden:    { label: 'Golden', modes: ['lenormand-mode', 'golden-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
-               draw: () => drawGolden(), gallery: () => LENORMAND.map(c => ({ src: `golden_${c.name}.webp`, label: lenLabel(c) })) },
+               draw: () => drawGolden(), gallery: () => LENORMAND.map(c => ({ src: `golden_${c.name}.webp`, label: lenLabel(c), m: { len: c } })) },
   bicycle:   { label: 'Bicycle', modes: ['lenormand-mode', 'bicycle-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
                draw: () => drawBicycle(), gallery: () => pipGallery(c => bikeUrl(c.rank, c.suit)) },
   red:       { label: 'Bicycle Jumbo', modes: ['lenormand-mode', 'red-mode'], pool: () => LENORMAND, lenormand: true, pip: true,
@@ -3342,7 +3369,7 @@ function viewDeck() {
 let galleryCache = [];
 let viewerItems = [], viewerIdx = 0;
 function openViewer(items, idx) {
-  viewerItems = items; viewerIdx = idx;
+  viewerItems = items; viewerIdx = idx; viewerMeaningOpen = false;
   document.getElementById('cardViewer').classList.add('open');
   document.body.classList.add('sheet-open');
   renderViewer();
@@ -3352,9 +3379,14 @@ function closeViewer() {
   if (!document.getElementById('deckGallery').classList.contains('open') &&
       !document.getElementById('settingsPanel').classList.contains('open')) document.body.classList.remove('sheet-open');
 }
+let viewerMeaningOpen = false;
 function renderViewer() {
   const it = viewerItems[viewerIdx];
   if (!it) return;
+  const panel = document.getElementById('viewerMeaning');
+  panel.classList.toggle('open', viewerMeaningOpen);
+  document.getElementById('viewerHint').style.display = viewerMeaningOpen || !it.m ? 'none' : '';
+  if (viewerMeaningOpen) { renderMeaningInto(panel, it.m, it.rev); panel.scrollTop = 0; }
   document.getElementById('viewerTitle').innerHTML = it.label;
   document.getElementById('viewerCount').textContent = viewerItems.length > 1 ? `${viewerIdx + 1} / ${viewerItems.length}` : '';
   const stage = document.getElementById('viewerStage');
@@ -3366,6 +3398,32 @@ function renderViewer() {
     stage.innerHTML = `<img class="viewer-img${it.rev ? ' rev' : ''}" src="${it.src}" alt="">`;
   }
 }
+function toggleViewerMeaning() {
+  if (!viewerItems[viewerIdx] || !viewerItems[viewerIdx].m) return;
+  viewerMeaningOpen = !viewerMeaningOpen;
+  renderViewer();
+}
+
+// One card's meaning for the viewer; Lenormand-system cards show both systems
+function renderMeaningInto(el, m, rev) {
+  el.innerHTML = '';
+  const add = (cls, text) => { const p = document.createElement('div'); p.className = cls; p.textContent = text; el.appendChild(p); return p; };
+  const ruBlock = ru => ru.split('\n').forEach(line => add(RU_ROLES.includes(line) ? 'vm-line ru-role' : 'vm-line', line));
+  if (!m) return;
+  if (m.key) {
+    const { en, ru } = keyMeaning(m.key, !!rev);
+    add('vm-para', en);
+    if (ru) { const gap = add('vm-gap', ''); ruBlock(ru); }
+  } else if (m.len) {
+    const c = m.len, rs = String(c.rank) + c.suit, r = RUSDATA[rs];
+    add('vm-head', 'Lenormand');
+    add('vm-para', lenCore(c.name));
+    if (r) { add('vm-head', 'Гадание'); add('vm-title', r[0]); add('vm-para', r[1]); }
+  } else {
+    add('vm-para', 'Not used in readings — this deck reads with the 36 cards from 6 to Ace.');
+  }
+}
+
 function stepViewer(d) {
   const n = viewerItems.length;
   if (n < 2) return;
@@ -3374,14 +3432,19 @@ function stepViewer(d) {
 }
 (function initViewerSwipe() {
   const stage = document.getElementById('viewerStage');
-  let x0 = null, y0 = 0;
+  let x0 = null, y0 = 0, lastTap = 0;
   stage.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; });
   stage.addEventListener('pointerup', e => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dy = e.clientY - y0;
     x0 = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) stepViewer(dx < 0 ? 1 : -1);
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { stepViewer(dx < 0 ? 1 : -1); lastTap = 0; return; }
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+      const now = Date.now();
+      if (now - lastTap < 320) { toggleViewerMeaning(); lastTap = 0; } else lastTap = now;
+    }
   });
+  stage.addEventListener('dblclick', e => e.preventDefault());
   document.addEventListener('keydown', e => {
     if (!document.getElementById('cardViewer').classList.contains('open')) return;
     if (e.key === 'Escape') closeViewer();
@@ -3401,8 +3464,10 @@ function openSpreadViewer(i) {
     const label = document.getElementById(`lbl${k}`).textContent;
     const rev = front.classList.contains('rev');
     if (k === i) at = items.length;
-    if (img && img.getAttribute('src')) items.push({ src: img.getAttribute('src'), label, rev });
-    else items.push({ sprite: (front.getAttribute('style') || '').replace(/;?\s*$/, ''), label, rev });
+    const m = usesMeaningToggle() ? (drawnLenormand[k] ? { len: drawnLenormand[k] } : null)
+            : (front.dataset.key ? { key: front.dataset.key } : null);
+    if (img && img.getAttribute('src')) items.push({ src: img.getAttribute('src'), label, rev, m });
+    else items.push({ sprite: (front.getAttribute('style') || '').replace(/;?\s*$/, ''), label, rev, m });
   }
   if (items.length) openViewer(items, at);
 }
